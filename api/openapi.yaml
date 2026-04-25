@@ -7,18 +7,19 @@ info:
     name: MIT
     identifier: MIT
   description: >
-    LingMind Annex 通过 Phoenix 网关提供稳定的设备、任务、原始数据和规则命中 API。
+    LingMind Annex SDK/CLI 通过 Phoenix 网关调用 LingMind 能力。当前 HTTP 传输层使用
+    Phoenix 已存在的认证接口和 Radix 代理接口；客户端库负责把 Radix 原始响应映射为 Annex 标准对象。
 servers:
-  - url: https://{host}/api/annex/v1
+  - url: https://{host}
     variables:
       host:
-        default: gateway.example.com
+        default: phoenix.example.com
 security:
   - BearerAuth: []
   - ApiKeyAuth: []
 tags:
   - name: Auth
-    description: 集成凭证登录、刷新、查询和吊销。
+    description: Phoenix 用户登录、刷新和退出。
   - name: Devices
     description: 设备清单和在线状态。
   - name: Missions
@@ -28,14 +29,14 @@ tags:
   - name: RuleHits
     description: AI 和规则检测结果。
 paths:
-  /auth/token:
+  /api/auth/login:
     post:
       tags: [Auth]
-      operationId: createAuthToken
-      summary: 使用集成客户端凭证换取访问令牌。
+      operationId: login
+      summary: 使用 LingMind 用户名密码登录 Phoenix。
       security: []
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
@@ -53,7 +54,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         default:
           $ref: '#/components/responses/Error'
-  /auth/refresh:
+  /api/auth/refresh:
     post:
       tags: [Auth]
       operationId: refreshAuthToken
@@ -78,27 +79,11 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         default:
           $ref: '#/components/responses/Error'
-  /auth/me:
-    get:
-      tags: [Auth]
-      operationId: getAuthSubject
-      summary: 查询当前凭证身份和权限范围。
-      responses:
-        '200':
-          description: 当前凭证身份。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthSubject'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        default:
-          $ref: '#/components/responses/Error'
-  /auth/revoke:
+  /api/auth/logout:
     post:
       tags: [Auth]
-      operationId: revokeAuthToken
-      summary: 吊销访问令牌或 refresh token。
+      operationId: logout
+      summary: 退出当前 Phoenix access token。
       requestBody:
         required: true
         content:
@@ -106,15 +91,15 @@ paths:
             schema:
               $ref: '#/components/schemas/AuthRevokeRequest'
       responses:
-        '204':
-          description: 令牌已吊销。
+        '200':
+          description: 已退出。
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         default:
           $ref: '#/components/responses/Error'
-  /devices:
+  /proxy/radix/api/devices:
     get:
       tags: [Devices]
       operationId: listDevices
@@ -123,11 +108,11 @@ paths:
         - $ref: '#/components/parameters/ProjectCode'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
-        - name: state
+        - name: filters[state][$eq]
           in: query
           schema:
             type: string
-        - name: type
+        - name: filters[deviceType][$eq]
           in: query
           schema:
             type: string
@@ -147,7 +132,7 @@ paths:
         default:
           $ref: '#/components/responses/Error'
       x-annex-scope: device:read
-  /devices/{deviceId}:
+  /proxy/radix/api/devices/{deviceId}:
     get:
       tags: [Devices]
       operationId: getDevice
@@ -165,7 +150,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Device'
+                $ref: '#/components/schemas/RadixItemResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -175,7 +160,7 @@ paths:
         default:
           $ref: '#/components/responses/Error'
       x-annex-scope: device:read
-  /missions:
+  /proxy/radix/api/missions:
     get:
       tags: [Missions]
       operationId: listMissions
@@ -184,15 +169,15 @@ paths:
         - $ref: '#/components/parameters/ProjectCode'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
-        - name: state
+        - name: filters[state][$eq]
           in: query
           schema:
             type: string
-        - name: type
+        - name: filters[taskType][$eq]
           in: query
           schema:
             type: string
-        - name: deviceId
+        - name: filters[device][documentId][$eq]
           in: query
           schema:
             type: string
@@ -212,7 +197,7 @@ paths:
         default:
           $ref: '#/components/responses/Error'
       x-annex-scope: mission:read
-  /missions/{missionId}:
+  /proxy/radix/api/missions/{missionId}:
     get:
       tags: [Missions]
       operationId: getMission
@@ -230,7 +215,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Mission'
+                $ref: '#/components/schemas/RadixItemResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -240,7 +225,7 @@ paths:
         default:
           $ref: '#/components/responses/Error'
       x-annex-scope: mission:read
-  /raw-data:
+  /proxy/radix/api/raw-data:
     get:
       tags: [RawData]
       operationId: listRawData
@@ -249,24 +234,24 @@ paths:
         - $ref: '#/components/parameters/ProjectCode'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
-        - name: type
+        - name: filters[type][$eq]
           in: query
           schema:
             type: string
-        - name: missionId
+        - name: filters[mission][documentId][$eq]
           in: query
           schema:
             type: string
-        - name: deviceId
+        - name: filters[device][documentId][$eq]
           in: query
           schema:
             type: string
-        - name: capturedAfter
+        - name: filters[captureTime][$gte]
           in: query
           schema:
             type: string
             format: date-time
-        - name: capturedBefore
+        - name: filters[captureTime][$lte]
           in: query
           schema:
             type: string
@@ -285,7 +270,7 @@ paths:
         default:
           $ref: '#/components/responses/Error'
       x-annex-scope: raw-data:read
-  /raw-data/{rawDataId}:
+  /proxy/radix/api/raw-data/{rawDataId}:
     get:
       tags: [RawData]
       operationId: getRawData
@@ -303,7 +288,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RawData'
+                $ref: '#/components/schemas/RadixItemResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -313,7 +298,7 @@ paths:
         default:
           $ref: '#/components/responses/Error'
       x-annex-scope: raw-data:read
-  /rule-hits:
+  /proxy/radix/api/rule-hits:
     get:
       tags: [RuleHits]
       operationId: listRuleHits
@@ -322,33 +307,33 @@ paths:
         - $ref: '#/components/parameters/ProjectCode'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
-        - name: state
+        - name: filters[reviewState][$eq]
           in: query
           schema:
             type: string
-        - name: severity
+        - name: filters[severity][$eq]
           in: query
           schema:
             type: string
             enum: [info, low, medium, high, critical]
-        - name: ruleId
+        - name: filters[ruleId][$eq]
           in: query
           schema:
             type: string
-        - name: missionId
+        - name: filters[mission][documentId][$eq]
           in: query
           schema:
             type: string
-        - name: deviceId
+        - name: filters[device][documentId][$eq]
           in: query
           schema:
             type: string
-        - name: hitAfter
+        - name: filters[occurredAt][$gte]
           in: query
           schema:
             type: string
             format: date-time
-        - name: hitBefore
+        - name: filters[occurredAt][$lte]
           in: query
           schema:
             type: string
@@ -367,7 +352,7 @@ paths:
         default:
           $ref: '#/components/responses/Error'
       x-annex-scope: rule-hit:read
-  /rule-hits/{ruleHitId}:
+  /proxy/radix/api/rule-hits/{ruleHitId}:
     get:
       tags: [RuleHits]
       operationId: getRuleHit
@@ -385,7 +370,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RuleHit'
+                $ref: '#/components/schemas/RadixItemResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -446,20 +431,20 @@ components:
       name: X-LM-API-Key
   parameters:
     ProjectCode:
-      name: X-LM-Project-Code
+      name: X-Requested-Project-Code
       in: header
       required: false
       schema:
         type: string
     Page:
-      name: page
+      name: pagination[page]
       in: query
       schema:
         type: integer
         minimum: 1
         default: 1
     PageSize:
-      name: pageSize
+      name: pagination[pageSize]
       in: query
       schema:
         type: integer
@@ -467,13 +452,13 @@ components:
         maximum: 200
         default: 50
     UpdatedAfter:
-      name: updatedAfter
+      name: filters[updatedAt][$gte]
       in: query
       schema:
         type: string
         format: date-time
     UpdatedBefore:
-      name: updatedBefore
+      name: filters[updatedAt][$lte]
       in: query
       schema:
         type: string
@@ -512,167 +497,115 @@ components:
   schemas:
     AuthTokenRequest:
       type: object
-      required: [grantType]
+      required: [username, password]
       properties:
-        grantType:
+        username:
           type: string
-          enum: [client_credentials, refresh_token]
-          description: 授权类型。`client_credentials` 使用客户端凭证登录，`refresh_token` 使用 refresh token 换取新令牌。
-        clientId:
-          type: string
-          description: 集成客户端 ID。`grantType=client_credentials` 时必填。
-        clientSecret:
+          description: LingMind 用户名。
+        password:
           type: string
           format: password
-          description: 集成客户端密钥。`grantType=client_credentials` 时必填。
-        refreshToken:
-          type: string
-          description: Refresh token。`grantType=refresh_token` 时必填。
-        projectCode:
-          type: string
-          description: 可选项目上下文。凭证覆盖多个项目时建议指定。
-        scope:
-          type: array
-          description: 请求的 scope 列表。最终授权范围由 Phoenix 权限策略裁剪。
-          items:
-            type: string
+          description: LingMind 密码。
     AuthRefreshRequest:
       type: object
-      required: [refreshToken]
+      required: [refresh_token]
       properties:
-        refreshToken:
+        refresh_token:
           type: string
-        projectCode:
-          type: string
-          description: 可选项目上下文。
     AuthRevokeRequest:
       type: object
-      required: [token]
+      required: [access_token]
       properties:
-        token:
+        access_token:
           type: string
-          description: 待吊销令牌。
-        tokenTypeHint:
-          type: string
-          enum: [access_token, refresh_token]
-          description: 令牌类型提示。
+          description: 待退出的 access token。也可以通过 Authorization Bearer 传入。
     AuthTokenResponse:
       type: object
-      required: [accessToken, tokenType, expiresIn]
+      required: [access_token, token_type, expires_in]
       properties:
-        accessToken:
+        access_token:
           type: string
-        tokenType:
+        token_type:
           type: string
           examples: [Bearer]
-        expiresIn:
+        expires_in:
           type: integer
           description: access token 有效秒数。
-        refreshToken:
+        refresh_token:
           type: string
-        refreshExpiresIn:
-          type: integer
-          description: refresh token 有效秒数。
-        scope:
-          type: array
-          items:
-            type: string
-        projectCode:
+        issued_at:
           type: string
-        projects:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAccess'
-        subject:
-          $ref: '#/components/schemas/AuthSubject'
-    AuthSubject:
-      type: object
-      required: [id, type]
-      properties:
-        id:
-          type: string
-        type:
-          type: string
-          examples: [integration]
-        name:
-          type: string
-        email:
-          type: string
-        projectCode:
-          type: string
-        projects:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAccess'
-        scopes:
-          type: array
-          items:
-            type: string
-        expiresAt:
-          type: [string, 'null']
           format: date-time
-    ProjectAccess:
+        user:
+          type: object
+          additionalProperties: true
+          description: Phoenix 返回的用户上下文。Annex SDK 会从中提取常用身份信息。
+    DeviceListResponse:
       type: object
-      required: [projectCode]
+      required: [data, meta]
       properties:
-        projectCode:
-          type: string
-        name:
-          type: string
-        scopes:
+        data:
           type: array
           items:
-            type: string
-    PageInfo:
+            $ref: '#/components/schemas/RadixRecord'
+        meta:
+          $ref: '#/components/schemas/RadixMeta'
+    MissionListResponse:
       type: object
-      required: [page, pageSize]
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RadixRecord'
+        meta:
+          $ref: '#/components/schemas/RadixMeta'
+    RawDataListResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RadixRecord'
+        meta:
+          $ref: '#/components/schemas/RadixMeta'
+    RuleHitListResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RadixRecord'
+        meta:
+          $ref: '#/components/schemas/RadixMeta'
+    RadixItemResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/RadixRecord'
+    RadixRecord:
+      type: object
+      additionalProperties: true
+      description: Radix 原始记录。Annex SDK 会映射为 Device、Mission、RawData 或 RuleHit 标准对象。
+    RadixMeta:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/RadixPagination'
+      additionalProperties: true
+    RadixPagination:
+      type: object
       properties:
         page:
           type: integer
         pageSize:
           type: integer
         total:
-          type: [integer, 'null']
-    DeviceListResponse:
-      type: object
-      required: [data, page]
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Device'
-        page:
-          $ref: '#/components/schemas/PageInfo'
-    MissionListResponse:
-      type: object
-      required: [data, page]
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Mission'
-        page:
-          $ref: '#/components/schemas/PageInfo'
-    RawDataListResponse:
-      type: object
-      required: [data, page]
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/RawData'
-        page:
-          $ref: '#/components/schemas/PageInfo'
-    RuleHitListResponse:
-      type: object
-      required: [data, page]
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/RuleHit'
-        page:
-          $ref: '#/components/schemas/PageInfo'
+          type: integer
+      additionalProperties: true
     Device:
       type: object
       required: [id, name, type, state, projectCode]

@@ -3,8 +3,8 @@ package annex
 import "time"
 
 const (
-	GrantTypeClientCredentials = "client_credentials"
-	GrantTypeRefreshToken      = "refresh_token"
+	GrantTypePassword     = "password"
+	GrantTypeRefreshToken = "refresh_token"
 )
 
 type PageInfo struct {
@@ -19,34 +19,30 @@ type ListResponse[T any] struct {
 }
 
 type AuthTokenRequest struct {
-	GrantType    string   `json:"grantType"`
-	ClientID     string   `json:"clientId,omitempty"`
-	ClientSecret string   `json:"clientSecret,omitempty"`
-	RefreshToken string   `json:"refreshToken,omitempty"`
-	ProjectCode  string   `json:"projectCode,omitempty"`
-	Scope        []string `json:"scope,omitempty"`
+	GrantType    string `json:"grantType"`
+	Username     string `json:"username,omitempty"`
+	Password     string `json:"password,omitempty"`
+	RefreshToken string `json:"refreshToken,omitempty"`
+	ProjectCode  string `json:"projectCode,omitempty"`
 }
 
 type AuthRefreshRequest struct {
-	RefreshToken string `json:"refreshToken"`
+	RefreshToken string `json:"refresh_token"`
 	ProjectCode  string `json:"projectCode,omitempty"`
 }
 
 type AuthRevokeRequest struct {
-	Token         string `json:"token"`
-	TokenTypeHint string `json:"tokenTypeHint,omitempty"`
+	Token string `json:"access_token"`
 }
 
 type AuthTokenResponse struct {
-	AccessToken      string          `json:"accessToken"`
-	TokenType        string          `json:"tokenType"`
-	ExpiresIn        int             `json:"expiresIn"`
-	RefreshToken     string          `json:"refreshToken,omitempty"`
-	RefreshExpiresIn int             `json:"refreshExpiresIn,omitempty"`
-	Scope            []string        `json:"scope,omitempty"`
-	ProjectCode      string          `json:"projectCode,omitempty"`
-	Projects         []ProjectAccess `json:"projects,omitempty"`
-	Subject          *AuthSubject    `json:"subject,omitempty"`
+	AccessToken  string       `json:"access_token"`
+	TokenType    string       `json:"token_type"`
+	ExpiresIn    int          `json:"expires_in"`
+	RefreshToken string       `json:"refresh_token,omitempty"`
+	ProjectCode  string       `json:"projectCode,omitempty"`
+	Scope        []string     `json:"scope,omitempty"`
+	Subject      *AuthSubject `json:"subject,omitempty"`
 }
 
 type AuthSubject struct {

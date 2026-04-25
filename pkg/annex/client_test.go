@@ -2,6 +2,7 @@ package annex
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,30 +11,51 @@ import (
 
 func TestListDevicesSendsAuthProjectAndQuery(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/api/annex/v1/devices" {
+		if r.URL.Path != "/proxy/radix/api/devices" {
 			t.Fatalf("unexpected path: %s", r.URL.Path)
 		}
 		if got := r.Header.Get("Authorization"); got != "Bearer token_123" {
 			t.Fatalf("unexpected authorization header: %s", got)
 		}
-		if got := r.Header.Get("X-LM-Project-Code"); got != "demo" {
+		if got := r.Header.Get("X-Requested-Project-Code"); got != "demo" {
 			t.Fatalf("unexpected project header: %s", got)
 		}
-		if got := r.URL.Query().Get("state"); got != "online" {
+		if got := r.URL.Query().Get("filters[state][$eq]"); got != "online" {
 			t.Fatalf("unexpected state query: %s", got)
 		}
-		if got := r.URL.Query().Get("pageSize"); got != "20" {
+		if got := r.URL.Query().Get("pagination[pageSize]"); got != "20" {
 			t.Fatalf("unexpected pageSize query: %s", got)
 		}
-		_ = json.NewEncoder(w).Encode(ListResponse[Device]{
-			Data: []Device{{ID: "dev_1", Name: "Camera 1", Type: "camera", State: "online", ProjectCode: "demo", Online: true}},
-			Page: PageInfo{Page: 1, PageSize: 20},
+		if got := r.URL.Query().Get("populate"); got != "" {
+			t.Fatalf("unexpected populate query: %s", got)
+		}
+		_ = json.NewEncoder(w).Encode(radixListResponse{
+			Data: []map[string]any{{
+				"documentId":   "dev_1",
+				"name":         "Camera 1",
+				"deviceType":   "camera",
+				"state":        "online",
+				"serialNumber": "sn_1",
+			}},
+			Meta: struct {
+				Pagination struct {
+					Page     int `json:"page"`
+					PageSize int `json:"pageSize"`
+					Total    int `json:"total"`
+				} `json:"pagination"`
+			}{
+				Pagination: struct {
+					Page     int `json:"page"`
+					PageSize int `json:"pageSize"`
+					Total    int `json:"total"`
+				}{Page: 1, PageSize: 20, Total: 1},
+			},
 		})
 	}))
 	defer server.Close()
 
 	client, err := NewClient(Config{
-		BaseURL:     server.URL + "/api/annex/v1",
+		BaseURL:     server.URL,
 		Token:       "token_123",
 		ProjectCode: "demo",
 	})
@@ -50,6 +72,9 @@ func TestListDevicesSendsAuthProjectAndQuery(t *testing.T) {
 	}
 	if len(resp.Data) != 1 || resp.Data[0].ID != "dev_1" {
 		t.Fatalf("unexpected response: %#v", resp)
+	}
+	if resp.Data[0].ProjectCode != "demo" {
+		t.Fatalf("unexpected project code fallback: %#v", resp.Data[0])
 	}
 }
 
@@ -80,19 +105,22 @@ func TestAPIErrorIncludesRequestID(t *testing.T) {
 	}
 }
 
-func TestCreateTokenSendsClientCredentialRequest(t *testing.T) {
+func TestCreateTokenSendsPasswordLoginRequest(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			t.Fatalf("unexpected method: %s", r.Method)
 		}
-		if r.URL.Path != "/auth/token" {
+		if r.URL.Path != "/api/auth/login" {
 			t.Fatalf("unexpected path: %s", r.URL.Path)
 		}
-		var request AuthTokenRequest
+		var request struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			t.Fatal(err)
 		}
-		if request.GrantType != GrantTypeClientCredentials || request.ClientID != "client_123" || request.ClientSecret != "secret_123" {
+		if request.Username != "user@example.com" || request.Password != "secret_123" {
 			t.Fatalf("unexpected token request: %#v", request)
 		}
 		_ = json.NewEncoder(w).Encode(AuthTokenResponse{
@@ -112,11 +140,10 @@ func TestCreateTokenSendsClientCredentialRequest(t *testing.T) {
 	}
 
 	resp, err := client.CreateToken(context.Background(), AuthTokenRequest{
-		GrantType:    GrantTypeClientCredentials,
-		ClientID:     "client_123",
-		ClientSecret: "secret_123",
-		ProjectCode:  "demo",
-		Scope:        []string{"device:read"},
+		GrantType:   GrantTypePassword,
+		Username:    "user@example.com",
+		Password:    "secret_123",
+		ProjectCode: "demo",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -126,25 +153,19 @@ func TestCreateTokenSendsClientCredentialRequest(t *testing.T) {
 	}
 }
 
-func TestAuthMeSendsBearerToken(t *testing.T) {
+func TestAuthMeDecodesBearerTokenLocally(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/auth/me" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
-		}
-		if got := r.Header.Get("Authorization"); got != "Bearer access_123" {
-			t.Fatalf("unexpected authorization header: %s", got)
-		}
-		_ = json.NewEncoder(w).Encode(AuthSubject{
-			ID:          "subject_1",
-			Type:        "integration",
-			Name:        "demo integration",
-			ProjectCode: "demo",
-			Scopes:      []string{"device:read"},
-		})
+		t.Fatalf("auth me should not call server, got %s", r.URL.Path)
 	}))
 	defer server.Close()
 
-	client, err := NewClient(Config{BaseURL: server.URL, Token: "access_123"})
+	token := fakeJWT(map[string]any{
+		"sub":                "subject_1",
+		"preferred_username": "demo user",
+		"email":              "demo@example.com",
+		"realm_access":       map[string]any{"roles": []any{"device:read"}},
+	})
+	client, err := NewClient(Config{BaseURL: server.URL, Token: token})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,7 +174,13 @@ func TestAuthMeSendsBearerToken(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if subject.ID != "subject_1" || subject.ProjectCode != "demo" {
+	if subject.ID != "subject_1" || subject.Email != "demo@example.com" || len(subject.Scopes) != 1 {
 		t.Fatalf("unexpected subject: %#v", subject)
 	}
+}
+
+func fakeJWT(claims map[string]any) string {
+	header, _ := json.Marshal(map[string]any{"alg": "none", "typ": "JWT"})
+	payload, _ := json.Marshal(claims)
+	return base64.RawURLEncoding.EncodeToString(header) + "." + base64.RawURLEncoding.EncodeToString(payload) + "."
 }

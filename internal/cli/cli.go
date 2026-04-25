@@ -235,29 +235,27 @@ func (c Command) runAuth(ctx context.Context, global globalOptions, args []strin
 }
 
 func (c Command) runAuthLogin(ctx context.Context, global globalOptions, args []string) int {
-	clientID := c.Env("LM_CLIENT_ID")
-	clientSecret := c.Env("LM_CLIENT_SECRET")
+	username := c.Env("LM_USERNAME")
+	password := c.Env("LM_PASSWORD")
 	projectCode := global.projectCode
-	scopeValue := ""
 	format := global.format
 	save := true
 
 	fs := flag.NewFlagSet("auth login", flag.ContinueOnError)
 	fs.SetOutput(c.Stderr)
-	fs.StringVar(&clientID, "client-id", clientID, "integration client ID")
-	fs.StringVar(&clientSecret, "client-secret", clientSecret, "integration client secret")
+	fs.StringVar(&username, "username", username, "LingMind username")
+	fs.StringVar(&password, "password", password, "LingMind password")
 	fs.StringVar(&projectCode, "project", projectCode, "project code")
-	fs.StringVar(&scopeValue, "scope", "", "comma-separated scopes")
 	fs.StringVar(&format, "format", format, "output format: table, json, or env")
 	fs.BoolVar(&save, "save", save, "save token to local config")
 	if err := fs.Parse(args); err != nil {
 		return c.error(err)
 	}
-	if strings.TrimSpace(clientID) == "" {
-		return c.usageError("auth login requires --client-id or LM_CLIENT_ID")
+	if strings.TrimSpace(username) == "" {
+		return c.usageError("auth login requires --username or LM_USERNAME")
 	}
-	if strings.TrimSpace(clientSecret) == "" {
-		return c.usageError("auth login requires --client-secret or LM_CLIENT_SECRET")
+	if strings.TrimSpace(password) == "" {
+		return c.usageError("auth login requires --password or LM_PASSWORD")
 	}
 
 	client, err := c.anonymousClient(global)
@@ -265,11 +263,10 @@ func (c Command) runAuthLogin(ctx context.Context, global globalOptions, args []
 		return c.error(err)
 	}
 	response, err := client.CreateToken(ctx, annex.AuthTokenRequest{
-		GrantType:    annex.GrantTypeClientCredentials,
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		ProjectCode:  projectCode,
-		Scope:        splitCSV(scopeValue),
+		GrantType:   annex.GrantTypePassword,
+		Username:    username,
+		Password:    password,
+		ProjectCode: projectCode,
 	})
 	if err != nil {
 		return c.error(err)
@@ -343,12 +340,10 @@ func (c Command) runAuthMe(ctx context.Context, global globalOptions) int {
 
 func (c Command) runAuthRevoke(ctx context.Context, global globalOptions, args []string) int {
 	token := global.token
-	tokenTypeHint := "access_token"
 
 	fs := flag.NewFlagSet("auth revoke", flag.ContinueOnError)
 	fs.SetOutput(c.Stderr)
 	fs.StringVar(&token, "token", token, "token to revoke")
-	fs.StringVar(&tokenTypeHint, "token-type", tokenTypeHint, "token type hint: access_token or refresh_token")
 	if err := fs.Parse(args); err != nil {
 		return c.error(err)
 	}
@@ -364,7 +359,7 @@ func (c Command) runAuthRevoke(ctx context.Context, global globalOptions, args [
 	if err != nil {
 		return c.error(err)
 	}
-	if err := client.RevokeToken(ctx, annex.AuthRevokeRequest{Token: token, TokenTypeHint: tokenTypeHint}); err != nil {
+	if err := client.RevokeToken(ctx, annex.AuthRevokeRequest{Token: token}); err != nil {
 		return c.error(err)
 	}
 
@@ -698,20 +693,6 @@ func parseOptionalTime(value string) (*time.Time, error) {
 	return &parsed, nil
 }
 
-func splitCSV(value string) []string {
-	if strings.TrimSpace(value) == "" {
-		return nil
-	}
-	parts := strings.Split(value, ",")
-	values := make([]string, 0, len(parts))
-	for _, part := range parts {
-		if trimmed := strings.TrimSpace(part); trimmed != "" {
-			values = append(values, trimmed)
-		}
-	}
-	return values
-}
-
 func (c Command) printTokenResponse(format string, response *annex.AuthTokenResponse, savedPath string) int {
 	switch format {
 	case "json":
@@ -833,7 +814,7 @@ func (c Command) printJSON(value any) int {
 
 func (c Command) printUsage() {
 	fmt.Fprintln(c.Stdout, `Usage:
-  lm [global flags] auth login --client-id <id> --client-secret <secret>
+  lm [global flags] auth login --username <user> --password <password>
   lm [global flags] auth refresh
   lm [global flags] auth me
   lm [global flags] auth revoke
@@ -848,7 +829,7 @@ func (c Command) printUsage() {
   lm serve [--addr :8080] [--path /lingmind/webhook]
 
 Global flags:
-  --base-url   Annex API base URL, or LM_BASE_URL
+  --base-url   Phoenix gateway base URL, or LM_BASE_URL
   --token      bearer token, or LM_TOKEN
   --api-key    API key, or LM_API_KEY
   --refresh-token

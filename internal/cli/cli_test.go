@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,22 +16,36 @@ import (
 
 func TestDevicesListCommand(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/devices" {
+		if r.URL.Path != "/proxy/radix/api/devices" {
 			t.Fatalf("unexpected path: %s", r.URL.Path)
 		}
 		if got := r.Header.Get("Authorization"); got != "Bearer token_123" {
 			t.Fatalf("unexpected authorization header: %s", got)
 		}
-		if got := r.Header.Get("X-LM-Project-Code"); got != "demo" {
+		if got := r.Header.Get("X-Requested-Project-Code"); got != "demo" {
 			t.Fatalf("unexpected project header: %s", got)
 		}
-		if got := r.URL.Query().Get("state"); got != "online" {
+		if got := r.URL.Query().Get("filters[state][$eq]"); got != "online" {
 			t.Fatalf("unexpected state query: %s", got)
 		}
+		if got := r.URL.Query().Get("populate"); got != "" {
+			t.Fatalf("unexpected populate query: %s", got)
+		}
 
-		_ = json.NewEncoder(w).Encode(annex.ListResponse[annex.Device]{
-			Data: []annex.Device{{ID: "dev_1", Name: "Camera 1", Type: "camera", State: "online", ProjectCode: "demo", Online: true}},
-			Page: annex.PageInfo{Page: 1, PageSize: 50},
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"data": []map[string]any{{
+				"documentId": "dev_1",
+				"name":       "Camera 1",
+				"deviceType": "camera",
+				"state":      "online",
+			}},
+			"meta": map[string]any{
+				"pagination": map[string]any{
+					"page":     1,
+					"pageSize": 50,
+					"total":    1,
+				},
+			},
 		})
 	}))
 	defer server.Close()
@@ -68,14 +83,17 @@ func TestAuthLoginSavesConfig(t *testing.T) {
 		if r.Method != http.MethodPost {
 			t.Fatalf("unexpected method: %s", r.Method)
 		}
-		if r.URL.Path != "/auth/token" {
+		if r.URL.Path != "/api/auth/login" {
 			t.Fatalf("unexpected path: %s", r.URL.Path)
 		}
-		var request annex.AuthTokenRequest
+		var request struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			t.Fatal(err)
 		}
-		if request.ClientID != "client_123" || request.ClientSecret != "secret_123" || request.ProjectCode != "demo" {
+		if request.Username != "demo@example.com" || request.Password != "secret_123" {
 			t.Fatalf("unexpected auth request: %#v", request)
 		}
 		_ = json.NewEncoder(w).Encode(annex.AuthTokenResponse{
@@ -105,8 +123,8 @@ func TestAuthLoginSavesConfig(t *testing.T) {
 		"lm",
 		"--base-url", server.URL,
 		"auth", "login",
-		"--client-id", "client_123",
-		"--client-secret", "secret_123",
+		"--username", "demo@example.com",
+		"--password", "secret_123",
 		"--project", "demo",
 	})
 	if code != 0 {
@@ -136,25 +154,13 @@ func TestAuthMeUsesSavedConfig(t *testing.T) {
 	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/auth/me" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
-		}
-		if got := r.Header.Get("Authorization"); got != "Bearer access_123" {
-			t.Fatalf("unexpected authorization header: %s", got)
-		}
-		_ = json.NewEncoder(w).Encode(annex.AuthSubject{
-			ID:          "subject_1",
-			Type:        "integration",
-			Name:        "demo integration",
-			ProjectCode: "demo",
-			Scopes:      []string{"device:read"},
-		})
+		t.Fatalf("auth me should not call server, got %s", r.URL.Path)
 	}))
 	defer server.Close()
 
 	config := storedConfig{
 		BaseURL:     server.URL,
-		Token:       "access_123",
+		Token:       fakeJWT(map[string]any{"sub": "subject_1", "preferred_username": "demo integration"}),
 		ProjectCode: "demo",
 	}
 	configFile, err := os.Create(filepath.Join(configDir, "config.json"))
@@ -187,4 +193,10 @@ func TestAuthMeUsesSavedConfig(t *testing.T) {
 	if !strings.Contains(stdout.String(), "subject_1") {
 		t.Fatalf("unexpected stdout: %s", stdout.String())
 	}
+}
+
+func fakeJWT(claims map[string]any) string {
+	header, _ := json.Marshal(map[string]any{"alg": "none", "typ": "JWT"})
+	payload, _ := json.Marshal(claims)
+	return base64.RawURLEncoding.EncodeToString(header) + "." + base64.RawURLEncoding.EncodeToString(payload) + "."
 }
