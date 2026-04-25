@@ -1,0 +1,7 @@
+groupId: com.lingmind
+artifactId: annex
+artifactVersion: 0.1.0
+invokerPackage: com.lingmind.annex
+apiPackage: com.lingmind.annex.api
+modelPackage: com.lingmind.annex.model
+library: native

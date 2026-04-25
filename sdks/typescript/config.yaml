@@ -1,0 +1,6 @@
+packageName: "@lingmind/annex"
+npmName: "@lingmind/annex"
+npmVersion: 0.1.0
+supportsES6: true
+typescriptThreePlus: true
+withInterfaces: true

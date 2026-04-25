@@ -1,0 +1,4 @@
+packageName: lingmind_annex
+projectName: lingmind-annex
+packageVersion: 0.1.0
+library: asyncio

@@ -1,0 +1,659 @@
+openapi: 3.1.0
+info:
+  title: LingMind Annex 开放集成 API
+  version: 0.1.0
+  summary: 面向 LingMind 外部集成的稳定 API。
+  license:
+    name: MIT
+    identifier: MIT
+  description: >
+    LingMind Annex 通过 Phoenix 网关提供稳定的设备、任务、原始数据和规则命中 API。
+servers:
+  - url: https://{host}/api/annex/v1
+    variables:
+      host:
+        default: gateway.example.com
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+tags:
+  - name: Devices
+    description: 设备清单和在线状态。
+  - name: Missions
+    description: 任务元数据和生命周期状态。
+  - name: RawData
+    description: 采集媒体和数据元信息。
+  - name: RuleHits
+    description: AI 和规则检测结果。
+paths:
+  /devices:
+    get:
+      tags: [Devices]
+      operationId: listDevices
+      summary: 查询当前集成可见的设备列表。
+      parameters:
+        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/UpdatedAfter'
+        - $ref: '#/components/parameters/UpdatedBefore'
+      responses:
+        '200':
+          description: 设备列表。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: device:read
+  /devices/{deviceId}:
+    get:
+      tags: [Devices]
+      operationId: getDevice
+      summary: 查询单个设备。
+      parameters:
+        - $ref: '#/components/parameters/ProjectCode'
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 设备。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: device:read
+  /missions:
+    get:
+      tags: [Missions]
+      operationId: listMissions
+      summary: 查询当前集成可见的任务列表。
+      parameters:
+        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: deviceId
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/UpdatedAfter'
+        - $ref: '#/components/parameters/UpdatedBefore'
+      responses:
+        '200':
+          description: 任务列表。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissionListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: mission:read
+  /missions/{missionId}:
+    get:
+      tags: [Missions]
+      operationId: getMission
+      summary: 查询单个任务。
+      parameters:
+        - $ref: '#/components/parameters/ProjectCode'
+        - name: missionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 任务。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mission'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: mission:read
+  /raw-data:
+    get:
+      tags: [RawData]
+      operationId: listRawData
+      summary: 查询当前集成可见的原始数据列表。
+      parameters:
+        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: missionId
+          in: query
+          schema:
+            type: string
+        - name: deviceId
+          in: query
+          schema:
+            type: string
+        - name: capturedAfter
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: capturedBefore
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: 原始数据列表。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawDataListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: raw-data:read
+  /raw-data/{rawDataId}:
+    get:
+      tags: [RawData]
+      operationId: getRawData
+      summary: 查询单条原始数据记录。
+      parameters:
+        - $ref: '#/components/parameters/ProjectCode'
+        - name: rawDataId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 原始数据。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: raw-data:read
+  /rule-hits:
+    get:
+      tags: [RuleHits]
+      operationId: listRuleHits
+      summary: 查询当前集成可见的规则命中列表。
+      parameters:
+        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [info, low, medium, high, critical]
+        - name: ruleId
+          in: query
+          schema:
+            type: string
+        - name: missionId
+          in: query
+          schema:
+            type: string
+        - name: deviceId
+          in: query
+          schema:
+            type: string
+        - name: hitAfter
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: hitBefore
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: 规则命中列表。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleHitListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: rule-hit:read
+  /rule-hits/{ruleHitId}:
+    get:
+      tags: [RuleHits]
+      operationId: getRuleHit
+      summary: 查询单条规则命中。
+      parameters:
+        - $ref: '#/components/parameters/ProjectCode'
+        - name: ruleHitId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 规则命中。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleHit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: rule-hit:read
+webhooks:
+  annexEvent:
+    post:
+      operationId: receiveAnnexEvent
+      summary: 接收 LingMind Annex Webhook 事件。
+      parameters:
+        - name: X-LM-Event
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-LM-Delivery
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-LM-Timestamp
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-LM-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+            example: sha256=6a6f...
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventEnvelope'
+      responses:
+        '204':
+          description: 事件已接收。
+        '400':
+          description: 请求无效。
+        '401':
+          description: 签名校验失败。
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-LM-API-Key
+  parameters:
+    ProjectCode:
+      name: X-LM-Project-Code
+      in: header
+      required: false
+      schema:
+        type: string
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    UpdatedAfter:
+      name: updatedAfter
+      in: query
+      schema:
+        type: string
+        format: date-time
+    UpdatedBefore:
+      name: updatedBefore
+      in: query
+      schema:
+        type: string
+        format: date-time
+  responses:
+    Unauthorized:
+      description: 缺少凭证或凭证无效。
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: 凭证有效，但缺少所需 Annex scope 或对象权限。
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在，或不在调用方权限边界内。
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error:
+      description: 错误响应。
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    PageInfo:
+      type: object
+      required: [page, pageSize]
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: [integer, 'null']
+    DeviceListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    MissionListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Mission'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    RawDataListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RawData'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    RuleHitListResponse:
+      type: object
+      required: [data, page]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleHit'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    Device:
+      type: object
+      required: [id, name, type, state, projectCode]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        sn:
+          type: [string, 'null']
+        type:
+          type: string
+        vendor:
+          type: [string, 'null']
+        model:
+          type: [string, 'null']
+        projectCode:
+          type: string
+        edgeId:
+          type: [string, 'null']
+        state:
+          type: string
+        online:
+          type: boolean
+        lastSeenAt:
+          type: [string, 'null']
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+    Mission:
+      type: object
+      required: [id, name, type, state, projectCode]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        state:
+          type: string
+        projectCode:
+          type: string
+        deviceIds:
+          type: array
+          items:
+            type: string
+        startedAt:
+          type: [string, 'null']
+          format: date-time
+        endedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+    RawData:
+      type: object
+      required: [id, type, projectCode, createdAt]
+      properties:
+        id:
+          type: string
+        projectCode:
+          type: string
+        missionId:
+          type: [string, 'null']
+        deviceId:
+          type: [string, 'null']
+        type:
+          type: string
+        mimeType:
+          type: [string, 'null']
+        sizeBytes:
+          type: [integer, 'null']
+          format: int64
+        downloadUrl:
+          type: [string, 'null']
+          format: uri
+          description: Phoenix 签发的短期 URL，不应暴露对象存储内部地址。
+        capturedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+    RuleHit:
+      type: object
+      required: [id, ruleId, ruleName, severity, state, projectCode, hitAt]
+      properties:
+        id:
+          type: string
+        projectCode:
+          type: string
+        ruleId:
+          type: string
+        ruleName:
+          type: string
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        state:
+          type: string
+        deviceId:
+          type: [string, 'null']
+        missionId:
+          type: [string, 'null']
+        rawDataId:
+          type: [string, 'null']
+        hitAt:
+          type: string
+          format: date-time
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evidence'
+        metadata:
+          type: object
+          additionalProperties: true
+    Evidence:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+        url:
+          type: [string, 'null']
+          format: uri
+        thumbnailUrl:
+          type: [string, 'null']
+          format: uri
+        rawDataId:
+          type: [string, 'null']
+        bbox:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            type: number
+        metadata:
+          type: object
+          additionalProperties: true
+    EventEnvelope:
+      type: object
+      required: [id, type, occurredAt, projectCode, data]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          examples:
+            - device.updated
+            - mission.updated
+            - raw-data.ready
+            - rule-hit.created
+        occurredAt:
+          type: string
+          format: date-time
+        projectCode:
+          type: string
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/Device'
+            - $ref: '#/components/schemas/Mission'
+            - $ref: '#/components/schemas/RawData'
+            - $ref: '#/components/schemas/RuleHit'
+            - type: object
+              additionalProperties: true
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            requestId:
+              type: [string, 'null']
