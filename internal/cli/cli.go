@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -26,11 +27,20 @@ type Command struct {
 }
 
 type globalOptions struct {
-	baseURL     string
-	token       string
-	apiKey      string
-	projectCode string
-	format      string
+	baseURL      string
+	token        string
+	apiKey       string
+	refreshToken string
+	projectCode  string
+	format       string
+}
+
+type storedConfig struct {
+	BaseURL      string     `json:"baseUrl,omitempty"`
+	Token        string     `json:"token,omitempty"`
+	RefreshToken string     `json:"refreshToken,omitempty"`
+	ProjectCode  string     `json:"projectCode,omitempty"`
+	ExpiresAt    *time.Time `json:"expiresAt,omitempty"`
 }
 
 func Main(args []string) int {
@@ -68,6 +78,8 @@ func (c Command) Run(ctx context.Context, args []string) int {
 	}
 
 	switch rest[0] {
+	case "auth":
+		return c.runAuth(ctx, global, rest[1:])
 	case "devices":
 		return c.runDevices(ctx, global, rest[1:])
 	case "missions":
@@ -86,12 +98,25 @@ func (c Command) Run(ctx context.Context, args []string) int {
 }
 
 func (c Command) parseGlobal(args []string) (globalOptions, []string, error) {
+	config, err := c.loadConfig()
+	if err != nil {
+		return globalOptions{}, nil, err
+	}
+
 	opts := globalOptions{
-		baseURL:     c.Env("LM_BASE_URL"),
-		token:       c.Env("LM_TOKEN"),
-		apiKey:      c.Env("LM_API_KEY"),
-		projectCode: c.Env("LM_PROJECT_CODE"),
-		format:      "table",
+		baseURL:      config.BaseURL,
+		token:        config.Token,
+		refreshToken: config.RefreshToken,
+		projectCode:  config.ProjectCode,
+		format:       "table",
+	}
+	overrideString(&opts.baseURL, c.Env("LM_BASE_URL"))
+	overrideString(&opts.token, c.Env("LM_TOKEN"))
+	overrideString(&opts.refreshToken, c.Env("LM_REFRESH_TOKEN"))
+	overrideString(&opts.projectCode, c.Env("LM_PROJECT_CODE"))
+	opts.apiKey = c.Env("LM_API_KEY")
+	if format := c.Env("LM_FORMAT"); strings.TrimSpace(format) != "" {
+		opts.format = format
 	}
 
 	fs := flag.NewFlagSet("lm", flag.ContinueOnError)
@@ -99,12 +124,262 @@ func (c Command) parseGlobal(args []string) (globalOptions, []string, error) {
 	fs.StringVar(&opts.baseURL, "base-url", opts.baseURL, "Annex API base URL")
 	fs.StringVar(&opts.token, "token", opts.token, "Bearer token")
 	fs.StringVar(&opts.apiKey, "api-key", opts.apiKey, "API key")
+	fs.StringVar(&opts.refreshToken, "refresh-token", opts.refreshToken, "refresh token")
 	fs.StringVar(&opts.projectCode, "project", opts.projectCode, "project code")
-	fs.StringVar(&opts.format, "format", opts.format, "output format: table or json")
+	fs.StringVar(&opts.format, "format", opts.format, "output format: table, json, or env")
 	if err := fs.Parse(args); err != nil {
 		return opts, nil, err
 	}
 	return opts, fs.Args(), nil
+}
+
+func overrideString(target *string, value string) {
+	if strings.TrimSpace(value) != "" {
+		*target = value
+	}
+}
+
+func (c Command) loadConfig() (storedConfig, error) {
+	path, err := c.configPath()
+	if err != nil {
+		return storedConfig{}, nil
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return storedConfig{}, nil
+		}
+		return storedConfig{}, fmt.Errorf("读取配置文件失败: %w", err)
+	}
+	defer file.Close()
+
+	var config storedConfig
+	if err := json.NewDecoder(file).Decode(&config); err != nil {
+		return storedConfig{}, fmt.Errorf("解析配置文件失败: %w", err)
+	}
+	return config, nil
+}
+
+func (c Command) saveConfig(config storedConfig) (string, error) {
+	path, err := c.configPath()
+	if err != nil {
+		return "", err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return "", fmt.Errorf("创建配置目录失败: %w", err)
+	}
+
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
+	if err != nil {
+		return "", fmt.Errorf("写入配置文件失败: %w", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(config); err != nil {
+		return "", fmt.Errorf("编码配置文件失败: %w", err)
+	}
+	return path, nil
+}
+
+func (c Command) configPath() (string, error) {
+	if path := strings.TrimSpace(c.Env("LM_CONFIG")); path != "" {
+		return path, nil
+	}
+	if home := strings.TrimSpace(c.Env("HOME")); home != "" {
+		return filepath.Join(home, ".lm", "config.json"), nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("无法确定配置文件路径: %w", err)
+	}
+	return filepath.Join(home, ".lm", "config.json"), nil
+}
+
+func (c Command) configForToken(global globalOptions, response *annex.AuthTokenResponse) storedConfig {
+	config := storedConfig{
+		BaseURL:      global.baseURL,
+		Token:        response.AccessToken,
+		RefreshToken: response.RefreshToken,
+		ProjectCode:  response.ProjectCode,
+	}
+	if config.ProjectCode == "" {
+		config.ProjectCode = global.projectCode
+	}
+	if response.ExpiresIn > 0 {
+		expiresAt := time.Now().Add(time.Duration(response.ExpiresIn) * time.Second)
+		config.ExpiresAt = &expiresAt
+	}
+	return config
+}
+
+func (c Command) runAuth(ctx context.Context, global globalOptions, args []string) int {
+	if len(args) == 0 {
+		return c.usageError("auth requires login, refresh, me, or revoke")
+	}
+
+	switch args[0] {
+	case "login":
+		return c.runAuthLogin(ctx, global, args[1:])
+	case "refresh":
+		return c.runAuthRefresh(ctx, global, args[1:])
+	case "me":
+		return c.runAuthMe(ctx, global)
+	case "revoke":
+		return c.runAuthRevoke(ctx, global, args[1:])
+	default:
+		return c.usageError("auth requires login, refresh, me, or revoke")
+	}
+}
+
+func (c Command) runAuthLogin(ctx context.Context, global globalOptions, args []string) int {
+	clientID := c.Env("LM_CLIENT_ID")
+	clientSecret := c.Env("LM_CLIENT_SECRET")
+	projectCode := global.projectCode
+	scopeValue := ""
+	format := global.format
+	save := true
+
+	fs := flag.NewFlagSet("auth login", flag.ContinueOnError)
+	fs.SetOutput(c.Stderr)
+	fs.StringVar(&clientID, "client-id", clientID, "integration client ID")
+	fs.StringVar(&clientSecret, "client-secret", clientSecret, "integration client secret")
+	fs.StringVar(&projectCode, "project", projectCode, "project code")
+	fs.StringVar(&scopeValue, "scope", "", "comma-separated scopes")
+	fs.StringVar(&format, "format", format, "output format: table, json, or env")
+	fs.BoolVar(&save, "save", save, "save token to local config")
+	if err := fs.Parse(args); err != nil {
+		return c.error(err)
+	}
+	if strings.TrimSpace(clientID) == "" {
+		return c.usageError("auth login requires --client-id or LM_CLIENT_ID")
+	}
+	if strings.TrimSpace(clientSecret) == "" {
+		return c.usageError("auth login requires --client-secret or LM_CLIENT_SECRET")
+	}
+
+	client, err := c.anonymousClient(global)
+	if err != nil {
+		return c.error(err)
+	}
+	response, err := client.CreateToken(ctx, annex.AuthTokenRequest{
+		GrantType:    annex.GrantTypeClientCredentials,
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		ProjectCode:  projectCode,
+		Scope:        splitCSV(scopeValue),
+	})
+	if err != nil {
+		return c.error(err)
+	}
+
+	savedPath := ""
+	if save {
+		savedPath, err = c.saveConfig(c.configForToken(global, response))
+		if err != nil {
+			return c.error(err)
+		}
+	}
+	return c.printTokenResponse(format, response, savedPath)
+}
+
+func (c Command) runAuthRefresh(ctx context.Context, global globalOptions, args []string) int {
+	refreshToken := global.refreshToken
+	projectCode := global.projectCode
+	format := global.format
+	save := true
+
+	fs := flag.NewFlagSet("auth refresh", flag.ContinueOnError)
+	fs.SetOutput(c.Stderr)
+	fs.StringVar(&refreshToken, "refresh-token", refreshToken, "refresh token")
+	fs.StringVar(&projectCode, "project", projectCode, "project code")
+	fs.StringVar(&format, "format", format, "output format: table, json, or env")
+	fs.BoolVar(&save, "save", save, "save refreshed token to local config")
+	if err := fs.Parse(args); err != nil {
+		return c.error(err)
+	}
+	if strings.TrimSpace(refreshToken) == "" {
+		return c.usageError("auth refresh requires --refresh-token, LM_REFRESH_TOKEN, or saved config")
+	}
+
+	client, err := c.anonymousClient(global)
+	if err != nil {
+		return c.error(err)
+	}
+	response, err := client.RefreshToken(ctx, annex.AuthRefreshRequest{
+		RefreshToken: refreshToken,
+		ProjectCode:  projectCode,
+	})
+	if err != nil {
+		return c.error(err)
+	}
+	if response.RefreshToken == "" {
+		response.RefreshToken = refreshToken
+	}
+
+	savedPath := ""
+	if save {
+		savedPath, err = c.saveConfig(c.configForToken(global, response))
+		if err != nil {
+			return c.error(err)
+		}
+	}
+	return c.printTokenResponse(format, response, savedPath)
+}
+
+func (c Command) runAuthMe(ctx context.Context, global globalOptions) int {
+	client, err := c.client(global)
+	if err != nil {
+		return c.error(err)
+	}
+	subject, err := client.AuthMe(ctx)
+	if err != nil {
+		return c.error(err)
+	}
+	return c.printAuthSubject(global.format, subject)
+}
+
+func (c Command) runAuthRevoke(ctx context.Context, global globalOptions, args []string) int {
+	token := global.token
+	tokenTypeHint := "access_token"
+
+	fs := flag.NewFlagSet("auth revoke", flag.ContinueOnError)
+	fs.SetOutput(c.Stderr)
+	fs.StringVar(&token, "token", token, "token to revoke")
+	fs.StringVar(&tokenTypeHint, "token-type", tokenTypeHint, "token type hint: access_token or refresh_token")
+	if err := fs.Parse(args); err != nil {
+		return c.error(err)
+	}
+	if strings.TrimSpace(token) == "" {
+		return c.usageError("auth revoke requires --token, LM_TOKEN, or saved config")
+	}
+
+	authGlobal := global
+	if authGlobal.token == "" {
+		authGlobal.token = token
+	}
+	client, err := c.client(authGlobal)
+	if err != nil {
+		return c.error(err)
+	}
+	if err := client.RevokeToken(ctx, annex.AuthRevokeRequest{Token: token, TokenTypeHint: tokenTypeHint}); err != nil {
+		return c.error(err)
+	}
+
+	config, _ := c.loadConfig()
+	if token == config.Token {
+		config.Token = ""
+		config.ExpiresAt = nil
+		_, _ = c.saveConfig(config)
+	}
+	if token == config.RefreshToken {
+		config.RefreshToken = ""
+		_, _ = c.saveConfig(config)
+	}
+	fmt.Fprintln(c.Stdout, "token revoked")
+	return 0
 }
 
 func (c Command) client(opts globalOptions) (*annex.Client, error) {
@@ -117,6 +392,13 @@ func (c Command) client(opts globalOptions) (*annex.Client, error) {
 		APIKey:      opts.apiKey,
 		ProjectCode: opts.projectCode,
 	})
+}
+
+func (c Command) anonymousClient(opts globalOptions) (*annex.Client, error) {
+	if strings.TrimSpace(opts.baseURL) == "" {
+		return nil, errors.New("base URL is required; set --base-url or LM_BASE_URL")
+	}
+	return annex.NewClient(annex.Config{BaseURL: opts.baseURL, ProjectCode: opts.projectCode})
 }
 
 func (c Command) runDevices(ctx context.Context, global globalOptions, args []string) int {
@@ -416,6 +698,78 @@ func parseOptionalTime(value string) (*time.Time, error) {
 	return &parsed, nil
 }
 
+func splitCSV(value string) []string {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	parts := strings.Split(value, ",")
+	values := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if trimmed := strings.TrimSpace(part); trimmed != "" {
+			values = append(values, trimmed)
+		}
+	}
+	return values
+}
+
+func (c Command) printTokenResponse(format string, response *annex.AuthTokenResponse, savedPath string) int {
+	switch format {
+	case "json":
+		return c.printJSON(response)
+	case "env":
+		fmt.Fprintf(c.Stdout, "export LM_TOKEN=%s\n", shellQuote(response.AccessToken))
+		if response.RefreshToken != "" {
+			fmt.Fprintf(c.Stdout, "export LM_REFRESH_TOKEN=%s\n", shellQuote(response.RefreshToken))
+		}
+		if response.ProjectCode != "" {
+			fmt.Fprintf(c.Stdout, "export LM_PROJECT_CODE=%s\n", shellQuote(response.ProjectCode))
+		}
+		return 0
+	default:
+		tw := tabwriter.NewWriter(c.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(tw, "FIELD\tVALUE")
+		fmt.Fprintf(tw, "accessToken\t%s\n", maskToken(response.AccessToken))
+		fmt.Fprintf(tw, "tokenType\t%s\n", valueOrDash(response.TokenType))
+		fmt.Fprintf(tw, "expiresIn\t%d\n", response.ExpiresIn)
+		if response.RefreshToken != "" {
+			fmt.Fprintf(tw, "refreshToken\t%s\n", maskToken(response.RefreshToken))
+		}
+		if response.ProjectCode != "" {
+			fmt.Fprintf(tw, "projectCode\t%s\n", response.ProjectCode)
+		}
+		if len(response.Scope) > 0 {
+			fmt.Fprintf(tw, "scope\t%s\n", strings.Join(response.Scope, ","))
+		}
+		if savedPath != "" {
+			fmt.Fprintf(tw, "config\t%s\n", savedPath)
+		}
+		_ = tw.Flush()
+		return 0
+	}
+}
+
+func (c Command) printAuthSubject(format string, subject *annex.AuthSubject) int {
+	if format == "json" {
+		return c.printJSON(subject)
+	}
+
+	tw := tabwriter.NewWriter(c.Stdout, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(tw, "FIELD\tVALUE")
+	fmt.Fprintf(tw, "id\t%s\n", valueOrDash(subject.ID))
+	fmt.Fprintf(tw, "type\t%s\n", valueOrDash(subject.Type))
+	fmt.Fprintf(tw, "name\t%s\n", valueOrDash(subject.Name))
+	fmt.Fprintf(tw, "email\t%s\n", valueOrDash(subject.Email))
+	fmt.Fprintf(tw, "projectCode\t%s\n", valueOrDash(subject.ProjectCode))
+	if len(subject.Scopes) > 0 {
+		fmt.Fprintf(tw, "scopes\t%s\n", strings.Join(subject.Scopes, ","))
+	}
+	if subject.ExpiresAt != nil {
+		fmt.Fprintf(tw, "expiresAt\t%s\n", subject.ExpiresAt.Format(time.RFC3339))
+	}
+	_ = tw.Flush()
+	return 0
+}
+
 func (c Command) printDeviceList(format string, values []annex.Device) int {
 	if format == "json" {
 		return c.printJSON(values)
@@ -479,6 +833,10 @@ func (c Command) printJSON(value any) int {
 
 func (c Command) printUsage() {
 	fmt.Fprintln(c.Stdout, `Usage:
+  lm [global flags] auth login --client-id <id> --client-secret <secret>
+  lm [global flags] auth refresh
+  lm [global flags] auth me
+  lm [global flags] auth revoke
   lm [global flags] devices list [flags]
   lm [global flags] devices get <device-id>
   lm [global flags] missions list [flags]
@@ -493,8 +851,10 @@ Global flags:
   --base-url   Annex API base URL, or LM_BASE_URL
   --token      bearer token, or LM_TOKEN
   --api-key    API key, or LM_API_KEY
+  --refresh-token
+               refresh token, or LM_REFRESH_TOKEN
   --project    project code, or LM_PROJECT_CODE
-  --format     table or json`)
+  --format     table, json, or env`)
 }
 
 func (c Command) usageError(message string) int {
@@ -533,4 +893,25 @@ func formatSize(value *int64) string {
 		return "-"
 	}
 	return strconv.FormatInt(*value, 10)
+}
+
+func valueOrDash(value string) string {
+	if strings.TrimSpace(value) == "" {
+		return "-"
+	}
+	return value
+}
+
+func maskToken(value string) string {
+	if value == "" {
+		return "-"
+	}
+	if len(value) <= 12 {
+		return "****"
+	}
+	return value[:6] + "..." + value[len(value)-4:]
+}
+
+func shellQuote(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", "'\"'\"'") + "'"
 }

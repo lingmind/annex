@@ -2,6 +2,11 @@ package annex
 
 import "time"
 
+const (
+	GrantTypeClientCredentials = "client_credentials"
+	GrantTypeRefreshToken      = "refresh_token"
+)
+
 type PageInfo struct {
 	Page     int  `json:"page"`
 	PageSize int  `json:"pageSize"`
@@ -11,6 +16,54 @@ type PageInfo struct {
 type ListResponse[T any] struct {
 	Data []T      `json:"data"`
 	Page PageInfo `json:"page"`
+}
+
+type AuthTokenRequest struct {
+	GrantType    string   `json:"grantType"`
+	ClientID     string   `json:"clientId,omitempty"`
+	ClientSecret string   `json:"clientSecret,omitempty"`
+	RefreshToken string   `json:"refreshToken,omitempty"`
+	ProjectCode  string   `json:"projectCode,omitempty"`
+	Scope        []string `json:"scope,omitempty"`
+}
+
+type AuthRefreshRequest struct {
+	RefreshToken string `json:"refreshToken"`
+	ProjectCode  string `json:"projectCode,omitempty"`
+}
+
+type AuthRevokeRequest struct {
+	Token         string `json:"token"`
+	TokenTypeHint string `json:"tokenTypeHint,omitempty"`
+}
+
+type AuthTokenResponse struct {
+	AccessToken      string          `json:"accessToken"`
+	TokenType        string          `json:"tokenType"`
+	ExpiresIn        int             `json:"expiresIn"`
+	RefreshToken     string          `json:"refreshToken,omitempty"`
+	RefreshExpiresIn int             `json:"refreshExpiresIn,omitempty"`
+	Scope            []string        `json:"scope,omitempty"`
+	ProjectCode      string          `json:"projectCode,omitempty"`
+	Projects         []ProjectAccess `json:"projects,omitempty"`
+	Subject          *AuthSubject    `json:"subject,omitempty"`
+}
+
+type AuthSubject struct {
+	ID          string          `json:"id"`
+	Type        string          `json:"type"`
+	Name        string          `json:"name,omitempty"`
+	Email       string          `json:"email,omitempty"`
+	ProjectCode string          `json:"projectCode,omitempty"`
+	Projects    []ProjectAccess `json:"projects,omitempty"`
+	Scopes      []string        `json:"scopes,omitempty"`
+	ExpiresAt   *time.Time      `json:"expiresAt,omitempty"`
+}
+
+type ProjectAccess struct {
+	ProjectCode string   `json:"projectCode"`
+	Name        string   `json:"name,omitempty"`
+	Scopes      []string `json:"scopes,omitempty"`
 }
 
 type Device struct {

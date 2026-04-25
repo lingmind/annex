@@ -16,10 +16,34 @@ scripts/generate-sdks.sh
 
 ## Go SDK
 
+使用集成客户端凭证获取 token：
+
+```go
+authClient, err := annex.NewClient(annex.Config{
+	BaseURL: "https://gateway.example.com/api/annex/v1",
+})
+if err != nil {
+	return err
+}
+
+token, err := authClient.CreateToken(ctx, annex.AuthTokenRequest{
+	GrantType:    annex.GrantTypeClientCredentials,
+	ClientID:     "client_xxx",
+	ClientSecret: "client_secret_xxx",
+	ProjectCode:  "demo",
+	Scope:        []string{"device:read", "mission:read"},
+})
+if err != nil {
+	return err
+}
+```
+
+使用 token 调用资源 API：
+
 ```go
 client, err := annex.NewClient(annex.Config{
 	BaseURL:     "https://gateway.example.com/api/annex/v1",
-	Token:       "lm_pat_xxx",
+	Token:       token.AccessToken,
 	ProjectCode: "demo",
 })
 if err != nil {
@@ -39,17 +63,57 @@ devices, err := client.ListDevices(ctx, annex.ListDevicesParams{
 make build
 ```
 
+### 认证
+
+使用客户端凭证登录。默认会把 `baseUrl`、`token`、`refreshToken` 和 `projectCode` 保存到 `~/.lm/config.json`，后续 `lm devices list` 等命令会自动读取。
+
+```bash
+bin/lm --base-url https://gateway.example.com/api/annex/v1 \
+  auth login \
+  --client-id client_xxx \
+  --client-secret client_secret_xxx \
+  --project demo \
+  --scope device:read,mission:read,raw-data:read,rule-hit:read
+```
+
+刷新 token：
+
+```bash
+bin/lm auth refresh
+```
+
+查看当前凭证身份和授权范围：
+
+```bash
+bin/lm auth me
+```
+
+吊销当前 access token：
+
+```bash
+bin/lm auth revoke
+```
+
+如果不想保存本地配置，可以使用 `--save=false`，并用 `--format env` 输出环境变量：
+
+```bash
+bin/lm --base-url https://gateway.example.com/api/annex/v1 \
+  auth login \
+  --client-id client_xxx \
+  --client-secret client_secret_xxx \
+  --format env \
+  --save=false
+```
+
+### 资源查询
+
 通过 Phoenix Annex 入口地址使用 `lm`：
 
 ```bash
-export LM_BASE_URL=https://gateway.example.com/api/annex/v1
-export LM_TOKEN=lm_pat_xxx
-export LM_PROJECT_CODE=demo
-
 bin/lm devices list
 bin/lm missions get mission_01HZX
 bin/lm raw-data list --page-size 20
-bin/lm rule-hits list --severity critical --format json
+bin/lm --format json rule-hits list --severity critical
 ```
 
 ## Webhook 进程模式

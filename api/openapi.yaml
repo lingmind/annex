@@ -17,6 +17,8 @@ security:
   - BearerAuth: []
   - ApiKeyAuth: []
 tags:
+  - name: Auth
+    description: 集成凭证登录、刷新、查询和吊销。
   - name: Devices
     description: 设备清单和在线状态。
   - name: Missions
@@ -26,6 +28,92 @@ tags:
   - name: RuleHits
     description: AI 和规则检测结果。
 paths:
+  /auth/token:
+    post:
+      tags: [Auth]
+      operationId: createAuthToken
+      summary: 使用集成客户端凭证换取访问令牌。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthTokenRequest'
+      responses:
+        '200':
+          description: 访问令牌。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/Error'
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      operationId: refreshAuthToken
+      summary: 使用 refresh token 刷新访问令牌。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRefreshRequest'
+      responses:
+        '200':
+          description: 新的访问令牌。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/Error'
+  /auth/me:
+    get:
+      tags: [Auth]
+      operationId: getAuthSubject
+      summary: 查询当前凭证身份和权限范围。
+      responses:
+        '200':
+          description: 当前凭证身份。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSubject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/Error'
+  /auth/revoke:
+    post:
+      tags: [Auth]
+      operationId: revokeAuthToken
+      summary: 吊销访问令牌或 refresh token。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRevokeRequest'
+      responses:
+        '204':
+          description: 令牌已吊销。
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/Error'
   /devices:
     get:
       tags: [Devices]
@@ -391,6 +479,12 @@ components:
         type: string
         format: date-time
   responses:
+    BadRequest:
+      description: 请求参数无效。
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     Unauthorized:
       description: 缺少凭证或凭证无效。
       content:
@@ -416,6 +510,119 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
   schemas:
+    AuthTokenRequest:
+      type: object
+      required: [grantType]
+      properties:
+        grantType:
+          type: string
+          enum: [client_credentials, refresh_token]
+          description: 授权类型。`client_credentials` 使用客户端凭证登录，`refresh_token` 使用 refresh token 换取新令牌。
+        clientId:
+          type: string
+          description: 集成客户端 ID。`grantType=client_credentials` 时必填。
+        clientSecret:
+          type: string
+          format: password
+          description: 集成客户端密钥。`grantType=client_credentials` 时必填。
+        refreshToken:
+          type: string
+          description: Refresh token。`grantType=refresh_token` 时必填。
+        projectCode:
+          type: string
+          description: 可选项目上下文。凭证覆盖多个项目时建议指定。
+        scope:
+          type: array
+          description: 请求的 scope 列表。最终授权范围由 Phoenix 权限策略裁剪。
+          items:
+            type: string
+    AuthRefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+        projectCode:
+          type: string
+          description: 可选项目上下文。
+    AuthRevokeRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: 待吊销令牌。
+        tokenTypeHint:
+          type: string
+          enum: [access_token, refresh_token]
+          description: 令牌类型提示。
+    AuthTokenResponse:
+      type: object
+      required: [accessToken, tokenType, expiresIn]
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          examples: [Bearer]
+        expiresIn:
+          type: integer
+          description: access token 有效秒数。
+        refreshToken:
+          type: string
+        refreshExpiresIn:
+          type: integer
+          description: refresh token 有效秒数。
+        scope:
+          type: array
+          items:
+            type: string
+        projectCode:
+          type: string
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAccess'
+        subject:
+          $ref: '#/components/schemas/AuthSubject'
+    AuthSubject:
+      type: object
+      required: [id, type]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          examples: [integration]
+        name:
+          type: string
+        email:
+          type: string
+        projectCode:
+          type: string
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAccess'
+        scopes:
+          type: array
+          items:
+            type: string
+        expiresAt:
+          type: [string, 'null']
+          format: date-time
+    ProjectAccess:
+      type: object
+      required: [projectCode]
+      properties:
+        projectCode:
+          type: string
+        name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
     PageInfo:
       type: object
       required: [page, pageSize]

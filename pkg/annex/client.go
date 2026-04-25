@@ -88,6 +88,34 @@ func (c *Client) GetDevice(ctx context.Context, id string) (*Device, error) {
 	return &out, nil
 }
 
+func (c *Client) CreateToken(ctx context.Context, request AuthTokenRequest) (*AuthTokenResponse, error) {
+	var out AuthTokenResponse
+	if err := c.post(ctx, "/auth/token", request, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *Client) RefreshToken(ctx context.Context, request AuthRefreshRequest) (*AuthTokenResponse, error) {
+	var out AuthTokenResponse
+	if err := c.post(ctx, "/auth/refresh", request, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *Client) AuthMe(ctx context.Context) (*AuthSubject, error) {
+	var out AuthSubject
+	if err := c.get(ctx, "/auth/me", nil, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *Client) RevokeToken(ctx context.Context, request AuthRevokeRequest) error {
+	return c.post(ctx, "/auth/revoke", request, nil)
+}
+
 func (c *Client) ListMissions(ctx context.Context, params ListMissionsParams) (*ListResponse[Mission], error) {
 	query := listValues(params.ListParams)
 	addString(query, "state", params.State)
@@ -159,6 +187,10 @@ func (c *Client) GetRuleHit(ctx context.Context, id string) (*RuleHit, error) {
 
 func (c *Client) get(ctx context.Context, endpoint string, query url.Values, out any) error {
 	return c.do(ctx, http.MethodGet, endpoint, query, nil, out)
+}
+
+func (c *Client) post(ctx context.Context, endpoint string, body any, out any) error {
+	return c.do(ctx, http.MethodPost, endpoint, nil, body, out)
 }
 
 func (c *Client) do(ctx context.Context, method, endpoint string, query url.Values, body any, out any) error {
