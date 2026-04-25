@@ -108,7 +108,7 @@ func (c Command) parseGlobal(args []string) (globalOptions, []string, error) {
 		token:        config.Token,
 		refreshToken: config.RefreshToken,
 		projectCode:  config.ProjectCode,
-		format:       "table",
+		format:       "json",
 	}
 	overrideString(&opts.baseURL, c.Env("LM_BASE_URL"))
 	overrideString(&opts.token, c.Env("LM_TOKEN"))
@@ -126,7 +126,7 @@ func (c Command) parseGlobal(args []string) (globalOptions, []string, error) {
 	fs.StringVar(&opts.apiKey, "api-key", opts.apiKey, "API key")
 	fs.StringVar(&opts.refreshToken, "refresh-token", opts.refreshToken, "refresh token")
 	fs.StringVar(&opts.projectCode, "project", opts.projectCode, "project code")
-	fs.StringVar(&opts.format, "format", opts.format, "output format: table, json, or env")
+	fs.StringVar(&opts.format, "format", opts.format, "output format: json, table, or env")
 	if err := fs.Parse(args); err != nil {
 		return opts, nil, err
 	}
@@ -246,7 +246,7 @@ func (c Command) runAuthLogin(ctx context.Context, global globalOptions, args []
 	fs.StringVar(&username, "username", username, "LingMind username")
 	fs.StringVar(&password, "password", password, "LingMind password")
 	fs.StringVar(&projectCode, "project", projectCode, "project code")
-	fs.StringVar(&format, "format", format, "output format: table, json, or env")
+	fs.StringVar(&format, "format", format, "output format: json, table, or env")
 	fs.BoolVar(&save, "save", save, "save token to local config")
 	if err := fs.Parse(args); err != nil {
 		return c.error(err)
@@ -292,7 +292,7 @@ func (c Command) runAuthRefresh(ctx context.Context, global globalOptions, args 
 	fs.SetOutput(c.Stderr)
 	fs.StringVar(&refreshToken, "refresh-token", refreshToken, "refresh token")
 	fs.StringVar(&projectCode, "project", projectCode, "project code")
-	fs.StringVar(&format, "format", format, "output format: table, json, or env")
+	fs.StringVar(&format, "format", format, "output format: json, table, or env")
 	fs.BoolVar(&save, "save", save, "save refreshed token to local config")
 	if err := fs.Parse(args); err != nil {
 		return c.error(err)
@@ -1021,7 +1021,7 @@ Global flags:
   --refresh-token
                refresh token, or LM_REFRESH_TOKEN
   --project    project code, or LM_PROJECT_CODE
-  --format     table, json, or env`)
+  --format     json, table, or env; default json`)
 }
 
 func (c Command) usageError(message string) int {

@@ -82,8 +82,11 @@ bin/lm --base-url https://phoenix.example.com auth login --project demo
 bin/lm devices list
 bin/lm missions get mission_01HZX
 bin/lm raw-data list --page-size 20
-bin/lm --format json rule-hits list --severity critical
+bin/lm rule-hits list --severity critical
+bin/lm devices list --format table
 ```
+
+CLI 默认输出 JSON。需要带边框表格时传 `--format table`。
 
 刷新 token：
 

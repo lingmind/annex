@@ -66,7 +66,6 @@ func TestDevicesListCommand(t *testing.T) {
 		"--project", "demo",
 		"devices", "list",
 		"--state", "online",
-		"--format", "json",
 	})
 	if code != 0 {
 		t.Fatalf("unexpected exit code %d, stderr: %s", code, stderr.String())
@@ -190,8 +189,8 @@ func TestAuthLoginSavesConfig(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("unexpected exit code %d, stderr: %s", code, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "config") {
-		t.Fatalf("expected config path in stdout, got: %s", stdout.String())
+	if !strings.Contains(stdout.String(), `"access_token": "access_123456"`) {
+		t.Fatalf("expected JSON token response in stdout, got: %s", stdout.String())
 	}
 
 	payload, err := os.ReadFile(filepath.Join(home, ".lm", "config.json"))
