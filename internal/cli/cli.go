@@ -13,8 +13,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"text/tabwriter"
 	"time"
+	"unicode"
 
 	"github.com/lingmind/annex/pkg/annex"
 	"github.com/lingmind/annex/pkg/webhook"
@@ -772,24 +772,24 @@ func (c Command) printTokenResponse(format string, response *annex.AuthTokenResp
 		}
 		return 0
 	default:
-		tw := tabwriter.NewWriter(c.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintln(tw, "FIELD\tVALUE")
-		fmt.Fprintf(tw, "accessToken\t%s\n", maskToken(response.AccessToken))
-		fmt.Fprintf(tw, "tokenType\t%s\n", valueOrDash(response.TokenType))
-		fmt.Fprintf(tw, "expiresIn\t%d\n", response.ExpiresIn)
+		rows := [][]string{
+			{"accessToken", maskToken(response.AccessToken)},
+			{"tokenType", valueOrDash(response.TokenType)},
+			{"expiresIn", strconv.Itoa(response.ExpiresIn)},
+		}
 		if response.RefreshToken != "" {
-			fmt.Fprintf(tw, "refreshToken\t%s\n", maskToken(response.RefreshToken))
+			rows = append(rows, []string{"refreshToken", maskToken(response.RefreshToken)})
 		}
 		if response.ProjectCode != "" {
-			fmt.Fprintf(tw, "projectCode\t%s\n", response.ProjectCode)
+			rows = append(rows, []string{"projectCode", response.ProjectCode})
 		}
 		if len(response.Scope) > 0 {
-			fmt.Fprintf(tw, "scope\t%s\n", strings.Join(response.Scope, ","))
+			rows = append(rows, []string{"scope", strings.Join(response.Scope, ",")})
 		}
 		if savedPath != "" {
-			fmt.Fprintf(tw, "config\t%s\n", savedPath)
+			rows = append(rows, []string{"config", savedPath})
 		}
-		_ = tw.Flush()
+		renderTable(c.Stdout, []string{"FIELD", "VALUE"}, rows)
 		return 0
 	}
 }
@@ -799,20 +799,20 @@ func (c Command) printAuthSubject(format string, subject *annex.AuthSubject) int
 		return c.printJSON(subject)
 	}
 
-	tw := tabwriter.NewWriter(c.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(tw, "FIELD\tVALUE")
-	fmt.Fprintf(tw, "id\t%s\n", valueOrDash(subject.ID))
-	fmt.Fprintf(tw, "type\t%s\n", valueOrDash(subject.Type))
-	fmt.Fprintf(tw, "name\t%s\n", valueOrDash(subject.Name))
-	fmt.Fprintf(tw, "email\t%s\n", valueOrDash(subject.Email))
-	fmt.Fprintf(tw, "projectCode\t%s\n", valueOrDash(subject.ProjectCode))
+	rows := [][]string{
+		{"id", valueOrDash(subject.ID)},
+		{"type", valueOrDash(subject.Type)},
+		{"name", valueOrDash(subject.Name)},
+		{"email", valueOrDash(subject.Email)},
+		{"projectCode", valueOrDash(subject.ProjectCode)},
+	}
 	if len(subject.Scopes) > 0 {
-		fmt.Fprintf(tw, "scopes\t%s\n", strings.Join(subject.Scopes, ","))
+		rows = append(rows, []string{"scopes", strings.Join(subject.Scopes, ",")})
 	}
 	if subject.ExpiresAt != nil {
-		fmt.Fprintf(tw, "expiresAt\t%s\n", subject.ExpiresAt.Format(time.RFC3339))
+		rows = append(rows, []string{"expiresAt", subject.ExpiresAt.Format(time.RFC3339)})
 	}
-	_ = tw.Flush()
+	renderTable(c.Stdout, []string{"FIELD", "VALUE"}, rows)
 	return 0
 }
 
@@ -820,12 +820,18 @@ func (c Command) printDeviceList(format string, values []annex.Device) int {
 	if format == "json" {
 		return c.printJSON(values)
 	}
-	tw := tabwriter.NewWriter(c.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(tw, "ID\tNAME\tTYPE\tSTATE\tONLINE\tPROJECT")
+	rows := make([][]string, 0, len(values))
 	for _, value := range values {
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", value.ID, value.Name, value.Type, value.State, boolText(value.Online), value.ProjectCode)
+		rows = append(rows, []string{
+			valueOrDash(value.ID),
+			valueOrDash(value.Name),
+			valueOrDash(value.Type),
+			valueOrDash(value.State),
+			boolText(value.Online),
+			valueOrDash(value.ProjectCode),
+		})
 	}
-	_ = tw.Flush()
+	renderTable(c.Stdout, []string{"ID", "NAME", "TYPE", "STATE", "ONLINE", "PROJECT"}, rows)
 	return 0
 }
 
@@ -833,12 +839,18 @@ func (c Command) printMissionList(format string, values []annex.Mission) int {
 	if format == "json" {
 		return c.printJSON(values)
 	}
-	tw := tabwriter.NewWriter(c.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(tw, "ID\tNAME\tTYPE\tSTATE\tPROJECT\tUPDATED")
+	rows := make([][]string, 0, len(values))
 	for _, value := range values {
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", value.ID, value.Name, value.Type, value.State, value.ProjectCode, formatTime(value.UpdatedAt))
+		rows = append(rows, []string{
+			valueOrDash(value.ID),
+			valueOrDash(value.Name),
+			valueOrDash(value.Type),
+			valueOrDash(value.State),
+			valueOrDash(value.ProjectCode),
+			formatTime(value.UpdatedAt),
+		})
 	}
-	_ = tw.Flush()
+	renderTable(c.Stdout, []string{"ID", "NAME", "TYPE", "STATE", "PROJECT", "UPDATED"}, rows)
 	return 0
 }
 
@@ -846,12 +858,19 @@ func (c Command) printRawDataList(format string, values []annex.RawData) int {
 	if format == "json" {
 		return c.printJSON(values)
 	}
-	tw := tabwriter.NewWriter(c.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(tw, "ID\tTYPE\tDEVICE\tMISSION\tSIZE\tPROJECT\tCREATED")
+	rows := make([][]string, 0, len(values))
 	for _, value := range values {
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", value.ID, value.Type, value.DeviceID, value.MissionID, formatSize(value.SizeBytes), value.ProjectCode, formatTime(value.CreatedAt))
+		rows = append(rows, []string{
+			valueOrDash(value.ID),
+			valueOrDash(value.Type),
+			valueOrDash(value.DeviceID),
+			valueOrDash(value.MissionID),
+			formatSize(value.SizeBytes),
+			valueOrDash(value.ProjectCode),
+			formatTime(value.CreatedAt),
+		})
 	}
-	_ = tw.Flush()
+	renderTable(c.Stdout, []string{"ID", "TYPE", "DEVICE", "MISSION", "SIZE", "PROJECT", "CREATED"}, rows)
 	return 0
 }
 
@@ -859,13 +878,115 @@ func (c Command) printRuleHitList(format string, values []annex.RuleHit) int {
 	if format == "json" {
 		return c.printJSON(values)
 	}
-	tw := tabwriter.NewWriter(c.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(tw, "ID\tRULE\tSEVERITY\tSTATE\tDEVICE\tMISSION\tHIT_AT")
+	rows := make([][]string, 0, len(values))
 	for _, value := range values {
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", value.ID, value.RuleName, value.Severity, value.State, value.DeviceID, value.MissionID, formatTime(value.HitAt))
+		rows = append(rows, []string{
+			valueOrDash(value.ID),
+			valueOrDash(value.RuleName),
+			valueOrDash(value.Severity),
+			valueOrDash(value.State),
+			valueOrDash(value.DeviceID),
+			valueOrDash(value.MissionID),
+			formatTime(value.HitAt),
+		})
 	}
-	_ = tw.Flush()
+	renderTable(c.Stdout, []string{"ID", "RULE", "SEVERITY", "STATE", "DEVICE", "MISSION", "HIT_AT"}, rows)
 	return 0
+}
+
+func renderTable(output io.Writer, headers []string, rows [][]string) {
+	widths := make([]int, len(headers))
+	cleanHeaders := normalizeRow(headers, len(headers))
+	for i, header := range cleanHeaders {
+		widths[i] = displayWidth(header)
+	}
+
+	cleanRows := make([][]string, 0, len(rows))
+	for _, row := range rows {
+		cleanRow := normalizeRow(row, len(headers))
+		for i, value := range cleanRow {
+			if width := displayWidth(value); width > widths[i] {
+				widths[i] = width
+			}
+		}
+		cleanRows = append(cleanRows, cleanRow)
+	}
+
+	writeBorder := func() {
+		for _, width := range widths {
+			fmt.Fprint(output, "+")
+			fmt.Fprint(output, strings.Repeat("-", width+2))
+		}
+		fmt.Fprintln(output, "+")
+	}
+	writeRow := func(values []string) {
+		for i, value := range values {
+			fmt.Fprintf(output, "| %s%s ", value, strings.Repeat(" ", widths[i]-displayWidth(value)))
+		}
+		fmt.Fprintln(output, "|")
+	}
+
+	writeBorder()
+	writeRow(cleanHeaders)
+	writeBorder()
+	for _, row := range cleanRows {
+		writeRow(row)
+	}
+	writeBorder()
+}
+
+func normalizeRow(values []string, length int) []string {
+	row := make([]string, length)
+	for i := range row {
+		if i < len(values) {
+			row[i] = tableCell(values[i])
+		}
+	}
+	return row
+}
+
+func tableCell(value string) string {
+	value = strings.TrimSpace(value)
+	value = strings.ReplaceAll(value, "\t", " ")
+	value = strings.ReplaceAll(value, "\r", " ")
+	value = strings.ReplaceAll(value, "\n", " ")
+	if value == "" {
+		return "-"
+	}
+	return value
+}
+
+func displayWidth(value string) int {
+	width := 0
+	for _, r := range value {
+		switch {
+		case r == 0 || r == '\t' || r == '\n' || r == '\r':
+			continue
+		case r < 0x20 || (r >= 0x7f && r < 0xa0):
+			continue
+		case r == 0x200d || unicode.Is(unicode.Mn, r) || unicode.Is(unicode.Me, r):
+			continue
+		case isWideRune(r):
+			width += 2
+		default:
+			width++
+		}
+	}
+	return width
+}
+
+func isWideRune(r rune) bool {
+	return r >= 0x1100 && (r <= 0x115f ||
+		r == 0x2329 ||
+		r == 0x232a ||
+		(r >= 0x2e80 && r <= 0xa4cf && r != 0x303f) ||
+		(r >= 0xac00 && r <= 0xd7a3) ||
+		(r >= 0xf900 && r <= 0xfaff) ||
+		(r >= 0xfe10 && r <= 0xfe19) ||
+		(r >= 0xfe30 && r <= 0xfe6f) ||
+		(r >= 0xff00 && r <= 0xff60) ||
+		(r >= 0xffe0 && r <= 0xffe6) ||
+		(r >= 0x1f300 && r <= 0x1faff))
 }
 
 func (c Command) printJSON(value any) int {

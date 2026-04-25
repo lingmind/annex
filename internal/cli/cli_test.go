@@ -117,6 +117,26 @@ func TestDevicesGetCommandAcceptsFormatAfterID(t *testing.T) {
 	}
 }
 
+func TestRenderTableDrawsBordersAndAlignsWideCells(t *testing.T) {
+	var output bytes.Buffer
+	renderTable(&output, []string{"ID", "NAME"}, [][]string{
+		{"d1", "摄像头"},
+		{"device-long", "Camera"},
+	})
+
+	expected := strings.Join([]string{
+		"+-------------+--------+\n",
+		"| ID          | NAME   |\n",
+		"+-------------+--------+\n",
+		"| d1          | 摄像头 |\n",
+		"| device-long | Camera |\n",
+		"+-------------+--------+\n",
+	}, "")
+	if output.String() != expected {
+		t.Fatalf("unexpected table:\n%s", output.String())
+	}
+}
+
 func TestAuthLoginSavesConfig(t *testing.T) {
 	home := t.TempDir()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
