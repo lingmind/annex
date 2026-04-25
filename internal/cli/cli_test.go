@@ -64,14 +64,54 @@ func TestDevicesListCommand(t *testing.T) {
 		"--base-url", server.URL,
 		"--token", "token_123",
 		"--project", "demo",
-		"--format", "json",
 		"devices", "list",
 		"--state", "online",
+		"--format", "json",
 	})
 	if code != 0 {
 		t.Fatalf("unexpected exit code %d, stderr: %s", code, stderr.String())
 	}
 
+	if !strings.Contains(stdout.String(), `"id": "dev_1"`) {
+		t.Fatalf("unexpected stdout: %s", stdout.String())
+	}
+}
+
+func TestDevicesGetCommandAcceptsFormatAfterID(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/proxy/radix/api/devices/dev_1" {
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"data": map[string]any{
+				"documentId": "dev_1",
+				"name":       "Camera 1",
+				"deviceType": "camera",
+				"state":      "online",
+			},
+		})
+	}))
+	defer server.Close()
+
+	var stdout, stderr bytes.Buffer
+	cmd := Command{
+		Stdout: &stdout,
+		Stderr: &stderr,
+		Env: func(key string) string {
+			return ""
+		},
+	}
+
+	code := cmd.Run(t.Context(), []string{
+		"lm",
+		"--base-url", server.URL,
+		"--token", "token_123",
+		"devices", "get", "dev_1",
+		"--format", "json",
+	})
+	if code != 0 {
+		t.Fatalf("unexpected exit code %d, stderr: %s", code, stderr.String())
+	}
 	if !strings.Contains(stdout.String(), `"id": "dev_1"`) {
 		t.Fatalf("unexpected stdout: %s", stdout.String())
 	}
@@ -186,11 +226,11 @@ func TestAuthMeUsesSavedConfig(t *testing.T) {
 		},
 	}
 
-	code := cmd.Run(t.Context(), []string{"lm", "auth", "me"})
+	code := cmd.Run(t.Context(), []string{"lm", "auth", "me", "--format", "json"})
 	if code != 0 {
 		t.Fatalf("unexpected exit code %d, stderr: %s", code, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "subject_1") {
+	if !strings.Contains(stdout.String(), `"id": "subject_1"`) {
 		t.Fatalf("unexpected stdout: %s", stdout.String())
 	}
 }

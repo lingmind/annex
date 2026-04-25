@@ -226,7 +226,7 @@ func (c Command) runAuth(ctx context.Context, global globalOptions, args []strin
 	case "refresh":
 		return c.runAuthRefresh(ctx, global, args[1:])
 	case "me":
-		return c.runAuthMe(ctx, global)
+		return c.runAuthMe(ctx, global, args[1:])
 	case "revoke":
 		return c.runAuthRevoke(ctx, global, args[1:])
 	default:
@@ -326,7 +326,15 @@ func (c Command) runAuthRefresh(ctx context.Context, global globalOptions, args 
 	return c.printTokenResponse(format, response, savedPath)
 }
 
-func (c Command) runAuthMe(ctx context.Context, global globalOptions) int {
+func (c Command) runAuthMe(ctx context.Context, global globalOptions, args []string) int {
+	args, format, err := extractFormatFlag(args, global.format)
+	if err != nil {
+		return c.error(err)
+	}
+	if len(args) > 0 {
+		return c.usageError("auth me accepts only --format")
+	}
+
 	client, err := c.client(global)
 	if err != nil {
 		return c.error(err)
@@ -335,7 +343,7 @@ func (c Command) runAuthMe(ctx context.Context, global globalOptions) int {
 	if err != nil {
 		return c.error(err)
 	}
-	return c.printAuthSubject(global.format, subject)
+	return c.printAuthSubject(format, subject)
 }
 
 func (c Command) runAuthRevoke(ctx context.Context, global globalOptions, args []string) int {
@@ -407,7 +415,7 @@ func (c Command) runDevices(ctx context.Context, global globalOptions, args []st
 
 	switch args[0] {
 	case "list":
-		params, err := parseDeviceListFlags(args[1:], c.Stderr)
+		params, format, err := parseDeviceListFlags(args[1:], c.Stderr, global.format)
 		if err != nil {
 			return c.error(err)
 		}
@@ -415,17 +423,17 @@ func (c Command) runDevices(ctx context.Context, global globalOptions, args []st
 		if err != nil {
 			return c.error(err)
 		}
-		return c.printDeviceList(global.format, resp.Data)
+		return c.printDeviceList(format, resp.Data)
 	case "get":
-		id, ok := firstArg(args[1:])
-		if !ok {
+		id, format, err := parseGetArgs("devices get", args[1:], global.format)
+		if err != nil {
 			return c.usageError("devices get requires <device-id>")
 		}
 		resp, err := client.GetDevice(ctx, id)
 		if err != nil {
 			return c.error(err)
 		}
-		return c.printDeviceList(global.format, []annex.Device{*resp})
+		return c.printDeviceList(format, []annex.Device{*resp})
 	default:
 		return c.usageError("devices requires list or get")
 	}
@@ -442,7 +450,7 @@ func (c Command) runMissions(ctx context.Context, global globalOptions, args []s
 
 	switch args[0] {
 	case "list":
-		params, err := parseMissionListFlags(args[1:], c.Stderr)
+		params, format, err := parseMissionListFlags(args[1:], c.Stderr, global.format)
 		if err != nil {
 			return c.error(err)
 		}
@@ -450,17 +458,17 @@ func (c Command) runMissions(ctx context.Context, global globalOptions, args []s
 		if err != nil {
 			return c.error(err)
 		}
-		return c.printMissionList(global.format, resp.Data)
+		return c.printMissionList(format, resp.Data)
 	case "get":
-		id, ok := firstArg(args[1:])
-		if !ok {
+		id, format, err := parseGetArgs("missions get", args[1:], global.format)
+		if err != nil {
 			return c.usageError("missions get requires <mission-id>")
 		}
 		resp, err := client.GetMission(ctx, id)
 		if err != nil {
 			return c.error(err)
 		}
-		return c.printMissionList(global.format, []annex.Mission{*resp})
+		return c.printMissionList(format, []annex.Mission{*resp})
 	default:
 		return c.usageError("missions requires list or get")
 	}
@@ -477,7 +485,7 @@ func (c Command) runRawData(ctx context.Context, global globalOptions, args []st
 
 	switch args[0] {
 	case "list":
-		params, err := parseRawDataListFlags(args[1:], c.Stderr)
+		params, format, err := parseRawDataListFlags(args[1:], c.Stderr, global.format)
 		if err != nil {
 			return c.error(err)
 		}
@@ -485,17 +493,17 @@ func (c Command) runRawData(ctx context.Context, global globalOptions, args []st
 		if err != nil {
 			return c.error(err)
 		}
-		return c.printRawDataList(global.format, resp.Data)
+		return c.printRawDataList(format, resp.Data)
 	case "get":
-		id, ok := firstArg(args[1:])
-		if !ok {
+		id, format, err := parseGetArgs("raw-data get", args[1:], global.format)
+		if err != nil {
 			return c.usageError("raw-data get requires <raw-data-id>")
 		}
 		resp, err := client.GetRawData(ctx, id)
 		if err != nil {
 			return c.error(err)
 		}
-		return c.printRawDataList(global.format, []annex.RawData{*resp})
+		return c.printRawDataList(format, []annex.RawData{*resp})
 	default:
 		return c.usageError("raw-data requires list or get")
 	}
@@ -512,7 +520,7 @@ func (c Command) runRuleHits(ctx context.Context, global globalOptions, args []s
 
 	switch args[0] {
 	case "list":
-		params, err := parseRuleHitListFlags(args[1:], c.Stderr)
+		params, format, err := parseRuleHitListFlags(args[1:], c.Stderr, global.format)
 		if err != nil {
 			return c.error(err)
 		}
@@ -520,17 +528,17 @@ func (c Command) runRuleHits(ctx context.Context, global globalOptions, args []s
 		if err != nil {
 			return c.error(err)
 		}
-		return c.printRuleHitList(global.format, resp.Data)
+		return c.printRuleHitList(format, resp.Data)
 	case "get":
-		id, ok := firstArg(args[1:])
-		if !ok {
+		id, format, err := parseGetArgs("rule-hits get", args[1:], global.format)
+		if err != nil {
 			return c.usageError("rule-hits get requires <rule-hit-id>")
 		}
 		resp, err := client.GetRuleHit(ctx, id)
 		if err != nil {
 			return c.error(err)
 		}
-		return c.printRuleHitList(global.format, []annex.RuleHit{*resp})
+		return c.printRuleHitList(format, []annex.RuleHit{*resp})
 	default:
 		return c.usageError("rule-hits requires list or get")
 	}
@@ -576,33 +584,48 @@ func (c Command) runServe(args []string) int {
 	return 0
 }
 
-func parseDeviceListFlags(args []string, output io.Writer) (annex.ListDevicesParams, error) {
+func parseDeviceListFlags(args []string, output io.Writer, defaultFormat string) (annex.ListDevicesParams, string, error) {
 	var params annex.ListDevicesParams
+	args, format, err := extractFormatFlag(args, defaultFormat)
+	if err != nil {
+		return params, "", err
+	}
+
 	var updatedAfter, updatedBefore string
 	fs := newListFlagSet("devices list", output, &params.ListParams, &updatedAfter, &updatedBefore)
 	fs.StringVar(&params.State, "state", "", "device state")
 	fs.StringVar(&params.Type, "type", "", "device type")
 	if err := fs.Parse(args); err != nil {
-		return params, err
+		return params, "", err
 	}
-	return params, parseListTimes(&params.ListParams, updatedAfter, updatedBefore)
+	return params, format, parseListTimes(&params.ListParams, updatedAfter, updatedBefore)
 }
 
-func parseMissionListFlags(args []string, output io.Writer) (annex.ListMissionsParams, error) {
+func parseMissionListFlags(args []string, output io.Writer, defaultFormat string) (annex.ListMissionsParams, string, error) {
 	var params annex.ListMissionsParams
+	args, format, err := extractFormatFlag(args, defaultFormat)
+	if err != nil {
+		return params, "", err
+	}
+
 	var updatedAfter, updatedBefore string
 	fs := newListFlagSet("missions list", output, &params.ListParams, &updatedAfter, &updatedBefore)
 	fs.StringVar(&params.State, "state", "", "mission state")
 	fs.StringVar(&params.Type, "type", "", "mission type")
 	fs.StringVar(&params.DeviceID, "device-id", "", "device ID")
 	if err := fs.Parse(args); err != nil {
-		return params, err
+		return params, "", err
 	}
-	return params, parseListTimes(&params.ListParams, updatedAfter, updatedBefore)
+	return params, format, parseListTimes(&params.ListParams, updatedAfter, updatedBefore)
 }
 
-func parseRawDataListFlags(args []string, output io.Writer) (annex.ListRawDataParams, error) {
+func parseRawDataListFlags(args []string, output io.Writer, defaultFormat string) (annex.ListRawDataParams, string, error) {
 	var params annex.ListRawDataParams
+	args, format, err := extractFormatFlag(args, defaultFormat)
+	if err != nil {
+		return params, "", err
+	}
+
 	var updatedAfter, updatedBefore string
 	fs := newListFlagSet("raw-data list", output, &params.ListParams, &updatedAfter, &updatedBefore)
 	fs.StringVar(&params.Type, "type", "", "raw data type")
@@ -612,25 +635,29 @@ func parseRawDataListFlags(args []string, output io.Writer) (annex.ListRawDataPa
 	fs.StringVar(&capturedAfter, "captured-after", "", "captured after RFC3339 timestamp")
 	fs.StringVar(&capturedBefore, "captured-before", "", "captured before RFC3339 timestamp")
 	if err := fs.Parse(args); err != nil {
-		return params, err
+		return params, "", err
 	}
 	if err := parseListTimes(&params.ListParams, updatedAfter, updatedBefore); err != nil {
-		return params, err
+		return params, "", err
 	}
-	var err error
 	params.CapturedAfter, err = parseOptionalTime(capturedAfter)
 	if err != nil {
-		return params, fmt.Errorf("parse --captured-after: %w", err)
+		return params, "", fmt.Errorf("parse --captured-after: %w", err)
 	}
 	params.CapturedBefore, err = parseOptionalTime(capturedBefore)
 	if err != nil {
-		return params, fmt.Errorf("parse --captured-before: %w", err)
+		return params, "", fmt.Errorf("parse --captured-before: %w", err)
 	}
-	return params, nil
+	return params, format, nil
 }
 
-func parseRuleHitListFlags(args []string, output io.Writer) (annex.ListRuleHitsParams, error) {
+func parseRuleHitListFlags(args []string, output io.Writer, defaultFormat string) (annex.ListRuleHitsParams, string, error) {
 	var params annex.ListRuleHitsParams
+	args, format, err := extractFormatFlag(args, defaultFormat)
+	if err != nil {
+		return params, "", err
+	}
+
 	var updatedAfter, updatedBefore string
 	fs := newListFlagSet("rule-hits list", output, &params.ListParams, &updatedAfter, &updatedBefore)
 	fs.StringVar(&params.State, "state", "", "rule hit state")
@@ -642,21 +669,59 @@ func parseRuleHitListFlags(args []string, output io.Writer) (annex.ListRuleHitsP
 	fs.StringVar(&hitAfter, "hit-after", "", "hit after RFC3339 timestamp")
 	fs.StringVar(&hitBefore, "hit-before", "", "hit before RFC3339 timestamp")
 	if err := fs.Parse(args); err != nil {
-		return params, err
+		return params, "", err
 	}
 	if err := parseListTimes(&params.ListParams, updatedAfter, updatedBefore); err != nil {
-		return params, err
+		return params, "", err
 	}
-	var err error
 	params.HitAfter, err = parseOptionalTime(hitAfter)
 	if err != nil {
-		return params, fmt.Errorf("parse --hit-after: %w", err)
+		return params, "", fmt.Errorf("parse --hit-after: %w", err)
 	}
 	params.HitBefore, err = parseOptionalTime(hitBefore)
 	if err != nil {
-		return params, fmt.Errorf("parse --hit-before: %w", err)
+		return params, "", fmt.Errorf("parse --hit-before: %w", err)
 	}
-	return params, nil
+	return params, format, nil
+}
+
+func parseGetArgs(name string, args []string, defaultFormat string) (string, string, error) {
+	args, format, err := extractFormatFlag(args, defaultFormat)
+	if err != nil {
+		return "", "", err
+	}
+	id, ok := firstArg(args)
+	if !ok {
+		return "", "", fmt.Errorf("%s requires an id", name)
+	}
+	if len(args) > 1 {
+		return "", "", fmt.Errorf("%s accepts only one id", name)
+	}
+	return id, format, nil
+}
+
+func extractFormatFlag(args []string, defaultFormat string) ([]string, string, error) {
+	format := defaultFormat
+	filtered := make([]string, 0, len(args))
+
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		switch {
+		case arg == "--format" || arg == "-format":
+			if i+1 >= len(args) || strings.HasPrefix(args[i+1], "-") {
+				return nil, "", fmt.Errorf("%s requires a value", arg)
+			}
+			format = args[i+1]
+			i++
+		case strings.HasPrefix(arg, "--format="):
+			format = strings.TrimPrefix(arg, "--format=")
+		case strings.HasPrefix(arg, "-format="):
+			format = strings.TrimPrefix(arg, "-format=")
+		default:
+			filtered = append(filtered, arg)
+		}
+	}
+	return filtered, format, nil
 }
 
 func newListFlagSet(name string, output io.Writer, params *annex.ListParams, updatedAfter *string, updatedBefore *string) *flag.FlagSet {
