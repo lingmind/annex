@@ -1,0 +1,38 @@
+{
+  "name": "lingmind",
+  "version": "0.1.0+codex.20260823165015",
+  "description": "List accessible projects and devices, and create raw-data notes through the authenticated LingMind sandbox MCP service.",
+  "author": {
+    "name": "LingMind",
+    "url": "https://www.lingmind.cn"
+  },
+  "homepage": "https://www.lingmind.cn",
+  "repository": "https://github.com/lingmind/annex",
+  "license": "MIT",
+  "keywords": [
+    "lingmind",
+    "iot",
+    "operations",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "LingMind",
+    "shortDescription": "Use the current LingMind sandbox MCP slice",
+    "longDescription": "Use the current sandbox tools to list accessible projects, list project devices, and create a raw-data note. Full mission, rule-hit, stream, and other business capabilities remain a release target and are not advertised as available tools.",
+    "developerName": "LingMind",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Show the projects I can access in LingMind",
+      "List the devices in my LingMind project",
+      "Create a note on a LingMind raw-data record"
+    ],
+    "brandColor": "#1677FF"
+  },
+  "mcpServers": "./.mcp.json"
+}

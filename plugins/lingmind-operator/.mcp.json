@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "lingmind-operator": {
+      "type": "http",
+      "url": "https://apex.sandbox.lingmind.cn/mcp/operator",
+      "oauth_resource": "https://apex.sandbox.lingmind.cn/mcp/operator",
+      "oauth": {
+        "client_id": "lingmind-operator-codex",
+        "callback_port": 1456
+      },
+      "scopes": [
+        "openid",
+        "apex.environments.read",
+        "apex.operator.observe",
+        "apex.operator.maintain"
+      ]
+    }
+  }
+}

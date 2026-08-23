@@ -13,7 +13,29 @@ pkg/annex/              Go SDK 核心客户端
 pkg/webhook/            Go Webhook / 进程模式运行时
 sdks/                   OpenAPI SDK 生成配置
 scripts/generate-sdks.sh
+plugins/                LingMind 与 LingMind Operator 插件源码
+.agents/plugins/        Annex 仓库内的 Codex marketplace
 ```
+
+## Agent 插件
+
+Annex 维护两个 repo-local Codex 插件：
+
+- `plugins/lingmind` 连接 sandbox Phoenix MCP；当前只发现项目、设备与原始数据备注切片。
+- `plugins/lingmind-operator` 连接 sandbox 的一套全局 Apex Operator MCP；当前只发现环境观察与
+  restart/scale 维护切片。正式发布切换生产全局入口，不在每个业务环境部署 Operator MCP。
+
+插件只声明远程 MCP、OAuth resource、Skills 和参考资料。身份认证使用 Authorization Code、
+PKCE S256 和目标服务的 OAuth discovery；插件包不保存用户凭证，也不在客户端复制服务端授权。
+完整业务、部署、备份和恢复能力仍是正式发布目标，不由当前插件描述为可用工具。
+
+验证 manifest、marketplace 和全部聚合 Skills：
+
+```bash
+make validate-plugins PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
+```
+
+本目录的 marketplace 用于仓库内开发和团队测试，不会创建或修改用户目录下的 marketplace。
 
 ## Go SDK
 

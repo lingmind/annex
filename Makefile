@@ -1,4 +1,9 @@
-.PHONY: build test fmt lint generate-sdks
+.PHONY: build test fmt lint generate-sdks validate-plugins
+
+PYTHON ?= python3
+CODEX_HOME ?= $(HOME)/.codex
+PLUGIN_VALIDATOR ?= $(CODEX_HOME)/skills/.system/plugin-creator/scripts/validate_plugin.py
+SKILL_VALIDATOR ?= $(CODEX_HOME)/skills/.system/skill-creator/scripts/quick_validate.py
 
 build:
 	go build ./...
@@ -15,3 +20,11 @@ lint:
 
 generate-sdks:
 	./scripts/generate-sdks.sh
+
+validate-plugins:
+	$(PYTHON) $(PLUGIN_VALIDATOR) plugins/lingmind
+	$(PYTHON) $(PLUGIN_VALIDATOR) plugins/lingmind-operator
+	@for skill in plugins/lingmind/skills/* plugins/lingmind-operator/skills/*; do \
+		$(PYTHON) $(SKILL_VALIDATOR) "$$skill" || exit 1; \
+	done
+	@jq empty .agents/plugins/marketplace.json

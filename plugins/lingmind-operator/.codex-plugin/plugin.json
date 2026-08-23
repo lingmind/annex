@@ -1,0 +1,38 @@
+{
+  "name": "lingmind-operator",
+  "version": "0.1.0+codex.20260823165015",
+  "description": "Observe authorized LingMind environments and execute confirmed restart or scale plans through the global Apex Operator MCP service.",
+  "author": {
+    "name": "LingMind",
+    "url": "https://www.lingmind.cn"
+  },
+  "homepage": "https://www.lingmind.cn",
+  "repository": "https://github.com/lingmind/annex",
+  "license": "MIT",
+  "keywords": [
+    "lingmind",
+    "operator",
+    "sre",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "LingMind Operator",
+    "shortDescription": "Observe environments and run restart or scale plans",
+    "longDescription": "Use the current Apex Operator slice to list granted environments, inspect workloads, pods, events, bounded logs and rollout state, and execute confirmed restart or scale plans. Deployment, backup, and recovery tools remain unavailable release targets.",
+    "developerName": "LingMind",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "List the LingMind environments I can operate",
+      "Analyze unhealthy workloads in an environment",
+      "Prepare a safe service maintenance plan"
+    ],
+    "brandColor": "#0F766E"
+  },
+  "mcpServers": "./.mcp.json"
+}
