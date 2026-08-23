@@ -1,7 +1,7 @@
 {
   "name": "lingmind-operator",
-  "version": "0.1.0+codex.20260823185349",
-  "description": "Observe authorized LingMind environments and execute confirmed restart or scale plans through the global Apex Operator MCP service.",
+  "version": "0.2.0+codex.20260823223646",
+  "description": "Observe and maintain granted LingMind environments, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
   "author": {
     "name": "LingMind",
     "url": "https://www.lingmind.cn"
@@ -18,8 +18,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "LingMind Operator",
-    "shortDescription": "Observe environments and run restart or scale plans",
-    "longDescription": "Use the current Apex Operator slice to list granted environments, inspect workloads, pods, events, bounded logs and rollout state, and execute confirmed restart or scale plans. Deployment, backup, and recovery tools remain unavailable release targets.",
+    "shortDescription": "Observe and maintain granted LingMind environments",
+    "longDescription": "Use one global Apex Operator connection to select granted environments, inspect safe Agent-backed evidence, administer grants with elevated scope, and execute Apex Mongo persisted maintenance, service deployment, backup, or checksum-bound restore plans.",
     "developerName": "LingMind",
     "category": "Developer Tools",
     "capabilities": [
@@ -29,8 +29,8 @@
     ],
     "defaultPrompt": [
       "List the LingMind environments I can operate",
-      "Analyze unhealthy workloads in an environment",
-      "Prepare a safe service maintenance plan"
+      "Diagnose an unhealthy service through its Apex Agent",
+      "Prepare and verify a reviewed deployment or backup plan"
     ],
     "brandColor": "#0F766E"
   },

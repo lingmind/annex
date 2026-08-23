@@ -1,0 +1,39 @@
+{
+  "profileVersion": 1,
+  "developmentTemplate": true,
+  "connectionCardinality": "single-global-control-plane",
+  "bridge": {
+    "mode": "annex-local-oauth-bridge",
+    "listen": "127.0.0.1:17642",
+    "localClientAuthentication": "ephemeral-session-secret",
+    "rejectNonLoopbackClients": true,
+    "upstreamMcpUrl": "https://apex.global.example/mcp/operator",
+    "oauth": {
+      "protocol": "oauth-2.1",
+      "protectedResourceMetadataDiscovery": true,
+      "authorizationCodePkce": true,
+      "pkceMethod": "S256",
+      "resourceIndicatorRequired": true,
+      "publicClientId": "lingmind-operator-deepseek",
+      "scopes": [
+        "openid",
+        "apex.backups.operate",
+        "apex.environments.read",
+        "apex.grants.manage",
+        "apex.operator.maintain",
+        "apex.operator.observe",
+        "apex.services.deploy"
+      ]
+    },
+    "credentialStore": "system-keychain",
+    "credentialNamespace": "cn.lingmind.deepseek.operator",
+    "persistTokensInRepository": false,
+    "longLivedBearerAllowed": false,
+    "redactAuthorizationLogs": true
+  },
+  "harness": {
+    "transport": "streamable-http",
+    "url": "http://127.0.0.1:17642/mcp",
+    "authorization": "bridge-managed"
+  }
+}

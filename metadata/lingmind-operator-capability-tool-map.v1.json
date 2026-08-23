@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "2.0.0",
+  "registry": {
+    "name": "CapabilityRegistry",
+    "service": "apex",
+    "toolCount": 37,
+    "connectionCardinality": "single-global-control-plane",
+    "releaseStage": "sandbox-development",
+    "productionReady": false
+  },
+  "generatedFrom": {
+    "toolContract": "apex/internal/operator/mcp_handler.go#operatorTools",
+    "fingerprint": "sha256:a2fdf9794f847e876dbeb144de747022e64d82d6d3a1687e7a83cbeb08a14b81"
+  },
+  "oauthScopes": [
+    "openid",
+    "apex.backups.operate",
+    "apex.environments.read",
+    "apex.grants.manage",
+    "apex.operator.maintain",
+    "apex.operator.observe",
+    "apex.services.deploy"
+  ],
+  "toolGroups": [
+    {
+      "name": "agent-backed-observe-maintain",
+      "tools": [
+        "k8s_events_list",
+        "k8s_logs_read",
+        "k8s_pods_list",
+        "k8s_resource_inspect",
+        "k8s_rollout_restart_execute",
+        "k8s_rollout_restart_plan",
+        "k8s_rollout_status",
+        "k8s_scale_execute",
+        "k8s_scale_plan",
+        "k8s_workloads_list",
+        "service_diagnostics_get",
+        "service_status_get"
+      ]
+    },
+    {
+      "name": "backup-and-restore",
+      "tools": [
+        "backup_run_execute",
+        "backup_run_plan",
+        "backup_run_status",
+        "backup_targets_list",
+        "restore_run_execute",
+        "restore_run_plan",
+        "restore_run_status"
+      ]
+    },
+    {
+      "name": "environment-discovery",
+      "tools": [
+        "environment_get",
+        "environments_list",
+        "operator_capabilities_list"
+      ]
+    },
+    {
+      "name": "grant-administration",
+      "tools": [
+        "grant_get",
+        "grant_history",
+        "grant_revoke",
+        "grant_upsert",
+        "grants_list"
+      ]
+    },
+    {
+      "name": "plan-lifecycle",
+      "tools": [
+        "operator_operation_get",
+        "operator_plan_cancel"
+      ]
+    },
+    {
+      "name": "service-deployment",
+      "tools": [
+        "service_deploy_configs_get",
+        "service_deploy_configs_list",
+        "service_install_execute",
+        "service_install_plan",
+        "service_install_status",
+        "service_upgrade_execute",
+        "service_upgrade_plan",
+        "service_upgrade_status"
+      ]
+    }
+  ],
+  "safetyContracts": {
+    "explicitEnvironmentIdPerTargetCall": true,
+    "agentOnlyEnvironmentAccess": true,
+    "directClusterFallback": false,
+    "grantAndAllowlistEnforced": true,
+    "mongoPersistedPlans": true,
+    "planCancelAndRetention": true,
+    "genericTransportExposed": false
+  }
+}

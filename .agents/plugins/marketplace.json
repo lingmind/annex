@@ -1,7 +1,7 @@
 {
   "name": "lingmind-local",
   "interface": {
-    "displayName": "LingMind Local"
+    "displayName": "LingMind Agent Plugins (Development)"
   },
   "plugins": [
     {

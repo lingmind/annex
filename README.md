@@ -14,24 +14,40 @@ pkg/webhook/            Go Webhook / 进程模式运行时
 sdks/                   OpenAPI SDK 生成配置
 scripts/generate-sdks.sh
 plugins/                LingMind 与 LingMind Operator 插件源码
+platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
+metadata/               版本化 capability/tool-map 快照
 .agents/plugins/        Annex 仓库内的 Codex marketplace
 ```
 
 ## Agent 插件
 
-Annex 维护两个 repo-local Codex 插件：
+Annex 维护两个 Agent 插件：
 
-- `plugins/lingmind` 连接 sandbox Phoenix MCP；当前只发现项目、设备与原始数据备注切片。
-- `plugins/lingmind-operator` 连接 sandbox 的一套全局 Apex Operator MCP；当前只发现环境观察与
-  restart/scale 维护切片。正式发布切换生产全局入口，不在每个业务环境部署 Operator MCP。
+- `plugins/lingmind` 是标准业务插件。每个独立业务环境使用一个 Phoenix MCP 连接和该环境自己的
+  Keycloak；多环境用户安装多个租户私有包或独立连接。
+- `plugins/lingmind-operator` 是全局运维插件。它只连接一套 Apex Operator MCP，并在每次目标调用中
+  显式选择获授权的 `environmentId`；不在每个业务环境部署 Operator MCP。
 
-插件只声明远程 MCP、OAuth resource、Skills 和参考资料。身份认证使用 Authorization Code、
-PKCE S256 和目标服务的 OAuth discovery；插件包不保存用户凭证，也不在客户端复制服务端授权。
-完整业务、部署、备份和恢复能力仍是正式发布目标，不由当前插件描述为可用工具。
+插件只声明远程 MCP、OAuth resource、Skills 和参考资料。标准插件覆盖 Phoenix 当前发布的项目上下文、
+完整业务查询、直接写入、异步任务、任务/航线、媒体/流和设备控制；Operator 覆盖 Agent-backed 观察、
+Grant 管理、维护、服务部署和备份/恢复编排。生产能力始终以运行时 `CapabilityRegistry` 为准，仓库内
+tool map 由 Phoenix/Apex 源码契约确定性生成，不手工维护数量。
+
+身份认证使用 Authorization Code、PKCE S256 和目标服务的 OAuth discovery。Codex 使用原生 HTTP
+OAuth，WorkBuddy 使用 MCP OAuth discovery/DCR，DeepSeek Harness 通过 Annex 本地 OAuth bridge；bridge
+只把 token 存入操作系统 keychain，插件包和平台 profile 中不保存 token，也禁止长效 bearer 配置。平台
+profile 见 [`platforms/`](platforms/README.md)。当前仓库 URL 都是 sandbox 开发 profile，不表示生产就绪。
 
 验证 manifest、marketplace 和全部聚合 Skills：
 
 ```bash
+make validate-plugins PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
+```
+
+Phoenix 或 Apex registry 变化后，一键刷新并校验 tool map：
+
+```bash
+make sync-plugin-tool-maps PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
 make validate-plugins PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
 ```
 

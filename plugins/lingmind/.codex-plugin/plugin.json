@@ -1,7 +1,7 @@
 {
   "name": "lingmind",
-  "version": "0.1.0+codex.20260823185349",
-  "description": "List accessible projects and devices, and create raw-data notes through the authenticated LingMind sandbox MCP service.",
+  "version": "0.2.0+codex.20260823223646",
+  "description": "Use project-scoped LingMind business queries, writes, jobs, missions, waylines, media, streams, UAV, NVR, and device actions through Phoenix MCP.",
   "author": {
     "name": "LingMind",
     "url": "https://www.lingmind.cn"
@@ -18,8 +18,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "LingMind",
-    "shortDescription": "Use the current LingMind sandbox MCP slice",
-    "longDescription": "Use the current sandbox tools to list accessible projects, list project devices, and create a raw-data note. Full mission, rule-hit, stream, and other business capabilities remain a release target and are not advertised as available tools.",
+    "shortDescription": "Operate LingMind business capabilities safely",
+    "longDescription": "Use one LingMind business environment through Phoenix's explicit CapabilityRegistry. Resolve project context; query and change business records; operate jobs, missions, waylines, media, streams, UAV, NVR, robots, and devices; and use plan/confirm/execute for destructive or physical actions.",
     "developerName": "LingMind",
     "category": "Developer Tools",
     "capabilities": [
@@ -28,9 +28,9 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Show the projects I can access in LingMind",
-      "List the devices in my LingMind project",
-      "Create a note on a LingMind raw-data record"
+      "Summarize the active incidents in my LingMind project",
+      "Generate a wayline and prepare a mission action plan",
+      "Inspect stream, UAV, and NVR runtime status safely"
     ],
     "brandColor": "#1677FF"
   },

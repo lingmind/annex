@@ -1,21 +1,26 @@
 ---
 name: lingmind-business-query
-description: List devices in an accessible LingMind project or create a requested note on a raw-data record using the current three-tool sandbox MCP catalog.
+description: Query LingMind business records, details, statistics, and safe runtime summaries within an explicitly selected accessible project.
 ---
 
-# LingMind sandbox business operations
+# LingMind business query
 
-Use only `projects_list`, `devices_list`, and `raw_notes_create`. Read
-[CapabilityRegistry usage](../../references/capability-registry.md) before reporting an unavailable capability.
+Read [CapabilityRegistry usage](../../references/capability-registry.md) and
+[business-domain routing](../../references/business-domains.md). Select tools from runtime discovery rather than
+memorizing a complete tool list.
 
 ## Workflow
 
 1. Resolve the project with `lingmind-project-context`.
-2. For device queries, call `devices_list` with explicit state or device-type filters and bounded page/pageSize values.
-3. Continue pagination only when the user needs more records, and separate returned facts from interpretation.
-4. For a raw-data note, require an explicit user request plus the stable raw-data document ID, title, and description.
-5. Read [current sandbox action safety](../../references/safe-actions.md), call `raw_notes_create` once, and report the returned note ID.
+2. Choose the narrowest domain list, get, statistics, status, or diagnostic tool matching the user's question.
+3. Use explicit filters and bounded page/pageSize or time-range inputs. Continue only while more data is needed.
+4. For live streams, use the single or at-most-50 runtime-status tool instead of inferring runtime from persisted
+   stream state; use the bounded recording-segment tool for historical windows. Use typed UAV, NVR, PTZ, robot, LED,
+   mission replay, trajectory, in-flight, report, and device status tools for their corresponding domains.
+5. Preserve returned document IDs, timestamps, project identity, and pagination metadata for follow-up calls.
+6. Separate returned facts from interpretation and state when a bounded result was truncated or incomplete.
 
-Missions, rule hits, streams, raw-data lookup, and arbitrary business APIs are not in the current catalog. Explain the
-gap instead of inferring a tool or using another transport. Do not turn a device query into a note mutation without a
-separate user request.
+This Skill is read-oriented. Route requested changes to `lingmind-business-write`, asynchronous work to
+`lingmind-async-job`, and destructive or physical actions to `lingmind-business-planned-action`. Never turn a query
+into a mutation without a separate explicit request. Never accept or synthesize a token, credential, URL, path, or
+generic downstream request.

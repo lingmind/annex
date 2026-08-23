@@ -14,4 +14,6 @@ The global Operator connection can reach several environments. Discovery uses `o
 
 Do not infer environment identity from a service hostname, an earlier conversation, or a project name. If the target
 Agent is unavailable or lacks the required capability, report the structured error and stop; another environment is
-not an equivalent substitute.
+not an equivalent substitute. All observation, maintenance, deployment, backup, and restore traffic must traverse the
+selected environment's Apex Agent. Never substitute a direct cluster client, shell, remote login, or copied cluster
+credential.
