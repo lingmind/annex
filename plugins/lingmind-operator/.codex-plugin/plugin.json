@@ -1,6 +1,6 @@
 {
   "name": "lingmind-operator",
-  "version": "0.1.0+codex.20260823165015",
+  "version": "0.1.0+codex.20260823185349",
   "description": "Observe authorized LingMind environments and execute confirmed restart or scale plans through the global Apex Operator MCP service.",
   "author": {
     "name": "LingMind",

@@ -1,6 +1,6 @@
 {
   "name": "lingmind",
-  "version": "0.1.0+codex.20260823165015",
+  "version": "0.1.0+codex.20260823185349",
   "description": "List accessible projects and devices, and create raw-data notes through the authenticated LingMind sandbox MCP service.",
   "author": {
     "name": "LingMind",
