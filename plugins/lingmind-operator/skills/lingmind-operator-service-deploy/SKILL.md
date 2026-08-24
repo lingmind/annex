@@ -10,16 +10,12 @@ Resolve the environment first and read [service deployment](../../references/ser
 
 ## Workflow
 
-1. Confirm `service.deploy` appears in the selected environment's Grant and runtime capability registry.
-2. Use `service_deploy_configs_list` and `service_deploy_configs_get` to resolve the active safe configuration ID and
-   revision; then read Agent-backed service status, Deployment image, resource version, rollout, pods, and recent
-   events. These discovery tools never return configuration YAML or secrets.
-3. For an existing service, create an upgrade plan with the exact namespace, service, fixed image tag, and active
-   configuration revision. For a new service, select only an embedded reviewed service profile enumerated by the tool.
+1. Confirm the requested capability is published for the selected environment and let Apex authorize it.
+2. Resolve the safe configuration and current service state required by the selected tool contract.
+3. Create the owner-declared installation or upgrade plan using only schema-accepted inputs.
 4. Present immutable targets, impact, availability risk, preconditions, and expiry; obtain confirmation for that exact
    plan and execute it once.
-5. Reconcile operation/status, then prove the active image, desired/ready replicas, rollout completion, and fresh pods
-   through the Agent.
+5. Reconcile operation/status, then verify the postconditions declared by Apex through the Agent.
 
 Never submit a manifest, chart values, environment variable, command, endpoint, URL, path, credential, or arbitrary
 image reference. Stop on drift, denial, missing Agent capability, expiry, or outcome unknown; never switch to direct

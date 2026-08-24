@@ -1,28 +1,19 @@
 # CapabilityRegistry usage
 
-Phoenix publishes the authoritative tool catalog from its versioned `CapabilityRegistry`. Treat the catalog as the
-source of truth for active business-user capabilities.
-
-The machine-readable Annex snapshot is
-[`metadata/lingmind-capability-tool-map.v1.json`](../../../metadata/lingmind-capability-tool-map.v1.json). Runtime
-discovery still wins when the connected service differs. The snapshot is generated from the Phoenix executable
-authorization contract and permission inventory with `make sync-plugin-tool-maps`; neither tool nor permission counts
-are maintained by hand. Permission coverage alone is not a production-readiness claim; the repo-local connection
-remains an environment-neutral development template.
+The connected Phoenix MCP `tools/list` response is the only authoritative catalog for the current environment. Each
+tool carries its owner-published description, input/output schema, permission, risk annotations and lifecycle.
 
 ## Rules
 
-- Use only tools returned by the connected MCP server.
-- Match the tool to the user's business goal and its declared read, write, or execute class.
-- Do not infer an unavailable operation from an internal service name or transport path.
-- Never synthesize a general request tool, downstream URL, service path, or arbitrary query from the catalog.
-- Never submit a token, credential, URL, filesystem path, manifest, environment variable, or command as tool input.
-- Preserve stable resource IDs and structured pagination in follow-up calls.
-- Treat an unknown or inactive capability as unavailable; explain the gap instead of improvising another access path.
-- A tool being visible does not prove that the current user can call it. Let Phoenix enforce scope, project,
-  permission, ownership, and state on every invocation.
-- Treat `expectedUpdatedAt`, idempotency keys, operation IDs, plan IDs, plan hashes, and confirmation material as
-  protocol fields. Do not weaken or omit them to make a call succeed.
+- Use only tools returned by the current MCP connection.
+- Select by the user's goal and the tool's declared domain, aliases, action, risk and lifecycle.
+- Never derive a tool, field, permission, service path or release status from its name.
+- Never synthesize a general request, URL, command or downstream transport.
+- Treat a missing or inactive capability as unavailable and explain the gap.
+- Tool visibility does not grant access; Phoenix and the owner still authorize every call.
+- Send only fields declared by the selected input schema.
+- Preserve identifiers and protocol fields returned by the server; do not invent plan, confirmation or idempotency
+  values.
 
-For domain selection read [business-domains.md](business-domains.md). For writes and executions also read
-[safe-actions.md](safe-actions.md).
+Annex deliberately has no checked-in tool-map snapshot. This prevents the Plugin from becoming a second business
+registry when owner models evolve.

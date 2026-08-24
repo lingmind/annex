@@ -1,42 +1,33 @@
 # LingMind Operator plugin
 
-面向 LingMind SRE、平台管理员和获授权交付人员的 Codex 插件。插件源代码不绑定 sandbox 或任何其他
-控制平台入口；发布或安装时使用 [`render-codex-plugins.py`](../../scripts/render-codex-plugins.py) 注入
-唯一的全局 Apex Operator MCP 连接。
+面向 LingMind SRE、平台管理员和获授权交付人员的全局运维插件。安装或发布时使用
+[`render-codex-plugins.py`](../../scripts/render-codex-plugins.py) 注入唯一的 Apex Operator MCP 连接。
 
-`operator_capabilities_list` 和 `environments_list` 用于发现；选择环境后的所有目标观察和修改调用都
-显式携带 `environmentId`。能力由 Apex grant、目标 Agent capability、namespace/resource/service allowlist
-和目标环境 Agent 权限共同决定。环境访问只经过 Apex Agent；插件不持有目标集群凭据，也不提供备用
-集群访问路径。
+Operator Plugin 负责环境选择、证据收集、用户确认、结果展示和工作流编排。Apex 负责工具契约、环境
+Grant、计划持久化、`Environment.agentConfig` 解析和审计；被分配的共享 VM Apex Agent 负责通过自身
+网络或业务平台 VPN 访问目标环境并执行。插件不保存 Agent URL、集群凭据、服务实现、备份格式、部署
+schema、角色名称、工具目录或当前可用性清单。
 
-当前服务端工具覆盖环境与 capability discovery、Grant 创建/更新/列表/详情/撤销/历史、工作负载/Pod/事件/有界
-日志/rollout、资源检查、服务状态和诊断、备份目标与安全部署配置 discovery，以及 restart/scale、服务升级/受审安装、Matrix 备份的持久化
-plan、cancel、execute、status 和结果证明；Matrix 备份运行时只作为目标 `apex-agent` Pod 内监听 localhost
-的 sidecar 存在，不部署独立的 Matrix Deployment、Service 或 Ingress。Matrix 恢复从已完成且
-checksum-bound 的备份 operation 派生，
-同样只通过该 Agent 执行。运行时 `operator_capabilities_list` 与 tool catalog 仍是最终事实源；当前不可用项
-见 [能力边界](references/unavailable-capabilities.md)。
+每个目标调用都显式携带环境标识。插件可以保存本地默认环境，但 Apex 会在每次调用重新校验用户 Grant
+并读取服务端 Environment 当前分配的 Agent。多个环境可以共享同一个 Agent，Plugin 不假设 Agent 部署在
+目标环境中。所有观察和修改操作都必须经过 Apex Agent；Agent 不可用时明确失败，不存在
+直接集群客户端、SSH、shell 或其他环境访问 fallback。
 
-Codex 使用全局控制平台预注册的 public client 和发布时分配的独立 callback port，执行 Authorization
-Code + PKCE S256；客户端不保存 secret。该 client 和 Operator scopes 只能由
-全局控制平台 Keycloak 签发，redirect URI 必须与生成连接的 loopback callback 精确匹配，不能复用业务
-环境的标准插件 token。
-当前按工具申请 `openid`、环境读取、观察、维护、服务部署、备份操作和 Grant 管理 scopes。Grant 管理
-仍由服务端同时核验 `apex.grants.manage` 与配置的 Keycloak `apex-operator-admin` realm role；普通 Operator
-用户即使能申请可选 scope 或看到技能说明也不能越权调用。服务端不使用
-`profile` 或 `email` claims。
+修改类操作遵循运行时工具声明的 prepare/confirm/execute 流程。用户确认前展示环境、目标、影响、
+前置条件和过期时间；执行后使用运行时状态或证据能力核验结果。具体参数、允许动作、计划规则和结果结构
+始终以 Apex MCP `tools/list` 为准。
 
-空的 repo-local `.mcp.json` 只是无控制平台模板，不表示生产就绪，也不表示每个业务环境都部署
-Operator MCP。Operator 始终只有一套全局控制平台连接；每次目标调用都由 Apex 以显式
-`environmentId` 重新解析该环境持久化的 `agentConfig.endpoint`。切换全局入口时，必须同步使用该
-入口的 issuer、resource audience、Codex callback hash 和 Keycloak 精确 redirect allowlist。
+repo-local `.mcp.json` 是空的全局入口模板。OAuth 使用全局控制平台的 Authorization Code + PKCE S256；
+Operator token 不能用于业务环境 Phoenix MCP，标准插件 token 也不能用于 Operator。
+当前 Apex 到 Agent 是内部可信网络调用，没有 Agent API token；Plugin 不参与、保存或透传这段内部调用的
+认证材料。
 
 ## Skills
 
-- `lingmind-operator-environment-context`：发现获授权环境并显式切换 `environmentId`。
-- `lingmind-operator-observe`：环境、工作负载、事件和日志观察。
-- `lingmind-operator-incident-analysis`：跨证据诊断故障。
-- `lingmind-operator-service-maintenance`：重启/扩缩容 plan、取消、执行和 rollout 证明。
-- `lingmind-operator-service-deploy`：服务升级和内置受审服务安装。
-- `lingmind-operator-backup-restore`：checksum-bound Matrix 备份与恢复流程。
-- `lingmind-operator-grant-admin`：在管理员 scope 与 Keycloak 管理角色双重授权下管理 Grant。
+- `lingmind-operator-environment-context`：发现、选择和核验获授权环境。
+- `lingmind-operator-observe`：收集环境、服务、事件和日志证据。
+- `lingmind-operator-incident-analysis`：组织故障证据并形成诊断。
+- `lingmind-operator-service-maintenance`：编排服务维护与结果验证。
+- `lingmind-operator-service-deploy`：编排受控服务安装或升级。
+- `lingmind-operator-backup-restore`：编排备份恢复和验证。
+- `lingmind-operator-grant-admin`：在服务端授权范围内管理 Grant。

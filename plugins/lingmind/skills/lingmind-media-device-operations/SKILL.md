@@ -11,17 +11,12 @@ stream, capability, runtime state, and current version on that same connection b
 
 ## Workflow
 
-1. Use persisted device/stream records for identity and dedicated runtime tools for live status; do not infer one from
-   the other.
-2. Use stream-specific tools for start/stop, screenshot, recording settings, segments, and expiring playback. Keep
-   metadata updates separate from runtime or recording changes.
-3. Read PTZ profiles, presets, status, and camera capabilities before a camera plan. Read UAV runtime and PSDK state
-   before a flight or payload command.
-4. Use NVR channel discovery/probe and a confirmed synchronization plan for managed channel changes. Use typed robot,
-   LED/display, camera refresh, and speaker-audio tools for their exact device class.
-5. For a plan-backed action, present the exact command and impact, obtain confirmation, execute once, reconcile the
-   operation, and verify the matching runtime state.
+1. Distinguish persisted identity, live state and historical evidence using owner-declared descriptions.
+2. Select the narrowest capability for the requested device or media concept and send only declared inputs.
+3. Read prerequisites and live capability state when required by the selected operation.
+4. Follow the declared direct, asynchronous or prepare/execute lifecycle.
+5. For a confirmed action, present the exact target and impact, execute once, and verify the matching owner state.
 
 Never submit a token, credential, connection URL, local or remote path, manifest, environment variable, shell command,
-or arbitrary transport payload. Phoenix and Vertex resolve routing and managed credentials. Treat returned playback
-locations as expiring outputs and never feed them into another tool.
+or arbitrary transport payload. The server resolves routing and managed credentials. Treat returned locations
+according to their owner-declared lifetime and result semantics.

@@ -15,9 +15,11 @@ The global Operator connection can reach several environments. Discovery uses `o
 Do not infer environment identity from a service hostname, an earlier conversation, or a project name. If the target
 Agent is unavailable or lacks the required capability, report the structured error and stop; another environment is
 not an equivalent substitute. All observation, maintenance, deployment, backup, and restore traffic must traverse the
-selected environment's Apex Agent. Never substitute a direct cluster client, shell, remote login, or copied cluster
-credential.
+shared VM Apex Agent assigned by the selected Environment's `agentConfig`. The Agent may serve several environments
+and may reach an edge environment through a business-platform VPN. Never substitute a direct cluster client, shell,
+remote login, or copied cluster credential.
 
-Apex resolves the selected environment's persisted `agentConfig.endpoint` again for every target call. The plugin does
+Apex resolves the selected Environment's `agentConfig` again for every target call. Agent endpoints and the current
+two-Agent fleet topology are server-side details and must not be hardcoded or exposed by the plugin. The plugin does
 not keep a server-authoritative mutable "current environment": changing environments means passing another authorized
-`environmentId`, which is independently authorized and routed to that environment's Agent URL.
+environment identifier, which is independently authorized and routed by Apex.

@@ -1,6 +1,6 @@
 {
   "name": "lingmind",
-  "version": "0.2.0+codex.20260824044306",
+  "version": "0.2.0+codex.20260824115645",
   "description": "Use project-scoped LingMind business queries, writes, jobs, missions, waylines, media, streams, UAV, NVR, and device actions through Phoenix MCP.",
   "author": {
     "name": "LingMind",

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import tempfile
 import unittest
@@ -20,6 +21,30 @@ SPEC.loader.exec_module(MODULE)
 
 
 class RenderCodexPluginsTest(unittest.TestCase):
+    def test_environment_resolver_accepts_only_minimal_mcp_contract(self) -> None:
+        payload = io.BytesIO(
+            json.dumps(
+                {
+                    "code": "alpha",
+                    "mcpResourceUrl": "https://phoenix.alpha.example/mcp",
+                }
+            ).encode("utf-8")
+        )
+        with patch.object(MODULE, "urlopen", return_value=payload):
+            self.assertEqual(
+                MODULE.resolve_environment("https://apex.example", "alpha"),
+                ("alpha", "https://phoenix.alpha.example/mcp"),
+            )
+
+        legacy = io.BytesIO(
+            json.dumps(
+                {"code": "alpha", "endpoint": "https://phoenix.alpha.example"}
+            ).encode("utf-8")
+        )
+        with patch.object(MODULE, "urlopen", return_value=legacy):
+            with self.assertRaisesRegex(ValueError, "exact path /mcp"):
+                MODULE.resolve_environment("https://apex.example", "alpha")
+
     def test_renders_multiple_direct_environment_connections(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "marketplace"

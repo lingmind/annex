@@ -22,6 +22,12 @@ then select the exact mission, wayline, gateway, and device records with read to
 5. Reconcile the plan and durable operation, then verify mission, flight, in-flight, and device state until the outcome
    is terminal or explicitly unknown.
 
-Phoenix derives flight assets, fingerprints, gateway routing, and managed credentials. Never submit a token,
-credential, URL, filesystem path, manifest, environment variable, or command. Do not create a replacement plan while
-the original prepare or execute outcome remains unknown.
+## Wayline flight-height semantics
+
+“安全起飞高度”“返航高度/全局返航高度”和“航点执行高度”是不同业务概念。Use the owner-published tool
+description, aliases and output schema to locate and explain them; never encode or guess their field paths, fallback
+order or unit in this Skill. If the active capability does not expose the requested concept, report the contract gap
+instead of inspecting unrelated fields.
+
+Never submit a token, credential, URL, filesystem path, manifest, environment variable, or command. Do not create a
+replacement plan while the original prepare or execute outcome remains unknown.

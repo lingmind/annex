@@ -107,46 +107,6 @@ def validate_marketplace() -> None:
             fail(f"invalid marketplace policy for {name}")
 
 
-def grouped_tools(metadata: dict[str, Any], key: str) -> list[str]:
-    return [tool for group in metadata[key] for tool in group["tools"]]
-
-
-def validate_metadata() -> None:
-    standard = load_json(ROOT / "metadata" / "lingmind-capability-tool-map.v1.json")
-    registry = standard["registry"]
-    domain_tools = grouped_tools(standard, "domainGroups")
-    action_tools = grouped_tools(standard, "actionGroups")
-    tools = set(domain_tools)
-    if len(domain_tools) != len(tools) or set(action_tools) != tools or len(action_tools) != len(tools):
-        fail("standard domain/action tool groups must contain the same unique tools")
-    if len(tools) != registry["toolCount"]:
-        fail(f"standard tool-map count is {len(tools)}, metadata says {registry['toolCount']}")
-    permissions = standard["businessPermissions"]
-    if len(permissions) != len(set(permissions)) or registry["businessPermissionCount"] != len(permissions):
-        fail("standard business permission inventory drifted")
-    if registry["primaryPermissionsCovered"] != len(permissions):
-        fail("standard primary permission coverage drifted")
-    release_ready = (
-        registry.get("releaseStage") == "public_release_candidate"
-        and registry.get("publicReleaseReady") is True
-        and registry.get("productionReady") is True
-        and registry.get("writeReleaseGate") == "passed_semantic_security_e2e"
-    )
-    if not release_ready or standard["oauthScopes"] != STANDARD_SCOPES:
-        fail("standard release stage or scopes drifted")
-    if tools.intersection(GENERIC_TOOLS):
-        fail("standard tool-map exposes a generic transport tool")
-
-    operator = load_json(ROOT / "metadata" / "lingmind-operator-capability-tool-map.v1.json")
-    operator_tools = grouped_tools(operator, "toolGroups")
-    if len(operator_tools) != len(set(operator_tools)) or len(operator_tools) != operator["registry"]["toolCount"]:
-        fail("operator tool-map count or uniqueness drifted")
-    if set(operator_tools).intersection(GENERIC_TOOLS):
-        fail("operator tool-map contains a generic transport tool")
-    if operator["oauthScopes"] != OPERATOR_SCOPES or operator["registry"]["productionReady"] is not False:
-        fail("operator release stage or scopes drifted")
-
-
 def require_connection_profile(path: Path, cardinality: str) -> dict[str, Any]:
     profile = load_json(path)
     if profile.get("profileVersion") != 1 or profile.get("developmentTemplate") is not True:
@@ -281,7 +241,6 @@ def main() -> int:
         validate_manifest("lingmind")
         validate_manifest("lingmind-operator")
         validate_marketplace()
-        validate_metadata()
         validate_platforms()
         validate_repository_hygiene()
         validate_markdown_and_skill_yaml()

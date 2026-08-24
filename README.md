@@ -15,7 +15,6 @@ sdks/                   OpenAPI SDK 生成配置
 scripts/generate-sdks.sh
 plugins/                LingMind 与 LingMind Operator 插件源码
 platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
-metadata/               版本化 capability/tool-map 快照
 .agents/plugins/        Annex 仓库内的 Codex marketplace
 ```
 
@@ -30,8 +29,8 @@ Annex 维护两个 Agent 插件：
 
 插件模板声明 Skills、参考资料和空 MCP 清单，具体环境连接由发布工具注入。标准插件覆盖 Phoenix 当前发布的环境/项目上下文、
 完整业务查询、直接写入、异步任务、任务/航线、媒体/流和设备控制；Operator 覆盖 Agent-backed 观察、
-Grant 管理、维护、服务部署和备份/恢复编排。生产能力始终以运行时 `CapabilityRegistry` 为准，仓库内
-tool map 由 Phoenix/Apex 源码契约确定性生成，不手工维护数量。
+Grant 管理、维护、服务部署和备份/恢复编排。工具、schema、权限、风险和生命周期始终以运行时 MCP
+`tools/list` 为准，Annex 不保存第二份工具目录或业务字段契约。
 
 身份认证使用 Authorization Code、PKCE S256 和目标服务的 OAuth discovery。Codex 使用原生 HTTP
 OAuth，WorkBuddy 使用 MCP OAuth discovery/DCR，DeepSeek Harness 通过 Annex 本地 OAuth bridge；bridge
@@ -58,13 +57,6 @@ profile 见 [`platforms/`](platforms/README.md)。仓库模板不包含具体环
 验证 manifest、marketplace 和全部聚合 Skills：
 
 ```bash
-make validate-plugins PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
-```
-
-Phoenix 或 Apex registry 变化后，一键刷新并校验 tool map：
-
-```bash
-make sync-plugin-tool-maps PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
 make validate-plugins PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
 ```
 

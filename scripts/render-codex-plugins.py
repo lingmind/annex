@@ -130,8 +130,12 @@ def resolve_environment(apex_url: str, raw_code: str) -> tuple[str, str]:
     resolved_code = validate_environment_code(str(payload.get("code", "")))
     if resolved_code != code:
         raise ValueError("Apex returned a different environment code")
-    endpoint = validate_url(str(payload.get("endpoint", "")).rstrip("/"), "", "Phoenix endpoint")
-    return resolved_code, f"{endpoint}/mcp"
+    mcp_resource_url = validate_url(
+        str(payload.get("mcpResourceUrl", "")),
+        "/mcp",
+        "Phoenix MCP resource URL",
+    )
+    return resolved_code, mcp_resource_url
 
 
 def validate_client_id(raw: str) -> str:

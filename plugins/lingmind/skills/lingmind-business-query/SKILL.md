@@ -13,11 +13,10 @@ memorizing a complete tool list.
 
 1. Resolve and verify the environment with `lingmind-environment-context`, then resolve the project with
    `lingmind-project-context` on that same connection.
-2. Choose the narrowest domain list, get, statistics, status, or diagnostic tool matching the user's question.
-3. Use explicit filters and bounded page/pageSize or time-range inputs. Continue only while more data is needed.
-4. For live streams, use the single or at-most-50 runtime-status tool instead of inferring runtime from persisted
-   stream state; use the bounded recording-segment tool for historical windows. Use typed UAV, NVR, PTZ, robot, LED,
-   mission replay, trajectory, in-flight, report, and device status tools for their corresponding domains.
+2. Choose the narrowest owner-declared read capability matching the user's question.
+3. Use only declared filters, pagination and time-range inputs. Continue only while more data is needed.
+4. Distinguish persisted records, live status and historical evidence using the runtime tool descriptions; do not
+   infer one kind of state from another.
 5. Preserve returned document IDs, timestamps, project identity, and pagination metadata for follow-up calls.
 6. Separate returned facts from interpretation and state when a bounded result was truncated or incomplete.
 
