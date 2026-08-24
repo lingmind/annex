@@ -5,7 +5,8 @@ description: Query and operate LingMind missions, trajectories, replay, wayline 
 
 # LingMind mission and wayline operations
 
-Resolve the project first, then select the exact mission, wayline, gateway, and device records with read tools. Read
+Verify the environment with `lingmind-environment-context` and resolve the project on that same connection first,
+then select the exact mission, wayline, gateway, and device records with read tools. Read
 [business action safety](../../references/safe-actions.md) and the
 [sensitive input boundary](../../references/sensitive-input-boundary.md).
 

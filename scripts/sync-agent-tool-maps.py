@@ -128,7 +128,7 @@ def fingerprint(values: list[str]) -> str:
 
 
 def standard_domain(tool: str) -> str:
-    if tool in {"projects_list", "profile_get", "profile_update_self", "business_operation_get", "business_action_plan_get", "business_action_plan_cancel"}:
+    if tool in {"environment_context_get", "projects_list", "profile_get", "profile_update_self", "business_operation_get", "business_action_plan_get", "business_action_plan_cancel"}:
         return "context-and-profile"
     if tool.startswith(("missions_", "waylines_", "in_flight_", "trajectories_")):
         return "missions-and-waylines"

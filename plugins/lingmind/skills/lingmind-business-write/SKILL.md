@@ -5,7 +5,8 @@ description: Create or update LingMind business records with explicit project co
 
 # LingMind business write
 
-Resolve the project with `lingmind-project-context`, then read [business action safety](../../references/safe-actions.md)
+Resolve and verify the environment with `lingmind-environment-context`, resolve the project with
+`lingmind-project-context` on that same connection, then read [business action safety](../../references/safe-actions.md)
 before a mutation. Use only the explicit domain tool published by the connected Phoenix `CapabilityRegistry`.
 
 ## Workflow

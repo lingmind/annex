@@ -80,16 +80,16 @@ def validate_manifest(plugin_name: str) -> None:
         fail(f"unexpected development version for {plugin_name}: {version}")
     if manifest.get("mcpServers") != "./.mcp.json" or manifest.get("skills") != "./skills/":
         fail(f"plugin paths drifted for {plugin_name}")
+    interface = manifest.get("interface", {})
+    if interface.get("composerIcon") != "./assets/logo.png" or interface.get("logo") != "./assets/logo.png":
+        fail(f"plugin icon paths drifted for {plugin_name}")
+    if not (plugin / "assets" / "logo.png").is_file():
+        fail(f"plugin logo is missing for {plugin_name}")
     prompts = manifest.get("interface", {}).get("defaultPrompt", [])
     if not isinstance(prompts, list) or not prompts or len(prompts) > 3 or not all(isinstance(item, str) and item.strip() for item in prompts):
         fail(f"manifest defaultPrompt must contain one to three non-empty prompts for {plugin_name}")
-    mcp = load_json(plugin / ".mcp.json")["mcpServers"][plugin_name]
-    expected_scopes = STANDARD_SCOPES if plugin_name == "lingmind" else OPERATOR_SCOPES
-    if mcp.get("type") != "http" or mcp.get("scopes") != expected_scopes:
-        fail(f"MCP transport or scopes drifted for {plugin_name}")
-    expected_fragment = "phoenix.sandbox.lingmind.cn/mcp" if plugin_name == "lingmind" else "apex.sandbox.lingmind.cn/mcp/operator"
-    if expected_fragment not in mcp.get("url", ""):
-        fail(f"repo-local {plugin_name} profile must remain sandbox development configuration")
+    if load_json(plugin / ".mcp.json").get("mcpServers") != {}:
+        fail(f"repo-local {plugin_name} template must not bind an environment or control-plane URL")
 
 
 def validate_marketplace() -> None:
@@ -239,6 +239,8 @@ def validate_repository_hygiene() -> None:
             relative = path.relative_to(ROOT)
             if path.suffix.lower() in {".pem", ".key", ".p12", ".pfx"}:
                 fail(f"credential file is not allowed: {relative}")
+            if path.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp"}:
+                continue
             text = path.read_text(encoding="utf-8")
             if re.search(r"(?i)\b(?:kubectl|kubeconfig)\b", text):
                 fail(f"direct cluster-access instruction is not allowed: {relative}")

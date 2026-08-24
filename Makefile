@@ -25,6 +25,7 @@ sync-plugin-tool-maps:
 	$(PYTHON) scripts/sync-agent-tool-maps.py
 
 validate-plugins:
+	$(PYTHON) scripts/test-render-codex-plugins.py
 	$(PYTHON) $(PLUGIN_VALIDATOR) plugins/lingmind
 	$(PYTHON) $(PLUGIN_VALIDATOR) plugins/lingmind-operator
 	@for skill in plugins/lingmind/skills/* plugins/lingmind-operator/skills/*; do \

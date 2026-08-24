@@ -1,6 +1,6 @@
 {
   "name": "lingmind",
-  "version": "0.2.0+codex.20260823223646",
+  "version": "0.2.0+codex.20260824044306",
   "description": "Use project-scoped LingMind business queries, writes, jobs, missions, waylines, media, streams, UAV, NVR, and device actions through Phoenix MCP.",
   "author": {
     "name": "LingMind",
@@ -32,7 +32,9 @@
       "Generate a wayline and prepare a mission action plan",
       "Inspect stream, UAV, and NVR runtime status safely"
     ],
-    "brandColor": "#1677FF"
+    "brandColor": "#1677FF",
+    "composerIcon": "./assets/logo.png",
+    "logo": "./assets/logo.png"
   },
   "mcpServers": "./.mcp.json"
 }

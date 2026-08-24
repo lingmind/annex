@@ -1,18 +1,3 @@
 {
-  "mcpServers": {
-    "lingmind": {
-      "type": "http",
-      "url": "https://phoenix.sandbox.lingmind.cn/mcp",
-      "oauth": {
-        "client_id": "lingmind-codex",
-        "callback_port": 1455
-      },
-      "scopes": [
-        "openid",
-        "lingmind.read",
-        "lingmind.write",
-        "lingmind.execute"
-      ]
-    }
-  }
+  "mcpServers": {}
 }

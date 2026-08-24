@@ -24,11 +24,11 @@ metadata/               版本化 capability/tool-map 快照
 Annex 维护两个 Agent 插件：
 
 - `plugins/lingmind` 是标准业务插件。每个独立业务环境使用一个 Phoenix MCP 连接和该环境自己的
-  Keycloak；多环境用户安装多个租户私有包或独立连接。
+  Keycloak；一个插件包可包含多个具名连接，并在请求开始时显式核验和切换环境。
 - `plugins/lingmind-operator` 是全局运维插件。它只连接一套 Apex Operator MCP，并在每次目标调用中
   显式选择获授权的 `environmentId`；不在每个业务环境部署 Operator MCP。
 
-插件只声明远程 MCP、OAuth resource、Skills 和参考资料。标准插件覆盖 Phoenix 当前发布的项目上下文、
+插件模板声明 Skills、参考资料和空 MCP 清单，具体环境连接由发布工具注入。标准插件覆盖 Phoenix 当前发布的环境/项目上下文、
 完整业务查询、直接写入、异步任务、任务/航线、媒体/流和设备控制；Operator 覆盖 Agent-backed 观察、
 Grant 管理、维护、服务部署和备份/恢复编排。生产能力始终以运行时 `CapabilityRegistry` 为准，仓库内
 tool map 由 Phoenix/Apex 源码契约确定性生成，不手工维护数量。
@@ -36,7 +36,19 @@ tool map 由 Phoenix/Apex 源码契约确定性生成，不手工维护数量。
 身份认证使用 Authorization Code、PKCE S256 和目标服务的 OAuth discovery。Codex 使用原生 HTTP
 OAuth，WorkBuddy 使用 MCP OAuth discovery/DCR，DeepSeek Harness 通过 Annex 本地 OAuth bridge；bridge
 只把 token 存入操作系统 keychain，插件包和平台 profile 中不保存 token，也禁止长效 bearer 配置。平台
-profile 见 [`platforms/`](platforms/README.md)。当前仓库 URL 都是 sandbox 开发 profile，不表示生产就绪。
+profile 见 [`platforms/`](platforms/README.md)。仓库模板不包含具体环境 URL，也不表示生产就绪。
+
+为 Codex 生成包含一个或多个业务环境的本地 marketplace：
+
+```bash
+/Users/shoppon/code/lingmind/.codex-venv/bin/python scripts/render-codex-plugins.py \
+  --output .local/codex-marketplace \
+  --environment wf3b https://phoenix.wf3b.example/mcp lingmind-codex-wf3b 1455 \
+  --environment yf16 https://phoenix.yf16.example/mcp lingmind-codex-yf16 1455 \
+  --operator https://apex.example/mcp/operator lingmind-operator-codex 1456
+```
+
+生成目录包含独立 marketplace 和插件副本；环境 URL、OAuth client 和 callback port 不写回源码。
 
 验证 manifest、marketplace 和全部聚合 Skills：
 

@@ -7,7 +7,8 @@ description: Plan, confirm, execute, cancel, and verify destructive or physical 
 
 Use this Skill for resource deletion, schedule triggering, camera PTZ, mission execution/resume, in-flight delivery,
 UAV, NVR synchronization, robot or display control, and any runtime tool that requires a plan. Read
-[business action safety](../../references/safe-actions.md) first.
+[business action safety](../../references/safe-actions.md) first. Verify the environment with
+`lingmind-environment-context` before resolving a project or creating a plan.
 
 ## Workflow
 

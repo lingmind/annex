@@ -5,8 +5,8 @@ description: Resolve and verify the LingMind project for a business request when
 
 # LingMind project context
 
-Use the connected environment's `projects_list` tool to select one canonical project before any project-scoped
-business tool.
+First verify the connection with `lingmind-environment-context`. Then use that same connection's `projects_list` tool
+to select one canonical project before any project-scoped business tool.
 
 Read [project context](../../references/project-context.md) before resolving an ambiguous project.
 
@@ -18,5 +18,5 @@ Read [project context](../../references/project-context.md) before resolving an 
 4. Ask the user to choose when multiple records remain possible.
 5. Pass the selected canonical project ID to every project-scoped tool in the current request.
 
-On a project or permission error, report it and stop. Do not silently switch projects, carry a project ID between
-business environments, or change the connection URL as part of project selection.
+On an environment, project, or permission error, report it and stop. Do not silently switch projects or connections,
+carry a project ID between business environments, or fall back to a local Skill, shell, CLI, or direct API.

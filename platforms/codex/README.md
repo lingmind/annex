@@ -1,12 +1,19 @@
 # Codex adapter
 
 Codex connects directly to the remote HTTP MCP endpoint and owns OAuth 2.1 Authorization Code + PKCE S256. Use
-[`standard-business-environment.mcp.json`](standard-business-environment.mcp.json) as the shape for one tenant-private
-business-environment package, and [`global-operator.mcp.json`](global-operator.mcp.json) for the single global Operator.
+[`standard-business-environment.mcp.json`](standard-business-environment.mcp.json) as the shape for each direct
+business-environment connection, and [`global-operator.mcp.json`](global-operator.mcp.json) for the single global
+Operator. [`render-codex-plugins.py`](../../scripts/render-codex-plugins.py) combines any number of standard
+connections into one installed LingMind plugin package.
 
 For each standard environment, choose a unique connection name, Phoenix URL, public Keycloak client, callback port,
 issuer configuration, and exact redirect allowlist. Never place two business-environment URLs behind one standard
-connection. The checked-in plugin `.mcp.json` files are concrete sandbox development profiles.
+connection. The checked-in plugin `.mcp.json` files are empty templates and contain no environment URL.
+
+Connection names must be `lingmind-<environment-code>`. The agent calls `environment_context_get` on the selected
+connection and verifies the returned code before any project or business tool. Switching environments selects another
+connection and clears project, plan, idempotency, and operation context; it does not reuse a token or pass a URL to a
+business tool.
 
 Codex must request only the scopes declared in the templates. The remote resource server remains responsible for
 audience, subject, client, permission, project/Grant, ownership, allowlist, and state checks.

@@ -8,7 +8,7 @@ The machine-readable Annex snapshot is
 discovery still wins when the connected service differs. The snapshot is generated from the Phoenix executable
 authorization contract and permission inventory with `make sync-plugin-tool-maps`; neither tool nor permission counts
 are maintained by hand. Permission coverage alone is not a production-readiness claim; the repo-local connection
-remains a sandbox development profile.
+remains an environment-neutral development template.
 
 ## Rules
 

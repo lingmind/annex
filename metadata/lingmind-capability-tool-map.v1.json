@@ -3,7 +3,7 @@
   "registry": {
     "name": "CapabilityRegistry",
     "service": "phoenix",
-    "toolCount": 260,
+    "toolCount": 261,
     "businessPermissionCount": 122,
     "primaryPermissionsCovered": 122,
     "releaseStage": "public_release_candidate",
@@ -15,7 +15,7 @@
     "toolContract": "phoenix/internal/mcpserver/capability_registry_test.go#TestEveryBusinessCapabilityHasExecutableAuthorizationContract",
     "permissionContract": "phoenix/internal/mcpserver/permission_inventory.go#businessPermissionInventory",
     "releaseContract": "phoenix/internal/mcpserver/capability_registry.go#CapabilityRegistry.CoverageReport",
-    "fingerprint": "sha256:9143c9d5c93e53135848fd8fd8ce44cc85139093bd47c55730bfdfe14e521a4d"
+    "fingerprint": "sha256:f5d6bd7ef1bdd774bebc3fb0de205d23698d6e9ee4634e05addee305de6096ef"
   },
   "oauthScopes": [
     "openid",
@@ -58,6 +58,7 @@
         "business_action_plan_cancel",
         "business_action_plan_get",
         "business_operation_get",
+        "environment_context_get",
         "profile_get",
         "profile_update_self",
         "projects_list"
@@ -533,6 +534,7 @@
         "detection_rules_list",
         "devices_get",
         "devices_list",
+        "environment_context_get",
         "events_get",
         "events_list",
         "events_stats",

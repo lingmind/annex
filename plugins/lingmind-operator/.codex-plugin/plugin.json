@@ -1,6 +1,6 @@
 {
   "name": "lingmind-operator",
-  "version": "0.2.0+codex.20260824025020",
+  "version": "0.2.0+codex.20260824044306",
   "description": "Observe and maintain granted LingMind environments, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
   "author": {
     "name": "LingMind",
@@ -32,7 +32,9 @@
       "Diagnose an unhealthy service through its Apex Agent",
       "Prepare and verify a reviewed deployment or backup plan"
     ],
-    "brandColor": "#0F766E"
+    "brandColor": "#0F766E",
+    "composerIcon": "./assets/logo.png",
+    "logo": "./assets/logo.png"
   },
   "mcpServers": "./.mcp.json"
 }
