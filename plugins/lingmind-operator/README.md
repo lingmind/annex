@@ -14,8 +14,10 @@ https://apex.sandbox.lingmind.cn/mcp/operator
 
 当前服务端工具覆盖环境与 capability discovery、Grant 创建/更新/列表/详情/撤销/历史、工作负载/Pod/事件/有界
 日志/rollout、资源检查、服务状态和诊断、备份目标与安全部署配置 discovery，以及 restart/scale、服务升级/受审安装、Matrix 备份的持久化
-plan、cancel、execute、status 和结果证明；Matrix 恢复从已完成且 checksum-bound 的备份 operation 派生，
-同样只通过 Agent 执行。运行时 `operator_capabilities_list` 与 tool catalog 仍是最终事实源；当前不可用项
+plan、cancel、execute、status 和结果证明；Matrix 备份运行时只作为目标 `apex-agent` Pod 内监听 localhost
+的 sidecar 存在，不部署独立的 Matrix Deployment、Service 或 Ingress。Matrix 恢复从已完成且
+checksum-bound 的备份 operation 派生，
+同样只通过该 Agent 执行。运行时 `operator_capabilities_list` 与 tool catalog 仍是最终事实源；当前不可用项
 见 [能力边界](references/unavailable-capabilities.md)。
 
 Codex 使用预注册 public client `lingmind-operator-codex` 和固定本地回调端口 `1456`，执行
@@ -28,7 +30,8 @@ Authorization Code + PKCE S256；客户端不保存 secret。该 client 和 Oper
 `profile` 或 `email` claims。
 
 这是 sandbox 开发 profile，不表示生产就绪，也不表示每个业务环境都部署 Operator MCP。Operator 始终
-只有一套全局控制平台连接；切换到非 sandbox 入口时，必须同步使用该入口的 issuer、resource audience、
+只有一套全局控制平台连接；每次目标调用都由 Apex 以显式 `environmentId` 重新解析该环境持久化的
+`agentConfig.endpoint`。切换到非 sandbox 入口时，必须同步使用该入口的 issuer、resource audience、
 Codex callback hash 和 Keycloak 精确 redirect allowlist。
 
 ## Skills

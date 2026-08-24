@@ -6,8 +6,12 @@ active environment Grant and Agent capability, a persisted Apex Mongo plan, and 
 ## Backup
 
 Select an enabled backup target returned from Apex persistence by stable target ID. The plan binds its current
-revision and target environment. After confirmation, execute once through the Agent and fixed Matrix API, then follow
-the operation/status tool to a terminal Matrix run and report the safe artifact identity and verification state.
+revision and target environment. After confirmation, execute once through the Agent and its localhost-only Matrix
+backup runner sidecar, then follow the operation/status tool to a terminal Matrix run and report the single safe OSS
+artifact identity, lowercase SHA-256, and verification state. The runner uses the Agent Pod ServiceAccount through
+typed Kubernetes APIs. It is a container in the existing Apex Agent Pod, not an independently deployed Matrix
+Deployment, Service, or Ingress, and it has no external cluster credential, cluster CLI, shell, or direct external
+entry point.
 
 ## Restore
 

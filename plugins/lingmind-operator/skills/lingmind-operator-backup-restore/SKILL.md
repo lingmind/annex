@@ -16,9 +16,13 @@ Resolve the environment first and read [backup and restore](../../references/bac
    derive its single server-owned checksum-bound artifact.
 3. Create the matching persisted plan and present target, scope, impact, retention/recovery risk, preconditions, and
    expiry without exposing confirmation material.
-4. Obtain confirmation for the exact plan, execute once, and reconcile the operation/status to a terminal Matrix run.
-5. Report the safe run/artifact identity and action-specific postcondition. Treat outcome unknown as unresolved.
+4. Obtain confirmation for the exact plan, execute once, and reconcile the operation/status to the terminal run from
+   the localhost-only Matrix backup runner sidecar inside the selected Apex Agent Pod. For each target call, pass the
+   exact `environmentId`; Apex resolves that environment's current persisted `agentConfig.endpoint`.
+5. Report the safe run identity, the single OSS artifact, its lowercase SHA-256, and the action-specific
+   postcondition. Treat outcome unknown as unresolved.
 
 Never accept a storage credential, token, URL, object location, path, command, namespace override, or arbitrary Matrix
-payload. If a selected environment does not advertise restore, report the registry reason and stop. All target access
-remains Agent-only.
+payload. The runner has no independent Matrix Deployment, Service, or Ingress. If a selected environment does not
+advertise restore, report the registry reason and stop. All target access remains Agent-only, with no direct cluster
+fallback.

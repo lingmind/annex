@@ -17,3 +17,7 @@ Agent is unavailable or lacks the required capability, report the structured err
 not an equivalent substitute. All observation, maintenance, deployment, backup, and restore traffic must traverse the
 selected environment's Apex Agent. Never substitute a direct cluster client, shell, remote login, or copied cluster
 credential.
+
+Apex resolves the selected environment's persisted `agentConfig.endpoint` again for every target call. The plugin does
+not keep a server-authoritative mutable "current environment": changing environments means passing another authorized
+`environmentId`, which is independently authorized and routed to that environment's Agent URL.
