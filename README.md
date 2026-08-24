@@ -43,12 +43,17 @@ profile 见 [`platforms/`](platforms/README.md)。仓库模板不包含具体环
 ```bash
 /Users/shoppon/code/lingmind/.codex-venv/bin/python scripts/render-codex-plugins.py \
   --output .local/codex-marketplace \
-  --environment wf3b https://phoenix.wf3b.example/mcp lingmind-codex-wf3b 1455 \
-  --environment yf16 https://phoenix.yf16.example/mcp lingmind-codex-yf16 1455 \
+  --apex-url https://apex.lingmind.cn \
+  --environment-code wf3b \
+  --environment-code yf16 \
+  --default-environment wf3b \
   --operator https://apex.example/mcp/operator lingmind-operator-codex 1456
 ```
 
-生成目录包含独立 marketplace 和插件副本；环境 URL、OAuth client 和 callback port 不写回源码。
+只配置一个环境时会自动成为默认环境；配置多个环境时必须显式传
+`--default-environment`。未提供任何环境参数且终端可交互时，脚本会提示输入一个环境编码。连接器通过
+全局 Apex 解析环境编码，只保存返回的 Phoenix MCP 地址；也可用 `--environment` 显式注入连接供发布
+自动化使用。生成目录包含独立 marketplace 和插件副本；环境 URL 不写回源码。
 
 验证 manifest、marketplace 和全部聚合 Skills：
 

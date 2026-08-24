@@ -9,6 +9,7 @@ import tempfile
 import unittest
 from argparse import Namespace
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).with_name("render-codex-plugins.py")
@@ -30,12 +31,16 @@ class RenderCodexPluginsTest(unittest.TestCase):
                         ["alpha", "https://phoenix.alpha.example/mcp", "lingmind-alpha", "1455"],
                         ["beta", "https://phoenix.beta.example/mcp", "lingmind-beta", "1455"],
                     ],
+                    default_environment="alpha",
                     operator=["https://apex.example/mcp/operator", "lingmind-operator", "1456"],
                 )
             )
             standard = json.loads((output / "plugins/lingmind/.mcp.json").read_text(encoding="utf-8"))
-            self.assertEqual(list(standard["mcpServers"]), ["lingmind-alpha", "lingmind-beta"])
+            self.assertEqual(list(standard["mcpServers"]), ["lingmind", "lingmind-beta"])
+            self.assertEqual(standard["mcpServers"]["lingmind"]["url"], "https://phoenix.alpha.example/mcp")
             self.assertEqual(standard["mcpServers"]["lingmind-beta"]["url"], "https://phoenix.beta.example/mcp")
+            marker = json.loads((output / ".lingmind-generated-marketplace").read_text(encoding="utf-8"))
+            self.assertEqual(marker["defaultEnvironment"], "alpha")
             operator = json.loads((output / "plugins/lingmind-operator/.mcp.json").read_text(encoding="utf-8"))
             self.assertEqual(list(operator["mcpServers"]), ["lingmind-operator"])
             manifest = json.loads(
@@ -52,9 +57,53 @@ class RenderCodexPluginsTest(unittest.TestCase):
                         output=Path(temporary) / "marketplace",
                         marketplace_name="lingmind-test",
                         environment=[["alpha", "https://phoenix.alpha.example/api", "lingmind-alpha", "1455"]],
+                        default_environment=None,
                         operator=None,
                     )
                 )
+
+    def test_requires_explicit_default_for_multiple_environments(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(ValueError, "--default-environment is required"):
+                MODULE.render(
+                    Namespace(
+                        output=Path(temporary) / "marketplace",
+                        marketplace_name="lingmind-test",
+                        environment=[
+                            ["alpha", "https://phoenix.alpha.example/mcp", "lingmind-alpha", "1455"],
+                            ["beta", "https://phoenix.beta.example/mcp", "lingmind-beta", "1455"],
+                        ],
+                        default_environment=None,
+                        operator=None,
+                    )
+                )
+
+    def test_resolves_environment_code_through_apex(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "marketplace"
+            with patch.object(
+                MODULE,
+                "resolve_environment",
+                return_value=("alpha_1", "https://phoenix.alpha.example/mcp"),
+            ) as resolve:
+                MODULE.render(
+                    Namespace(
+                        output=output,
+                        marketplace_name="lingmind-test",
+                        environment=None,
+                        environment_code=["ALPHA_1"],
+                        apex_url="https://apex.example",
+                        oauth_client_id="lingmind-codex",
+                        callback_port="1455",
+                        default_environment=None,
+                        operator=None,
+                    )
+                )
+
+            resolve.assert_called_once_with("https://apex.example", "ALPHA_1")
+            standard = json.loads((output / "plugins/lingmind/.mcp.json").read_text(encoding="utf-8"))
+            self.assertEqual(list(standard["mcpServers"]), ["lingmind"])
+            self.assertEqual(standard["mcpServers"]["lingmind"]["url"], "https://phoenix.alpha.example/mcp")
 
 
 if __name__ == "__main__":

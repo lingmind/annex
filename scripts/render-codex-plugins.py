@@ -8,15 +8,19 @@ import json
 import os
 import re
 import shutil
+import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode, urlparse
+from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MARKER = ".lingmind-generated-marketplace"
-ENVIRONMENT_CODE = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
+IDENTIFIER = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
+ENVIRONMENT_CODE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 STANDARD_SCOPES = ["openid", "lingmind.read", "lingmind.write", "lingmind.execute"]
 OPERATOR_SCOPES = [
     "openid",
@@ -40,8 +44,32 @@ def parser() -> argparse.ArgumentParser:
         action="append",
         nargs=4,
         metavar=("CODE", "MCP_URL", "OAUTH_CLIENT_ID", "CALLBACK_PORT"),
-        required=True,
-        help="Repeat once for every directly connected business environment",
+        help="Explicit environment connection; intended for release automation",
+    )
+    result.add_argument(
+        "--environment-code",
+        action="append",
+        metavar="CODE",
+        help="Resolve an environment code through Apex; repeat to connect multiple environments",
+    )
+    result.add_argument(
+        "--apex-url",
+        default=os.environ.get("LINGMIND_APEX_URL", "https://apex.lingmind.cn"),
+        help="Global Apex URL used only for environment-code resolution",
+    )
+    result.add_argument(
+        "--oauth-client-id",
+        default="lingmind-codex",
+        help="Public OAuth client registered independently in every selected environment",
+    )
+    result.add_argument(
+        "--callback-port",
+        default="1455",
+        help="Loopback OAuth callback port registered for the public client",
+    )
+    result.add_argument(
+        "--default-environment",
+        help="Default environment code; inferred only when exactly one environment is configured",
     )
     result.add_argument(
         "--operator",
@@ -54,8 +82,15 @@ def parser() -> argparse.ArgumentParser:
 
 def validate_identifier(value: str, label: str) -> str:
     value = value.strip()
+    if not IDENTIFIER.fullmatch(value):
+        raise ValueError(f"{label} must match {IDENTIFIER.pattern}")
+    return value
+
+
+def validate_environment_code(value: str) -> str:
+    value = value.strip().lower()
     if not ENVIRONMENT_CODE.fullmatch(value):
-        raise ValueError(f"{label} must match {ENVIRONMENT_CODE.pattern}")
+        raise ValueError(f"environment code must match {ENVIRONMENT_CODE.pattern}")
     return value
 
 
@@ -73,6 +108,30 @@ def validate_url(raw: str, expected_path: str, label: str) -> str:
     ):
         raise ValueError(f"{label} must be an absolute HTTPS URL with exact path {expected_path}")
     return raw
+
+
+def resolve_environment(apex_url: str, raw_code: str) -> tuple[str, str]:
+    code = validate_environment_code(raw_code)
+    base_url = validate_url(apex_url.rstrip("/"), "", "Apex URL")
+    request = Request(
+        f"{base_url}/api/v1/gateway/environments/resolve?{urlencode({'code': code})}",
+        headers={"Accept": "application/json", "User-Agent": "lingmind-annex-plugin-configurator/1"},
+    )
+    try:
+        with urlopen(request, timeout=10) as response:  # noqa: S310 - HTTPS is enforced above.
+            payload = json.load(response)
+    except HTTPError as exc:
+        raise ValueError("environment is unavailable or the code is invalid") from exc
+    except (URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise ValueError("Apex environment resolution failed") from exc
+
+    if not isinstance(payload, dict):
+        raise ValueError("Apex environment resolution returned an invalid response")
+    resolved_code = validate_environment_code(str(payload.get("code", "")))
+    if resolved_code != code:
+        raise ValueError("Apex returned a different environment code")
+    endpoint = validate_url(str(payload.get("endpoint", "")).rstrip("/"), "", "Phoenix endpoint")
+    return resolved_code, f"{endpoint}/mcp"
 
 
 def validate_client_id(raw: str) -> str:
@@ -133,19 +192,44 @@ def replace_generated_output(staged: Path, output: Path) -> None:
 
 def render(args: argparse.Namespace) -> Path:
     marketplace_name = validate_identifier(args.marketplace_name, "marketplace name")
-    connections: dict[str, object] = {}
-    for raw_code, raw_url, raw_client_id, raw_port in args.environment:
-        code = validate_identifier(raw_code, "environment code")
-        name = f"lingmind-{code}"
-        if name in connections:
+    environments: dict[str, tuple[str, str, int]] = {}
+    for raw_code, raw_url, raw_client_id, raw_port in getattr(args, "environment", None) or []:
+        code = validate_environment_code(raw_code)
+        if code in environments:
             raise ValueError(f"duplicate environment code: {code}")
         port = validate_port(raw_port)
-        connections[name] = server(
+        environments[code] = (
             validate_url(raw_url, "/mcp", f"{code} MCP URL"),
             validate_client_id(raw_client_id),
             port,
-            STANDARD_SCOPES,
         )
+
+    resolved_client_id = validate_client_id(getattr(args, "oauth_client_id", "lingmind-codex"))
+    resolved_port = validate_port(getattr(args, "callback_port", "1455"))
+    apex_url = getattr(args, "apex_url", "https://apex.lingmind.cn")
+    for raw_code in getattr(args, "environment_code", None) or []:
+        code, mcp_url = resolve_environment(apex_url, raw_code)
+        if code in environments:
+            raise ValueError(f"duplicate environment code: {code}")
+        environments[code] = (mcp_url, resolved_client_id, resolved_port)
+
+    if not environments:
+        raise ValueError("at least one --environment-code or --environment is required")
+
+    raw_default = getattr(args, "default_environment", None)
+    if raw_default:
+        default_environment = validate_environment_code(raw_default)
+    elif len(environments) == 1:
+        default_environment = next(iter(environments))
+    else:
+        raise ValueError("--default-environment is required when multiple environments are configured")
+    if default_environment not in environments:
+        raise ValueError(f"default environment is not configured: {default_environment}")
+
+    connections: dict[str, object] = {}
+    for code, (url, client_id, port) in environments.items():
+        name = "lingmind" if code == default_environment else f"lingmind-{code}"
+        connections[name] = server(url, client_id, port, STANDARD_SCOPES)
 
     operator_connection = None
     if args.operator:
@@ -198,7 +282,8 @@ def render(args: argparse.Namespace) -> Path:
             staged / MARKER,
             {
                 "generator": "annex/scripts/render-codex-plugins.py",
-                "environments": sorted(name.removeprefix("lingmind-") for name in connections),
+                "environments": sorted(environments),
+                "defaultEnvironment": default_environment,
                 "operator": operator_connection is not None,
             },
         )
@@ -211,6 +296,8 @@ def render(args: argparse.Namespace) -> Path:
 
 def main() -> int:
     args = parser().parse_args()
+    if not args.environment and not args.environment_code and sys.stdin.isatty():
+        args.environment_code = [input("LingMind environment code: ").strip()]
     try:
         output = render(args)
     except ValueError as exc:

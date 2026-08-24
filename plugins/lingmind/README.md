@@ -2,7 +2,9 @@
 
 面向 LingMind 业务用户的标准插件。插件源代码不绑定 sandbox 或任何其他业务环境；发布或安装时使用
 [`render-codex-plugins.py`](../../scripts/render-codex-plugins.py) 注入用户获准访问的 Phoenix MCP 连接。
-同一个插件包可以包含多个 `lingmind-<environment-code>` 连接，用户切换环境时选择对应连接。
+默认环境使用 `lingmind` 连接，其他环境使用 `lingmind-<environment-code>`；不指定环境时直接使用默认连接。
+连接阶段可只输入环境编码，由全局 Apex 按 Helix 相同的流程解析目标 Phoenix；环境选择发生在 OAuth 前，
+Keycloak 登录表单不负责切换环境。
 
 Phoenix 的版本化 `CapabilityRegistry` 是工具、项目上下文、权限和审计的最终事实源。当前服务端快照
 由 [`metadata/lingmind-capability-tool-map.v1.json`](../../metadata/lingmind-capability-tool-map.v1.json) 记录，
@@ -13,9 +15,10 @@ Radix 和项目授权中的权限；空的 repo-local `.mcp.json` 只是无环�
 连接；不要把环境 URL 当作业务工具参数动态切换。这样登录会话、issuer、audience、项目 ID 和审计
 记录始终留在同一环境边界内。Operator 使用另一套全局连接，不能复用标准插件 token。
 
-每次业务请求先调用目标连接的 `environment_context_get`，确认返回的 `code` 与用户指定环境完全一致；
-环境变化会清空项目、plan 和操作上下文。插件不得因为 MCP 不可用而静默调用本地 Skill、shell、CLI
-或直接 REST API。
+每次业务请求先调用目标连接的 `environment_context_get`；用户未指定环境时，将其返回身份作为当前默认
+环境，用户指定环境时则要求 `code` 完全一致。环境变化会清空项目、plan 和操作上下文。每个环境首次
+授权可能要求登录，后续切换复用该连接缓存或刷新的短期 token。插件不得因为 MCP 不可用而静默调用
+本地 Skill、shell、CLI 或直接 REST API。
 
 Codex 为每个连接使用对应环境的预注册 public client，通过 Authorization Code + PKCE S256 获取短期
 token。每个连接使用发布时分配的唯一 callback port；Keycloak 必须精确允许当前客户端生成的 loopback
