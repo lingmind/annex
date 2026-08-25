@@ -232,7 +232,7 @@ def render(args: argparse.Namespace) -> Path:
 
     connections: dict[str, object] = {}
     for code, (url, client_id, port) in environments.items():
-        name = "lingmind" if code == default_environment else f"lingmind-{code}"
+        name = f"lingmind-{code}"
         connections[name] = server(url, client_id, port, STANDARD_SCOPES)
 
     operator_connection = None
@@ -253,6 +253,20 @@ def render(args: argparse.Namespace) -> Path:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
         standard = copy_plugin("lingmind", staged, timestamp)
         write_json(standard / ".mcp.json", {"mcpServers": connections})
+        write_json(
+            standard / "references" / "configured-environments.json",
+            {
+                "defaultEnvironmentCode": default_environment,
+                "connections": [
+                    {
+                        "environmentCode": code,
+                        "mcpServer": f"lingmind-{code}",
+                        "default": code == default_environment,
+                    }
+                    for code in environments
+                ],
+            },
+        )
 
         entries = [
             {

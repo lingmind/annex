@@ -14,7 +14,8 @@ Read [project context](../../references/project-context.md) before resolving an 
 ## Workflow
 
 1. Call `projects_list` and verify an explicit project ID against the returned accessible records.
-2. Otherwise resolve the user's project name or code exactly from that same result.
+2. Otherwise resolve the user's project name or code exactly from that same result. If neither is present, a Host may
+   offer the last project code stored for the verified `{environmentCode, subject}`, but it must appear in this result.
 3. Automatically select only when exactly one accessible project remains.
 4. Ask the user to choose when multiple records remain possible.
 5. Pass the selected canonical `projectId` or exact `projectCode`, as accepted by that tool's schema, to every

@@ -3,9 +3,11 @@
 面向 LingMind 业务用户的标准 Agent 插件。插件源码不绑定 sandbox 或任何其他业务环境；安装或发布时使用
 [`render-codex-plugins.py`](../../scripts/render-codex-plugins.py) 注入用户获准访问的 Phoenix MCP 连接。
 
-每个连接只绑定一个业务环境和该环境独立的 Keycloak。默认环境使用 `lingmind` 连接，其他环境使用
-`lingmind-<environment-code>`。切换环境就是切换 MCP resource；不同环境的 token、issuer、audience、项目
-和确认计划不能混用。只有一个环境时可自动设为默认，多个环境时由用户选择默认环境。
+每个连接只绑定一个业务环境和该环境独立的 Keycloak，并始终使用稳定名称
+`lingmind-<environment-code>`。默认环境是安装侧偏好，记录在生成的
+`references/configured-environments.json` 中，不通过重命名连接表达。切换环境就是切换 MCP resource；不同
+环境的 token、issuer、audience、项目和确认计划不能混用。只有一个环境时可自动设为默认，多个环境时由
+用户选择默认环境。
 
 插件负责：
 

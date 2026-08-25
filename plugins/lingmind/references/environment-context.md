@@ -1,15 +1,14 @@
 # Environment context
 
-One installed LingMind plugin may expose multiple direct Phoenix MCP connections. `lingmind` is the configured
-default connection; every other connection is named `lingmind-<environment-code>`. Each remains bound to exactly one
-business environment, Keycloak issuer, OAuth audience, and token set.
+One installed LingMind plugin may expose multiple direct Phoenix MCP connections. Every connection has the stable
+name `lingmind-<environment-code>` and remains bound to exactly one business environment, Keycloak issuer, OAuth
+audience, and token set. The generated `configured-environments.json` stores a separate default-environment pointer;
+changing that pointer never renames or rebinds a connection.
 
 ## Selection
 
-1. If the user supplies no environment code, select `lingmind` and treat its authenticated identity as the current
-   default environment.
-2. If the user supplies an environment code, use `lingmind` only when its authenticated identity matches that code;
-   otherwise select only `lingmind-<environment-code>`.
+1. If the user supplies no environment code, select the connection for `defaultEnvironmentCode`.
+2. If the user supplies an environment code, select only the configured `lingmind-<environment-code>` connection.
 3. Never ask a single-environment user to select an environment merely because the request omitted one.
 4. Call `environment_context_get` on the selected connection before `projects_list` or any business tool.
 5. Accept the connection only when its returned `code` exactly matches the selected environment code and its

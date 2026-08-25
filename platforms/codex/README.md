@@ -16,12 +16,13 @@ result selects the environment-specific MCP resource and Keycloak issuer. Codex 
 `.mcp.json`, so its adapter renders or updates the installed connection after this setup step; do not put environment
 selection inside the Keycloak credential form.
 
-The configured default environment uses the connection name `lingmind`; other connections use
-`lingmind-<environment-code>`. A single configured environment becomes the default automatically, while a
-multi-environment package requires an explicit default. The agent calls `environment_context_get` on the selected
-connection and verifies the returned code before any project or business tool. Switching environments selects another
-connection and clears project, plan, idempotency, and operation context; each connection retains only its own OAuth
-session and never passes a URL to a business tool.
+Every environment uses the stable connection name `lingmind-<environment-code>`. A single configured environment
+becomes the default automatically, while a multi-environment package requires an explicit default. The renderer
+stores that preference separately in `references/configured-environments.json`; changing the default cannot rebind a
+cached OAuth session to another environment. The agent calls `environment_context_get` on the selected connection and
+verifies the returned code before any project or business tool. Switching environments selects another connection and
+clears project, plan, idempotency, and operation context; each connection retains only its own OAuth session and never
+passes a URL to a business tool.
 
 Codex must request only the scopes declared in the templates. The remote resource server remains responsible for
 audience, subject, client, permission, project/Grant, ownership, allowlist, and state checks.

@@ -61,9 +61,20 @@ class RenderCodexPluginsTest(unittest.TestCase):
                 )
             )
             standard = json.loads((output / "plugins/lingmind/.mcp.json").read_text(encoding="utf-8"))
-            self.assertEqual(list(standard["mcpServers"]), ["lingmind", "lingmind-beta"])
-            self.assertEqual(standard["mcpServers"]["lingmind"]["url"], "https://phoenix.alpha.example/mcp")
+            self.assertEqual(list(standard["mcpServers"]), ["lingmind-alpha", "lingmind-beta"])
+            self.assertEqual(standard["mcpServers"]["lingmind-alpha"]["url"], "https://phoenix.alpha.example/mcp")
             self.assertEqual(standard["mcpServers"]["lingmind-beta"]["url"], "https://phoenix.beta.example/mcp")
+            configured = json.loads(
+                (output / "plugins/lingmind/references/configured-environments.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(configured["defaultEnvironmentCode"], "alpha")
+            self.assertEqual(
+                configured["connections"],
+                [
+                    {"environmentCode": "alpha", "mcpServer": "lingmind-alpha", "default": True},
+                    {"environmentCode": "beta", "mcpServer": "lingmind-beta", "default": False},
+                ],
+            )
             marker = json.loads((output / ".lingmind-generated-marketplace").read_text(encoding="utf-8"))
             self.assertEqual(marker["defaultEnvironment"], "alpha")
             operator = json.loads((output / "plugins/lingmind-operator/.mcp.json").read_text(encoding="utf-8"))
@@ -127,8 +138,8 @@ class RenderCodexPluginsTest(unittest.TestCase):
 
             resolve.assert_called_once_with("https://apex.example", "ALPHA_1")
             standard = json.loads((output / "plugins/lingmind/.mcp.json").read_text(encoding="utf-8"))
-            self.assertEqual(list(standard["mcpServers"]), ["lingmind"])
-            self.assertEqual(standard["mcpServers"]["lingmind"]["url"], "https://phoenix.alpha.example/mcp")
+            self.assertEqual(list(standard["mcpServers"]), ["lingmind-alpha_1"])
+            self.assertEqual(standard["mcpServers"]["lingmind-alpha_1"]["url"], "https://phoenix.alpha.example/mcp")
 
 
 if __name__ == "__main__":
