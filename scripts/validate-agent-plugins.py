@@ -18,7 +18,6 @@ OPERATOR_SCOPES = [
     "openid",
     "apex.backups.operate",
     "apex.environments.read",
-    "apex.grants.manage",
     "apex.operator.maintain",
     "apex.operator.observe",
     "apex.services.deploy",

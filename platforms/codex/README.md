@@ -37,4 +37,4 @@ requests distinct environment, observe, maintain, service-deploy, and backup-ope
 for one profile is never reused by the other. Phoenix and Apex publish protected-resource metadata for their exact MCP
 resource, while each Keycloak public client allows only the generated loopback redirect URI.
 
-The global Operator resource requires the configured Keycloak `apex-operator-admin` realm role for every request.
+The global Operator resource accepts the authenticated lm control-plane administrator through the allowlisted OAuth client. Tool access remains limited by the OAuth scopes granted during login; no additional Keycloak realm role is required.
