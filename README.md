@@ -23,7 +23,7 @@ platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
 Annex 维护两个 Agent 插件：
 
 - `plugins/lingmind` 是标准业务插件。每个独立业务环境使用一个 Phoenix MCP 连接和该环境自己的
-  Keycloak；一个插件包可包含多个具名连接，并在请求开始时显式核验和切换环境。
+  Keycloak；一个插件包可包含多个具名连接，但每个 Host turn 只激活一个，并在请求开始时显式核验。
 - `plugins/lingmind-operator` 是全局运维插件。它只连接一套 Apex Operator MCP，并在每次目标调用中
   显式选择获授权的 `environmentId`；不在每个业务环境部署 Operator MCP。
 
@@ -46,7 +46,7 @@ profile 见 [`platforms/`](platforms/README.md)。仓库模板不包含具体环
   --environment-code wf3b \
   --environment-code yf16 \
   --default-environment wf3b \
-  --operator https://apex.example/mcp/operator lingmind-operator-codex 1456
+  --operator https://apex.lingmind.cn/mcp/operator lingmind-operator-codex 1456
 ```
 
 只配置一个环境时会自动成为默认环境；配置多个环境时必须显式传
@@ -55,7 +55,9 @@ profile 见 [`platforms/`](platforms/README.md)。仓库模板不包含具体环
 环境参数且终端可交互时，脚本会提示输入一个环境编码。连接器通过全局 Apex 解析环境编码，只保存返回的
 Phoenix MCP 地址；也可用 `--environment` 显式注入连接供发布自动化使用。生成目录包含独立 marketplace
 和插件副本；默认连接摘要同时注入生成后的环境选择 Skill，确保 Host 无需读取外部 JSON 也能选择默认
-连接。摘要不包含 URL、issuer 或凭据，环境 URL 也不写回源码。
+连接。生成的 MCP 配置只启用默认连接，其他稳定连接保持禁用；环境切换由 Host 关闭当前标准连接、启用
+目标连接，并在新 Agent turn 中核验。摘要不包含 URL、issuer 或凭据，环境 URL 也不写回源码。Codex
+加载完整动态目录时启用 MCP 2026；旧协议模式应使用 Host 原生 tool allowlist 控制单轮目录规模。
 
 验证 manifest、marketplace 和全部聚合 Skills：
 

@@ -64,6 +64,8 @@ class RenderCodexPluginsTest(unittest.TestCase):
             self.assertEqual(list(standard["mcpServers"]), ["lingmind-alpha", "lingmind-beta"])
             self.assertEqual(standard["mcpServers"]["lingmind-alpha"]["url"], "https://phoenix.alpha.example/mcp")
             self.assertEqual(standard["mcpServers"]["lingmind-beta"]["url"], "https://phoenix.beta.example/mcp")
+            self.assertTrue(standard["mcpServers"]["lingmind-alpha"]["enabled"])
+            self.assertFalse(standard["mcpServers"]["lingmind-beta"]["enabled"])
             configured = json.loads(
                 (output / "plugins/lingmind/references/configured-environments.json").read_text(encoding="utf-8")
             )
@@ -80,6 +82,8 @@ class RenderCodexPluginsTest(unittest.TestCase):
             ).read_text(encoding="utf-8")
             self.assertIn("authoritative default for this installed package is `lingmind-alpha`", environment_skill)
             self.assertIn("`lingmind-alpha` (default), `lingmind-beta`", environment_skill)
+            self.assertIn("only this standard connection active", environment_skill)
+            self.assertIn("takes effect in a new agent turn", environment_skill)
             self.assertNotIn("LINGMIND_CONFIGURED_ENVIRONMENTS", environment_skill)
             marker = json.loads((output / ".lingmind-generated-marketplace").read_text(encoding="utf-8"))
             self.assertEqual(marker["defaultEnvironment"], "alpha")

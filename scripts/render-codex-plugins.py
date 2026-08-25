@@ -200,10 +200,13 @@ def write_environment_skill_context(plugin: Path, environment_codes: list[str], 
             "## Installed connection map",
             "",
             f"The authoritative default for this installed package is `lingmind-{default_environment}`",
-            f"(environment code `{default_environment}`). When the user omits an environment, call only this",
-            "connection first; never choose another connection by alphabetical or tool-list order.",
+            f"(environment code `{default_environment}`). The Host must keep only this standard connection active",
+            "until the user explicitly switches environments; never choose another connection by alphabetical or",
+            "tool-list order.",
             "",
             "Configured connections: " + ", ".join(connections) + ".",
+            "A switch is a Host connection activation change and takes effect in a new agent turn. Keep every other",
+            "standard LingMind connection disabled so identical tool names cannot route to the wrong environment.",
             "This block is generated at installation time and contains no URL, issuer, token, or credential.",
         ]
     )
@@ -258,7 +261,9 @@ def render(args: argparse.Namespace) -> Path:
     connections: dict[str, object] = {}
     for code, (url, client_id, port) in environments.items():
         name = f"lingmind-{code}"
-        connections[name] = server(url, client_id, port, STANDARD_SCOPES)
+        connection = server(url, client_id, port, STANDARD_SCOPES)
+        connection["enabled"] = code == default_environment
+        connections[name] = connection
 
     operator_connection = None
     if args.operator:
