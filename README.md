@@ -25,11 +25,11 @@ Annex 维护两个 Agent 插件：
 - `plugins/lingmind` 是标准业务插件。每个独立业务环境使用一个 Phoenix MCP 连接和该环境自己的
   Keycloak；一个插件包可包含多个具名连接，但每个 Host turn 只激活一个，并在请求开始时显式核验。
 - `plugins/lingmind-operator` 是全局运维插件。它只连接一套 Apex Operator MCP，并在每次目标调用中
-  显式选择获授权的 `environmentId`；不在每个业务环境部署 Operator MCP。
+  显式选择有效的 `environmentId`；不在每个业务环境部署 Operator MCP。
 
 插件模板声明 Skills、参考资料和空 MCP 清单，具体环境连接由发布工具注入。标准插件覆盖 Phoenix 当前发布的环境/项目上下文、
 完整业务查询、直接写入、异步任务、任务/航线、媒体/流和设备控制；Operator 覆盖 Agent-backed 观察、
-Grant 管理、维护、服务部署和备份/恢复编排。工具、schema、权限、风险和生命周期始终以运行时 MCP
+维护、服务部署和备份/恢复编排。工具、schema、权限、风险和生命周期始终以运行时 MCP
 `tools/list` 为准，Annex 不保存第二份工具目录或业务字段契约。
 
 身份认证使用 Authorization Code、PKCE S256 和目标服务的 OAuth discovery。Codex 使用原生 HTTP

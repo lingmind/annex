@@ -1,7 +1,7 @@
 {
   "name": "lingmind-operator",
-  "version": "0.2.0+codex.20260825133627",
-  "description": "Observe and maintain granted LingMind environments, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
+  "version": "0.2.0+codex.20260825135828",
+  "description": "Observe and maintain active LingMind environments as an Operator administrator, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
   "author": {
     "name": "LingMind",
     "url": "https://www.lingmind.cn"
@@ -18,8 +18,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "LingMind Operator",
-    "shortDescription": "Observe and maintain granted LingMind environments",
-    "longDescription": "Use one global Apex Operator connection to select granted environments, inspect safe Agent-backed evidence, administer grants with elevated scope, and execute Apex Mongo persisted maintenance, service deployment, backup, or checksum-bound restore plans.",
+    "shortDescription": "Administer active LingMind environments",
+    "longDescription": "Use one global Apex Operator connection as a super administrator to select active environments, inspect safe Agent-backed evidence, and execute Apex Mongo persisted maintenance, service deployment, backup, or checksum-bound restore plans.",
     "developerName": "LingMind",
     "category": "Developer Tools",
     "capabilities": [

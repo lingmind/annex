@@ -1,6 +1,6 @@
 ---
 name: lingmind-operator-environment-context
-description: Discover granted LingMind environments and select one explicit environmentId before any Agent-backed Operator observation or modifying plan.
+description: Discover active LingMind environments and select one explicit environmentId before any Agent-backed Operator observation or modifying plan.
 ---
 
 # LingMind Operator environment context
@@ -10,7 +10,7 @@ connection; environment switching changes the explicit target ID, not the server
 
 ## Workflow
 
-1. Call `environments_list` and consider only records returned for the current OAuth subject and active Grants.
+1. Call `environments_list` and consider only active records returned to the authenticated Operator administrator.
 2. Resolve an explicit stable ID directly, or match a user-provided environment code/name exactly. If multiple records
    remain, show a short disambiguation list and wait for the user to choose.
 3. Call `environment_get` for the selected ID and read `operator_capabilities_list` before target-specific work.

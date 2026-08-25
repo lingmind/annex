@@ -1,6 +1,6 @@
 ---
 name: lingmind-operator-observe
-description: Inspect granted LingMind environments, Agent capabilities, safe resources, service status, diagnostics, workloads, pods, events, bounded logs, and rollouts.
+description: Inspect active LingMind environments, Agent capabilities, safe resources, service status, diagnostics, workloads, pods, events, bounded logs, and rollouts.
 ---
 
 # LingMind Operator observe

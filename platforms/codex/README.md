@@ -30,12 +30,11 @@ legacy MCP, configure a Host-native `enabled_tools` allowlist for the intended w
 rename tools, or keep several standard environment connections active to work around catalog limits.
 
 Codex must request only the scopes declared in the templates. The remote resource server remains responsible for
-audience, subject, client, permission, project/Grant, ownership, allowlist, and state checks.
+audience, subject, client, super-administrator role, ownership, target, and state checks.
 
 The standard profile requests `lingmind.read`, `lingmind.write`, and `lingmind.execute`. The global Operator profile
-requests distinct environment, observe, maintain, service-deploy, backup-operate, and Grant-admin scopes; the token
+requests distinct environment, observe, maintain, service-deploy, and backup-operate scopes; the token
 for one profile is never reused by the other. Phoenix and Apex publish protected-resource metadata for their exact MCP
 resource, while each Keycloak public client allows only the generated loopback redirect URI.
 
-Grant administration additionally requires the configured Keycloak `apex-operator-admin` realm role. An optional
-`apex.grants.manage` scope in a public-client token is intentionally insufficient on its own.
+The global Operator resource requires the configured Keycloak `apex-operator-admin` realm role for every request.
