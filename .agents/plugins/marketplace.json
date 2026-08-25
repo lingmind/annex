@@ -1,0 +1,32 @@
+{
+  "name": "lingmind-local",
+  "interface": {
+    "displayName": "LingMind Agent Plugins (Development)"
+  },
+  "plugins": [
+    {
+      "name": "lingmind",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lingmind"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "lingmind-operator",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lingmind-operator"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

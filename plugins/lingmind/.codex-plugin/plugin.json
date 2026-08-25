@@ -1,0 +1,40 @@
+{
+  "name": "lingmind",
+  "version": "0.2.0+codex.20260824115645",
+  "description": "Use project-scoped LingMind business queries, writes, jobs, missions, waylines, media, streams, UAV, NVR, and device actions through Phoenix MCP.",
+  "author": {
+    "name": "LingMind",
+    "url": "https://www.lingmind.cn"
+  },
+  "homepage": "https://www.lingmind.cn",
+  "repository": "https://github.com/lingmind/annex",
+  "license": "MIT",
+  "keywords": [
+    "lingmind",
+    "iot",
+    "operations",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "LingMind",
+    "shortDescription": "Operate LingMind business capabilities safely",
+    "longDescription": "Use one LingMind business environment through Phoenix's explicit CapabilityRegistry. Resolve project context; query and change business records; operate jobs, missions, waylines, media, streams, UAV, NVR, robots, and devices; and use plan/confirm/execute for destructive or physical actions.",
+    "developerName": "LingMind",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Summarize the active incidents in my LingMind project",
+      "Generate a wayline and prepare a mission action plan",
+      "Inspect stream, UAV, and NVR runtime status safely"
+    ],
+    "brandColor": "#1677FF",
+    "composerIcon": "./assets/logo.png",
+    "logo": "./assets/logo.png"
+  },
+  "mcpServers": "./.mcp.json"
+}

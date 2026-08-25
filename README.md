@@ -13,7 +13,59 @@ pkg/annex/              Go SDK 核心客户端
 pkg/webhook/            Go Webhook / 进程模式运行时
 sdks/                   OpenAPI SDK 生成配置
 scripts/generate-sdks.sh
+plugins/                LingMind 与 LingMind Operator 插件源码
+platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
+.agents/plugins/        Annex 仓库内的 Codex marketplace
 ```
+
+## Agent 插件
+
+Annex 维护两个 Agent 插件：
+
+- `plugins/lingmind` 是标准业务插件。每个独立业务环境使用一个 Phoenix MCP 连接和该环境自己的
+  Keycloak；一个插件包可包含多个具名连接，但每个 Host turn 只激活一个，并在请求开始时显式核验。
+- `plugins/lingmind-operator` 是全局运维插件。它只连接一套 Apex Operator MCP，并在每次目标调用中
+  显式选择获授权的 `environmentId`；不在每个业务环境部署 Operator MCP。
+
+插件模板声明 Skills、参考资料和空 MCP 清单，具体环境连接由发布工具注入。标准插件覆盖 Phoenix 当前发布的环境/项目上下文、
+完整业务查询、直接写入、异步任务、任务/航线、媒体/流和设备控制；Operator 覆盖 Agent-backed 观察、
+Grant 管理、维护、服务部署和备份/恢复编排。工具、schema、权限、风险和生命周期始终以运行时 MCP
+`tools/list` 为准，Annex 不保存第二份工具目录或业务字段契约。
+
+身份认证使用 Authorization Code、PKCE S256 和目标服务的 OAuth discovery。Codex 使用原生 HTTP
+OAuth，WorkBuddy 使用 MCP OAuth discovery/DCR，DeepSeek Harness 通过 Annex 本地 OAuth bridge；bridge
+只把 token 存入操作系统 keychain，插件包和平台 profile 中不保存 token，也禁止长效 bearer 配置。平台
+profile 见 [`platforms/`](platforms/README.md)。仓库模板不包含具体环境 URL，也不表示生产就绪。
+
+为 Codex 生成包含一个或多个业务环境的本地 marketplace：
+
+```bash
+/Users/shoppon/code/lingmind/.codex-venv/bin/python scripts/render-codex-plugins.py \
+  --output .local/codex-marketplace \
+  --apex-url https://apex.lingmind.cn \
+  --environment-code wf3b \
+  --environment-code yf16 \
+  --default-environment wf3b \
+  --operator https://apex.lingmind.cn/mcp/operator lingmind-operator-codex 1456
+```
+
+只配置一个环境时会自动成为默认环境；配置多个环境时必须显式传
+`--default-environment`。所有连接始终命名为 `lingmind-<environment-code>`，默认环境以独立指针写入生成
+插件的 `references/configured-environments.json`，不会因修改默认值而重绑已有 OAuth token。未提供任何
+环境参数且终端可交互时，脚本会提示输入一个环境编码。连接器通过全局 Apex 解析环境编码，只保存返回的
+Phoenix MCP 地址；也可用 `--environment` 显式注入连接供发布自动化使用。生成目录包含独立 marketplace
+和插件副本；默认连接摘要同时注入生成后的环境选择 Skill，确保 Host 无需读取外部 JSON 也能选择默认
+连接。生成的 MCP 配置只启用默认连接，其他稳定连接保持禁用；环境切换由 Host 关闭当前标准连接、启用
+目标连接，并在新 Agent turn 中核验。摘要不包含 URL、issuer 或凭据，环境 URL 也不写回源码。Codex
+加载完整动态目录时启用 MCP 2026；旧协议模式应使用 Host 原生 tool allowlist 控制单轮目录规模。
+
+验证 manifest、marketplace 和全部聚合 Skills：
+
+```bash
+make validate-plugins PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
+```
+
+本目录的 marketplace 用于仓库内开发和团队测试，不会创建或修改用户目录下的 marketplace。
 
 ## Go SDK
 

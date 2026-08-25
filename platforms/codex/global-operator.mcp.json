@@ -1,0 +1,28 @@
+{
+  "profileVersion": 1,
+  "developmentTemplate": true,
+  "connectionCardinality": "single-global-control-plane",
+  "mcpServers": {
+    "lingmind-operator": {
+      "type": "http",
+      "url": "https://apex.global.example/mcp/operator",
+      "oauth": {
+        "protocol": "oauth-2.1",
+        "mode": "authorization-code-pkce",
+        "protectedResourceMetadataDiscovery": true,
+        "pkceMethod": "S256",
+        "client_id": "lingmind-operator-codex",
+        "callback_port": 1456
+      },
+      "scopes": [
+        "openid",
+        "apex.backups.operate",
+        "apex.environments.read",
+        "apex.grants.manage",
+        "apex.operator.maintain",
+        "apex.operator.observe",
+        "apex.services.deploy"
+      ]
+    }
+  }
+}

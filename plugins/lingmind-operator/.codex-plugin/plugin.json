@@ -1,0 +1,40 @@
+{
+  "name": "lingmind-operator",
+  "version": "0.2.0+codex.20260824115645",
+  "description": "Observe and maintain granted LingMind environments, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
+  "author": {
+    "name": "LingMind",
+    "url": "https://www.lingmind.cn"
+  },
+  "homepage": "https://www.lingmind.cn",
+  "repository": "https://github.com/lingmind/annex",
+  "license": "MIT",
+  "keywords": [
+    "lingmind",
+    "operator",
+    "sre",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "LingMind Operator",
+    "shortDescription": "Observe and maintain granted LingMind environments",
+    "longDescription": "Use one global Apex Operator connection to select granted environments, inspect safe Agent-backed evidence, administer grants with elevated scope, and execute Apex Mongo persisted maintenance, service deployment, backup, or checksum-bound restore plans.",
+    "developerName": "LingMind",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "List the LingMind environments I can operate",
+      "Diagnose an unhealthy service through its Apex Agent",
+      "Prepare and verify a reviewed deployment or backup plan"
+    ],
+    "brandColor": "#0F766E",
+    "composerIcon": "./assets/logo.png",
+    "logo": "./assets/logo.png"
+  },
+  "mcpServers": "./.mcp.json"
+}

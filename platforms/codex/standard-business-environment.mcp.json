@@ -1,0 +1,26 @@
+{
+  "profileVersion": 1,
+  "developmentTemplate": true,
+  "connectionCardinality": "one-per-business-environment",
+  "distribution": "tenant-private",
+  "mcpServers": {
+    "lingmind-environment-code": {
+      "type": "http",
+      "url": "https://phoenix.environment.example/mcp",
+      "oauth": {
+        "protocol": "oauth-2.1",
+        "mode": "authorization-code-pkce",
+        "protectedResourceMetadataDiscovery": true,
+        "pkceMethod": "S256",
+        "client_id": "lingmind-codex-environment-code",
+        "callback_port": 1455
+      },
+      "scopes": [
+        "openid",
+        "lingmind.read",
+        "lingmind.write",
+        "lingmind.execute"
+      ]
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "profileVersion": 1,
+  "developmentTemplate": true,
+  "connectionCardinality": "one-per-business-environment",
+  "distribution": "tenant-private",
+  "bridge": {
+    "mode": "annex-local-oauth-bridge",
+    "listen": "127.0.0.1:17641",
+    "localClientAuthentication": "ephemeral-session-secret",
+    "rejectNonLoopbackClients": true,
+    "upstreamMcpUrl": "https://phoenix.environment.example/mcp",
+    "oauth": {
+      "protocol": "oauth-2.1",
+      "protectedResourceMetadataDiscovery": true,
+      "authorizationCodePkce": true,
+      "pkceMethod": "S256",
+      "resourceIndicatorRequired": true,
+      "publicClientId": "lingmind-deepseek-environment-code",
+      "scopes": [
+        "openid",
+        "lingmind.read",
+        "lingmind.write",
+        "lingmind.execute"
+      ]
+    },
+    "credentialStore": "system-keychain",
+    "credentialNamespace": "cn.lingmind.deepseek.environment-code",
+    "persistTokensInRepository": false,
+    "longLivedBearerAllowed": false,
+    "redactAuthorizationLogs": true
+  },
+  "harness": {
+    "transport": "streamable-http",
+    "url": "http://127.0.0.1:17641/mcp",
+    "authorization": "bridge-managed"
+  }
+}
