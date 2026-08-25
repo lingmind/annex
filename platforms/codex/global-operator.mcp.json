@@ -5,7 +5,7 @@
   "mcpServers": {
     "lingmind-operator": {
       "type": "http",
-      "url": "https://apex.global.example/mcp/operator",
+      "url": "https://apex.lingmind.cn/mcp/operator",
       "oauth": {
         "protocol": "oauth-2.1",
         "mode": "authorization-code-pkce",

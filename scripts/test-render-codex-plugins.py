@@ -57,7 +57,6 @@ class RenderCodexPluginsTest(unittest.TestCase):
                         ["beta", "https://phoenix.beta.example/mcp", "lingmind-beta", "1455"],
                     ],
                     default_environment="alpha",
-                    operator=["https://apex.example/mcp/operator", "lingmind-operator", "1456"],
                 )
             )
             standard = json.loads((output / "plugins/lingmind/.mcp.json").read_text(encoding="utf-8"))
@@ -102,6 +101,10 @@ class RenderCodexPluginsTest(unittest.TestCase):
             self.assertEqual(marker["defaultEnvironment"], "alpha")
             operator = json.loads((output / "plugins/lingmind-operator/.mcp.json").read_text(encoding="utf-8"))
             self.assertEqual(list(operator["mcpServers"]), ["lingmind-operator"])
+            self.assertEqual(
+                operator["mcpServers"]["lingmind-operator"]["url"],
+                "https://apex.lingmind.cn/mcp/operator",
+            )
             manifest = json.loads(
                 (output / "plugins/lingmind/.codex-plugin/plugin.json").read_text(encoding="utf-8")
             )
@@ -117,7 +120,6 @@ class RenderCodexPluginsTest(unittest.TestCase):
                         marketplace_name="lingmind-test",
                         environment=[["alpha", "https://phoenix.alpha.example/api", "lingmind-alpha", "1455"]],
                         default_environment=None,
-                        operator=None,
                     )
                 )
 
@@ -133,7 +135,6 @@ class RenderCodexPluginsTest(unittest.TestCase):
                             ["beta", "https://phoenix.beta.example/mcp", "lingmind-beta", "1455"],
                         ],
                         default_environment=None,
-                        operator=None,
                     )
                 )
 
@@ -155,7 +156,6 @@ class RenderCodexPluginsTest(unittest.TestCase):
                         oauth_client_id="lingmind-codex",
                         callback_port="1455",
                         default_environment=None,
-                        operator=None,
                     )
                 )
 

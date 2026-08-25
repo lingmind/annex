@@ -23,6 +23,8 @@ OPERATOR_SCOPES = [
     "apex.operator.observe",
     "apex.services.deploy",
 ]
+OPERATOR_URL = "https://apex.lingmind.cn/mcp/operator"
+OPERATOR_OAUTH = {"client_id": "lingmind-operator-codex", "callback_port": 1456}
 GENERIC_TOOLS = {
     "http_request",
     "http_get",
@@ -88,8 +90,18 @@ def validate_manifest(plugin_name: str) -> None:
     prompts = manifest.get("interface", {}).get("defaultPrompt", [])
     if not isinstance(prompts, list) or not prompts or len(prompts) > 3 or not all(isinstance(item, str) and item.strip() for item in prompts):
         fail(f"manifest defaultPrompt must contain one to three non-empty prompts for {plugin_name}")
-    if load_json(plugin / ".mcp.json").get("mcpServers") != {}:
-        fail(f"repo-local {plugin_name} template must not bind an environment or control-plane URL")
+    mcp_servers = load_json(plugin / ".mcp.json").get("mcpServers")
+    if plugin_name == "lingmind":
+        if mcp_servers != {}:
+            fail("repo-local lingmind template must not bind a business environment URL")
+        return
+    if not isinstance(mcp_servers, dict) or list(mcp_servers) != ["lingmind-operator"]:
+        fail("LingMind Operator must expose exactly one global MCP connection")
+    operator = mcp_servers["lingmind-operator"]
+    if operator.get("url") != OPERATOR_URL:
+        fail("LingMind Operator must bind the canonical global Apex MCP URL")
+    if operator.get("oauth") != OPERATOR_OAUTH or operator.get("scopes") != OPERATOR_SCOPES:
+        fail("LingMind Operator OAuth configuration or scopes drifted")
 
 
 def validate_marketplace() -> None:
@@ -129,6 +141,8 @@ def validate_platforms() -> None:
     codex_operator_server = next(iter(codex_operator["mcpServers"].values()))
     if codex_standard_server["scopes"] != STANDARD_SCOPES or codex_operator_server["scopes"] != OPERATOR_SCOPES:
         fail("Codex profile scopes drifted")
+    if codex_operator_server["url"] != OPERATOR_URL:
+        fail("Codex Operator profile must use the canonical global Apex MCP URL")
     for filename, server in (
         ("standard-business-environment.mcp.json", codex_standard_server),
         ("global-operator.mcp.json", codex_operator_server),

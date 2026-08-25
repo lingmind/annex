@@ -1,7 +1,8 @@
 # LingMind Operator plugin
 
-面向 LingMind SRE、平台管理员和获授权交付人员的全局运维插件。安装或发布时使用
-[`render-codex-plugins.py`](../../scripts/render-codex-plugins.py) 注入唯一的 Apex Operator MCP 连接。
+面向 LingMind SRE、平台管理员和获授权交付人员的全局运维插件。插件源码内置唯一的
+`https://apex.lingmind.cn/mcp/operator` 连接，可直接从 LingMind marketplace 安装；无需运行环境
+renderer 或手工填写 MCP 地址。
 
 Operator Plugin 负责环境选择、证据收集、用户确认、结果展示和工作流编排。Apex 负责工具契约、环境
 Grant、计划持久化、`Environment.agentConfig` 解析和审计；被分配的共享 VM Apex Agent 负责通过自身
@@ -17,7 +18,8 @@ schema、角色名称、工具目录或当前可用性清单。
 前置条件和过期时间；执行后使用运行时状态或证据能力核验结果。具体参数、允许动作、计划规则和结果结构
 始终以 Apex MCP `tools/list` 为准。
 
-repo-local `.mcp.json` 是空的全局入口模板。OAuth 使用全局控制平台的 Authorization Code + PKCE S256；
+repo-local `.mcp.json` 固定声明唯一的全局 Apex Operator MCP。OAuth 使用全局控制平台的 Authorization
+Code + PKCE S256；
 Operator token 不能用于业务环境 Phoenix MCP，标准插件 token 也不能用于 Operator。
 当前 Apex 到 Agent 是内部可信网络调用，没有 Agent API token；Plugin 不参与、保存或透传这段内部调用的
 认证材料。

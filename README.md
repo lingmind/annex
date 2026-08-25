@@ -35,7 +35,8 @@ Grant 管理、维护、服务部署和备份/恢复编排。工具、schema、�
 身份认证使用 Authorization Code、PKCE S256 和目标服务的 OAuth discovery。Codex 使用原生 HTTP
 OAuth，WorkBuddy 使用 MCP OAuth discovery/DCR，DeepSeek Harness 通过 Annex 本地 OAuth bridge；bridge
 只把 token 存入操作系统 keychain，插件包和平台 profile 中不保存 token，也禁止长效 bearer 配置。平台
-profile 见 [`platforms/`](platforms/README.md)。仓库模板不包含具体环境 URL，也不表示生产就绪。
+profile 见 [`platforms/`](platforms/README.md)。标准业务插件模板不包含具体环境 URL；全局唯一的 Operator
+插件直接声明 `https://apex.lingmind.cn/mcp/operator`，安装时无需注入连接。
 
 为 Codex 生成包含一个或多个业务环境的本地 marketplace：
 
@@ -45,8 +46,7 @@ profile 见 [`platforms/`](platforms/README.md)。仓库模板不包含具体环
   --apex-url https://apex.lingmind.cn \
   --environment-code wf3b \
   --environment-code yf16 \
-  --default-environment wf3b \
-  --operator https://apex.lingmind.cn/mcp/operator lingmind-operator-codex 1456
+  --default-environment wf3b
 ```
 
 只配置一个环境时会自动成为默认环境；配置多个环境时必须显式传

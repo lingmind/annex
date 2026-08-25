@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render environment-neutral LingMind plugin templates into a Codex marketplace."""
+"""Render LingMind business-environment connections into a Codex marketplace."""
 
 from __future__ import annotations
 
@@ -22,15 +22,6 @@ MARKER = ".lingmind-generated-marketplace"
 IDENTIFIER = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
 ENVIRONMENT_CODE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 STANDARD_SCOPES = ["openid", "lingmind.read", "lingmind.write", "lingmind.execute"]
-OPERATOR_SCOPES = [
-    "openid",
-    "apex.backups.operate",
-    "apex.environments.read",
-    "apex.grants.manage",
-    "apex.operator.maintain",
-    "apex.operator.observe",
-    "apex.services.deploy",
-]
 ENVIRONMENT_SKILL_MARKER = "<!-- LINGMIND_CONFIGURED_ENVIRONMENTS -->"
 
 
@@ -71,12 +62,6 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument(
         "--default-environment",
         help="Default environment code; inferred only when exactly one environment is configured",
-    )
-    result.add_argument(
-        "--operator",
-        nargs=3,
-        metavar=("MCP_URL", "OAUTH_CLIENT_ID", "CALLBACK_PORT"),
-        help="Optional singleton global Apex Operator connection",
     )
     return result
 
@@ -265,17 +250,6 @@ def render(args: argparse.Namespace) -> Path:
         connection["enabled"] = code == default_environment
         connections[name] = connection
 
-    operator_connection = None
-    if args.operator:
-        raw_url, raw_client_id, raw_port = args.operator
-        port = validate_port(raw_port)
-        operator_connection = server(
-            validate_url(raw_url, "/mcp/operator", "Operator MCP URL"),
-            validate_client_id(raw_client_id),
-            port,
-            OPERATOR_SCOPES,
-        )
-
     output = args.output.expanduser().resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     staged = Path(tempfile.mkdtemp(prefix=f".{output.name}.", dir=output.parent))
@@ -299,25 +273,21 @@ def render(args: argparse.Namespace) -> Path:
             },
         )
 
+        copy_plugin("lingmind-operator", staged, timestamp)
         entries = [
             {
                 "name": "lingmind",
                 "source": {"source": "local", "path": "./plugins/lingmind"},
                 "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
                 "category": "Developer Tools",
-            }
+            },
+            {
+                "name": "lingmind-operator",
+                "source": {"source": "local", "path": "./plugins/lingmind-operator"},
+                "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+                "category": "Developer Tools",
+            },
         ]
-        if operator_connection is not None:
-            operator = copy_plugin("lingmind-operator", staged, timestamp)
-            write_json(operator / ".mcp.json", {"mcpServers": {"lingmind-operator": operator_connection}})
-            entries.append(
-                {
-                    "name": "lingmind-operator",
-                    "source": {"source": "local", "path": "./plugins/lingmind-operator"},
-                    "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
-                    "category": "Developer Tools",
-                }
-            )
 
         write_json(
             staged / ".agents" / "plugins" / "marketplace.json",
@@ -333,7 +303,6 @@ def render(args: argparse.Namespace) -> Path:
                 "generator": "annex/scripts/render-codex-plugins.py",
                 "environments": sorted(environments),
                 "defaultEnvironment": default_environment,
-                "operator": operator_connection is not None,
             },
         )
         replace_generated_output(staged, output)
