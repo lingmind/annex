@@ -5,6 +5,8 @@ description: Select, verify, and switch the exact LingMind business environment 
 
 # LingMind environment context
 
+<!-- LINGMIND_CONFIGURED_ENVIRONMENTS -->
+
 Read [environment context](../../references/environment-context.md) before any project or business operation.
 
 ## Workflow

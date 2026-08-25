@@ -31,6 +31,7 @@ OPERATOR_SCOPES = [
     "apex.operator.observe",
     "apex.services.deploy",
 ]
+ENVIRONMENT_SKILL_MARKER = "<!-- LINGMIND_CONFIGURED_ENVIRONMENTS -->"
 
 
 def parser() -> argparse.ArgumentParser:
@@ -185,6 +186,30 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def write_environment_skill_context(plugin: Path, environment_codes: list[str], default_environment: str) -> None:
+    skill_path = plugin / "skills" / "lingmind-environment-context" / "SKILL.md"
+    content = skill_path.read_text(encoding="utf-8")
+    if content.count(ENVIRONMENT_SKILL_MARKER) != 1:
+        raise ValueError("environment context Skill must contain exactly one generated-context marker")
+    connections = []
+    for code in environment_codes:
+        default_suffix = " (default)" if code == default_environment else ""
+        connections.append(f"`lingmind-{code}`{default_suffix}")
+    generated = "\n".join(
+        [
+            "## Installed connection map",
+            "",
+            f"The authoritative default for this installed package is `lingmind-{default_environment}`",
+            f"(environment code `{default_environment}`). When the user omits an environment, call only this",
+            "connection first; never choose another connection by alphabetical or tool-list order.",
+            "",
+            "Configured connections: " + ", ".join(connections) + ".",
+            "This block is generated at installation time and contains no URL, issuer, token, or credential.",
+        ]
+    )
+    skill_path.write_text(content.replace(ENVIRONMENT_SKILL_MARKER, generated), encoding="utf-8")
+
+
 def replace_generated_output(staged: Path, output: Path) -> None:
     if output.exists():
         marker = output / MARKER
@@ -252,6 +277,7 @@ def render(args: argparse.Namespace) -> Path:
     try:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
         standard = copy_plugin("lingmind", staged, timestamp)
+        write_environment_skill_context(standard, list(environments), default_environment)
         write_json(standard / ".mcp.json", {"mcpServers": connections})
         write_json(
             standard / "references" / "configured-environments.json",

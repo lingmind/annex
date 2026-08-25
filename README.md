@@ -54,7 +54,8 @@ profile 见 [`platforms/`](platforms/README.md)。仓库模板不包含具体环
 插件的 `references/configured-environments.json`，不会因修改默认值而重绑已有 OAuth token。未提供任何
 环境参数且终端可交互时，脚本会提示输入一个环境编码。连接器通过全局 Apex 解析环境编码，只保存返回的
 Phoenix MCP 地址；也可用 `--environment` 显式注入连接供发布自动化使用。生成目录包含独立 marketplace
-和插件副本；环境 URL 不写回源码。
+和插件副本；默认连接摘要同时注入生成后的环境选择 Skill，确保 Host 无需读取外部 JSON 也能选择默认
+连接。摘要不包含 URL、issuer 或凭据，环境 URL 也不写回源码。
 
 验证 manifest、marketplace 和全部聚合 Skills：
 

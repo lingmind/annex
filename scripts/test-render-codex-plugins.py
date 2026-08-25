@@ -75,6 +75,12 @@ class RenderCodexPluginsTest(unittest.TestCase):
                     {"environmentCode": "beta", "mcpServer": "lingmind-beta", "default": False},
                 ],
             )
+            environment_skill = (
+                output / "plugins/lingmind/skills/lingmind-environment-context/SKILL.md"
+            ).read_text(encoding="utf-8")
+            self.assertIn("authoritative default for this installed package is `lingmind-alpha`", environment_skill)
+            self.assertIn("`lingmind-alpha` (default), `lingmind-beta`", environment_skill)
+            self.assertNotIn("LINGMIND_CONFIGURED_ENVIRONMENTS", environment_skill)
             marker = json.loads((output / ".lingmind-generated-marketplace").read_text(encoding="utf-8"))
             self.assertEqual(marker["defaultEnvironment"], "alpha")
             operator = json.loads((output / "plugins/lingmind-operator/.mcp.json").read_text(encoding="utf-8"))
