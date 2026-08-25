@@ -35,6 +35,7 @@ S256 和目标 MCP resource discovery；插件包不包含 client secret 或用�
 - `lingmind-business-planned-action`：完成 prepare、用户确认、execute 和结果核验。
 - `lingmind-mission-wayline-operations`：理解任务与航线概念并编排运行时能力。
 - `lingmind-media-device-operations`：理解媒体与设备概念并编排运行时能力。
+- `lingmind-daily-report-renderer`：查询已授权业务事实并生成无人机或摄像头日报图片。
 
 通用规则见 [CapabilityRegistry 使用规则](references/capability-registry.md)、
 [上下文规则](references/environment-context.md) 和 [安全动作规则](references/safe-actions.md)。

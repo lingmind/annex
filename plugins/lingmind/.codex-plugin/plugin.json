@@ -1,7 +1,7 @@
 {
   "name": "lingmind",
-  "version": "0.2.0+codex.20260824115645",
-  "description": "Use project-scoped LingMind business queries, writes, jobs, missions, waylines, media, streams, UAV, NVR, and device actions through Phoenix MCP.",
+  "version": "0.2.0+codex.20260825152137",
+  "description": "Use project-scoped LingMind business queries, writes, jobs, missions, waylines, media, devices, and daily reports through Phoenix MCP.",
   "author": {
     "name": "LingMind",
     "url": "https://www.lingmind.cn"
@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "LingMind",
     "shortDescription": "Operate LingMind business capabilities safely",
-    "longDescription": "Use one LingMind business environment through Phoenix's explicit CapabilityRegistry. Resolve project context; query and change business records; operate jobs, missions, waylines, media, streams, UAV, NVR, robots, and devices; and use plan/confirm/execute for destructive or physical actions.",
+    "longDescription": "Use one LingMind business environment through Phoenix's explicit CapabilityRegistry. Resolve project context; query and change business records; operate jobs, missions, waylines, media, streams, UAV, NVR, robots, and devices; generate daily business reports; and use plan/confirm/execute for destructive or physical actions.",
     "developerName": "LingMind",
     "category": "Developer Tools",
     "capabilities": [
@@ -30,7 +30,7 @@
     "defaultPrompt": [
       "Summarize the active incidents in my LingMind project",
       "Generate a wayline and prepare a mission action plan",
-      "Inspect stream, UAV, and NVR runtime status safely"
+      "Generate a UAV or camera daily report from authorized business facts"
     ],
     "brandColor": "#1677FF",
     "composerIcon": "./assets/logo.png",
