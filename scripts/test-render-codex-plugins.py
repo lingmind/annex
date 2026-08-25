@@ -84,7 +84,20 @@ class RenderCodexPluginsTest(unittest.TestCase):
             self.assertIn("`lingmind-alpha` (default), `lingmind-beta`", environment_skill)
             self.assertIn("only this standard connection active", environment_skill)
             self.assertIn("takes effect in a new agent turn", environment_skill)
+            self.assertIn("connection's `context_get`", environment_skill)
+            self.assertNotIn("environment_context_get", environment_skill)
             self.assertNotIn("LINGMIND_CONFIGURED_ENVIRONMENTS", environment_skill)
+            project_skill = (
+                output / "plugins/lingmind/skills/lingmind-project-context/SKILL.md"
+            ).read_text(encoding="utf-8")
+            self.assertIn("`context_get.projects`", project_skill)
+            self.assertIn("explicitly says all, every, or each accessible project", project_skill)
+            self.assertIn("has no `projects_list`", project_skill)
+            business_query_skill = (
+                output / "plugins/lingmind/skills/lingmind-business-query/SKILL.md"
+            ).read_text(encoding="utf-8")
+            self.assertIn("`pagination.total`", business_query_skill)
+            self.assertIn("Do not inspect local memory", business_query_skill)
             marker = json.loads((output / ".lingmind-generated-marketplace").read_text(encoding="utf-8"))
             self.assertEqual(marker["defaultEnvironment"], "alpha")
             operator = json.loads((output / "plugins/lingmind-operator/.mcp.json").read_text(encoding="utf-8"))

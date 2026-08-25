@@ -15,7 +15,8 @@ Installation enables the default connection and leaves the other stable connecti
 2. If the user supplies another environment code, switch Host activation: disable the current standard connection,
    enable only `lingmind-<environment-code>`, and start a new agent turn before calling a business tool.
 3. Never ask a single-environment user to select an environment merely because the request omitted one.
-4. Call `environment_context_get` on the selected connection before `projects_list` or any business tool.
+4. Call `context_get` on the selected connection before any business tool. Use its `projects` array as the accessible
+   project set; the public facade has no separate `projects_list` tool.
 5. Accept the connection only when its returned `code` exactly matches the selected environment code and its
    `resourceUrl` is the authenticated MCP resource for that connection.
 6. Keep every call for the request on that same connection. A completed Host-level environment change starts
@@ -25,7 +26,7 @@ Installation enables the default connection and leaves the other stable connecti
 
 - A project name, project code, resource name, hostname guess, previous task, or local environment file is never an
   environment identity.
-- Never use a connection whose `environment_context_get` result is missing or mismatched.
+- Never use a connection whose `context_get` result is missing or mismatched.
 - Never keep two standard LingMind environment connections active in the same Host turn. Environment selection is a
   Host connection policy, not an LLM tool-routing guess or mutable Phoenix session state.
 - Never switch to a local LingMind Skill, shell, CLI, direct REST request, or another MCP server when the requested
