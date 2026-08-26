@@ -5,8 +5,8 @@ description: Diagnose a LingMind environment incident using the current Operator
 
 # LingMind Operator incident analysis
 
-Resolve the environment first and read [incident evidence](../../references/incident-evidence.md) before drawing a
-root-cause conclusion.
+Resolve the environment first and read [Operator Agent binding](../../references/agent-binding.md) plus
+[incident evidence](../../references/incident-evidence.md) before drawing a root-cause conclusion.
 
 ## Workflow
 

@@ -1,6 +1,6 @@
 {
   "name": "lingmind-operator",
-  "version": "0.2.0+codex.20260825143423",
+  "version": "0.2.0+codex.20260826024438",
   "description": "Observe and maintain active LingMind environments as an Operator administrator, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
   "author": {
     "name": "LingMind",

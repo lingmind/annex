@@ -1,9 +1,12 @@
 # Operator plan protocol
 
+Read [Operator Agent binding](./agent-binding.md) before preparing a target-specific plan.
+
 Apex owns modifying plans and publishes their schema and state through MCP. The Plugin only conducts the user-facing
 workflow.
 
-1. Resolve the exact environment and target state.
+1. Resolve the exact environment and target state; Apex must derive the Agent URL from that Environment's current
+   `agentConfig.endpoint` for observe and operate calls.
 2. Call the owner-declared prepare tool.
 3. Present target, impact, risk, preconditions and expiry without exposing confirmation material.
 4. Obtain explicit confirmation for that plan.

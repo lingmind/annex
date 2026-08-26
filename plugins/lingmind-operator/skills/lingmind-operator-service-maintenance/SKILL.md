@@ -6,11 +6,13 @@ description: Prepare, confirm, cancel, execute, reconcile, and prove authorized 
 # LingMind Operator service maintenance
 
 Use only maintenance plan/execute tools published for the exact authorized environment and target.
-Read [the plan protocol](../../references/plan-protocol.md) before creating a modifying plan.
+Read [Operator Agent binding](../../references/agent-binding.md) and
+[the plan protocol](../../references/plan-protocol.md) before creating a modifying plan.
 
 ## Workflow
 
-1. Read the current target state and evidence required by the selected tool.
+1. Re-read the Environment, let Apex resolve its current `agentConfig.endpoint`, and read the current target state and
+   evidence required by the selected tool.
 2. Create the matching maintenance plan with the explicit environment identifier and target.
 3. Present impact, risk, preconditions, expiry, and expected availability from the persisted plan without exposing
    confirmation material.

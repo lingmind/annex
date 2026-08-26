@@ -1,5 +1,7 @@
 # Operator environment selection
 
+Read [Operator Agent binding](./agent-binding.md) before any target-specific observation or operation.
+
 The global Operator connection can reach several environments. Discovery uses `operator_capabilities_list` and
 `environments_list` without a target; every target-specific call after selection is bound to one explicit
 `environmentId`.
@@ -19,7 +21,8 @@ shared VM Apex Agent assigned by the selected Environment's `agentConfig`. The A
 and may reach an edge environment through a business-platform VPN. Never substitute a direct cluster client, shell,
 remote login, or copied cluster credential.
 
-Apex resolves the selected Environment's `agentConfig` again for every target call. Agent endpoints and the current
-two-Agent fleet topology are server-side details and must not be hardcoded or exposed by the plugin. The plugin does
-not keep a server-authoritative mutable "current environment": changing environments means passing another authorized
+Apex resolves the selected Environment's `agentConfig.endpoint` again for every target call and dispatches both
+observe and operate traffic to that resolved Agent. Agent endpoints and fleet topology are server-side details and
+must not be hardcoded, cached, accepted as user input, or exposed by the plugin. The plugin does not keep a
+server-authoritative mutable "current environment": changing environments means passing another authorized
 environment identifier, whose current active state and Agent assignment are independently verified and routed by Apex.

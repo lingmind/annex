@@ -9,10 +9,13 @@ Operator Plugin 负责环境选择、证据收集、用户确认、结果展示�
 网络或业务平台 VPN 访问目标环境并执行。插件不保存 Agent URL、集群凭据、服务实现、备份格式、部署
 schema、角色名称、工具目录或当前可用性清单。
 
-每个目标调用都显式携带环境标识。插件可以保存本地默认环境，但 Apex 会在每次调用重新校验超级管理员
-身份、环境有效状态，并读取服务端 Environment 当前分配的 Agent。多个环境可以共享同一个 Agent，Plugin 不假设 Agent 部署在
-目标环境中。所有观察和修改操作都必须经过 Apex Agent；Agent 不可用时明确失败，不存在
-直接集群客户端、SSH、shell 或其他环境访问 fallback。
+每次目标调用都携带显式 `environmentId`。Apex 会重新校验超级管理员身份和环境有效状态，再从该
+Environment 当前的 `agentConfig.endpoint` 解析 Agent URL 并分发 observe/operate 请求。插件可以保存本地
+默认环境，但不得缓存默认 Agent、沿用上一个环境的 Agent，或把 Agent URL 暴露给模型。多个环境可以共享
+同一个 Agent，Plugin 不假设 Agent 部署在目标环境中。所有观察和修改操作都必须经过 Apex Agent；Agent
+不可用时明确失败，不存在直接集群客户端、SSH、shell 或其他环境访问 fallback。命名服务的安装与运行
+状态以该 Environment 的 Agent-backed 工具为准；Prometheus 聚合状态冲突时报告监控绑定问题，不能据此
+误判 `not_installed`。
 
 修改类操作遵循运行时工具声明的 prepare/confirm/execute 流程。用户确认前展示环境、目标、影响、
 前置条件和过期时间；执行后使用运行时状态或证据能力核验结果。具体参数、允许动作、计划规则和结果结构
@@ -23,6 +26,8 @@ Code + PKCE S256；
 Operator token 不能用于业务环境 Phoenix MCP，标准插件 token 也不能用于 Operator。
 当前 Apex 到 Agent 是内部可信网络调用，没有 Agent API token；Plugin 不参与、保存或透传这段内部调用的
 认证材料。
+
+完整路由与证据优先级见 [Operator Agent binding](./references/agent-binding.md)。
 
 ## Skills
 

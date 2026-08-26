@@ -5,12 +5,14 @@ description: Plan, confirm, execute, reconcile, and verify authorized LingMind b
 
 # LingMind Operator backup and restore
 
-Resolve the environment first and read [backup and restore](../../references/backup-restore.md) plus the
+Resolve the environment first and read [Operator Agent binding](../../references/agent-binding.md),
+[backup and restore](../../references/backup-restore.md), plus the
 [Operator plan protocol](../../references/plan-protocol.md).
 
 ## Workflow
 
-1. Verify the environment, runtime tool availability and server authorization.
+1. Re-read the Environment, let Apex resolve its current `agentConfig.endpoint`, and verify runtime tool availability
+   and server authorization for that same environment.
 2. Choose the exact target and source declared by the current tool schema; do not infer restore support from backup.
 3. Create the matching plan and present target, scope, impact, retention/recovery risk, preconditions, and
    expiry without exposing confirmation material.

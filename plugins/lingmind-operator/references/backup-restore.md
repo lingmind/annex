@@ -1,5 +1,7 @@
 # Operator backup and restore
 
+Read [Operator Agent binding](./agent-binding.md) before resolving targets or creating a plan.
+
 Backup and restore are separate modifying operations. Discover target types, inputs, compatibility rules, result
 evidence and availability from the current Apex MCP tools; the Plugin does not encode storage or execution details.
 

@@ -40,6 +40,7 @@ STALE_PHRASES = (
     "垂直" + "切片",
     "后续发布" + "目标",
 )
+OPERATOR_AGENT_BINDING_REFERENCE = "../../references/agent-binding.md"
 
 
 def fail(message: str) -> None:
@@ -249,6 +250,28 @@ def validate_markdown_and_skill_yaml() -> None:
             fail(f"invalid Skill YAML frontmatter: {path.relative_to(ROOT)}")
 
 
+def validate_operator_agent_routing() -> None:
+    operator_root = ROOT / "plugins" / "lingmind-operator"
+    binding = (operator_root / "references" / "agent-binding.md").read_text(encoding="utf-8")
+    for phrase in (
+        "Environment.agentConfig.endpoint",
+        "every target call",
+        "Agent-backed result as authoritative",
+        "Do not turn `not_installed`",
+    ):
+        if phrase not in binding:
+            fail(f"Operator Agent binding contract is missing {phrase!r}")
+
+    for skill in (operator_root / "skills").glob("*/SKILL.md"):
+        text = skill.read_text(encoding="utf-8")
+        if OPERATOR_AGENT_BINDING_REFERENCE not in text:
+            fail(f"Operator Skill does not load Agent binding rules: {skill.relative_to(ROOT)}")
+
+    readme = (operator_root / "README.md").read_text(encoding="utf-8")
+    if "agentConfig.endpoint" not in readme or "Prometheus" not in readme:
+        fail("Operator README must describe per-Environment Agent routing and monitoring precedence")
+
+
 def main() -> int:
     try:
         validate_manifest("lingmind")
@@ -257,6 +280,7 @@ def main() -> int:
         validate_platforms()
         validate_repository_hygiene()
         validate_markdown_and_skill_yaml()
+        validate_operator_agent_routing()
     except AssertionError as exc:
         print(f"validation failed: {exc}", file=sys.stderr)
         return 1
