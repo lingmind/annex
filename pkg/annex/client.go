@@ -22,6 +22,7 @@ type Config struct {
 	BaseURL     string
 	Token       string
 	APIKey      string
+	ProjectID   string
 	ProjectCode string
 	UserAgent   string
 	HTTPClient  *http.Client
@@ -31,6 +32,7 @@ type Client struct {
 	baseURL     *url.URL
 	token       string
 	apiKey      string
+	projectID   string
 	projectCode string
 	userAgent   string
 	httpClient  *http.Client
@@ -63,6 +65,7 @@ func NewClient(cfg Config) (*Client, error) {
 		baseURL:     baseURL,
 		token:       cfg.Token,
 		apiKey:      cfg.APIKey,
+		projectID:   strings.TrimSpace(cfg.ProjectID),
 		projectCode: cfg.ProjectCode,
 		userAgent:   userAgent,
 		httpClient:  httpClient,
@@ -218,8 +221,8 @@ func (c *Client) do(ctx context.Context, method, endpoint string, query url.Valu
 	if c.apiKey != "" {
 		req.Header.Set("X-LM-API-Key", c.apiKey)
 	}
-	if c.projectCode != "" {
-		req.Header.Set("X-Requested-Project-Code", c.projectCode)
+	if c.projectID != "" {
+		req.Header.Set("X-Requested-Project", c.projectID)
 	}
 
 	resp, err := c.httpClient.Do(req)
@@ -377,6 +380,17 @@ func normalizeAuthResponse(response *AuthTokenResponse) {
 	}
 	if response.ProjectCode == "" && response.Subject != nil {
 		response.ProjectCode = response.Subject.ProjectCode
+	}
+	if response.ProjectID == "" && response.Subject != nil {
+		response.ProjectID = response.Subject.ProjectID
+	}
+	if response.User != nil && response.User.Project != nil {
+		if response.ProjectID == "" {
+			response.ProjectID = response.User.Project.ID
+		}
+		if response.ProjectCode == "" {
+			response.ProjectCode = response.User.Project.Code
+		}
 	}
 }
 

@@ -105,7 +105,7 @@ paths:
       operationId: listDevices
       summary: 查询当前集成可见的设备列表。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - name: filters[state][$eq]
@@ -138,7 +138,7 @@ paths:
       operationId: getDevice
       summary: 查询单个设备。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - name: deviceId
           in: path
           required: true
@@ -166,7 +166,7 @@ paths:
       operationId: listMissions
       summary: 查询当前集成可见的任务列表。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - name: filters[state][$eq]
@@ -203,7 +203,7 @@ paths:
       operationId: getMission
       summary: 查询单个任务。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - name: missionId
           in: path
           required: true
@@ -231,7 +231,7 @@ paths:
       operationId: listRawData
       summary: 查询当前集成可见的原始数据列表。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - name: filters[type][$eq]
@@ -276,7 +276,7 @@ paths:
       operationId: getRawData
       summary: 查询单条原始数据记录。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - name: rawDataId
           in: path
           required: true
@@ -304,7 +304,7 @@ paths:
       operationId: listRuleHits
       summary: 查询当前集成可见的规则命中列表。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - name: filters[reviewState][$eq]
@@ -358,7 +358,7 @@ paths:
       operationId: getRuleHit
       summary: 查询单条规则命中。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - name: ruleHitId
           in: path
           required: true
@@ -430,10 +430,11 @@ components:
       in: header
       name: X-LM-API-Key
   parameters:
-    ProjectCode:
-      name: X-Requested-Project-Code
+    ProjectID:
+      name: X-Requested-Project
       in: header
       required: false
+      description: Radix project documentId selected for this request.
       schema:
         type: string
     Page:

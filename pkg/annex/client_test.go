@@ -17,8 +17,11 @@ func TestListDevicesSendsAuthProjectAndQuery(t *testing.T) {
 		if got := r.Header.Get("Authorization"); got != "Bearer token_123" {
 			t.Fatalf("unexpected authorization header: %s", got)
 		}
-		if got := r.Header.Get("X-Requested-Project-Code"); got != "demo" {
+		if got := r.Header.Get("X-Requested-Project"); got != "project-doc-1" {
 			t.Fatalf("unexpected project header: %s", got)
+		}
+		if got := r.Header.Get("X-Requested-Project-Code"); got != "" {
+			t.Fatalf("retired project code header was sent: %s", got)
 		}
 		if got := r.URL.Query().Get("filters[state][$eq]"); got != "online" {
 			t.Fatalf("unexpected state query: %s", got)
@@ -57,6 +60,7 @@ func TestListDevicesSendsAuthProjectAndQuery(t *testing.T) {
 	client, err := NewClient(Config{
 		BaseURL:     server.URL,
 		Token:       "token_123",
+		ProjectID:   "project-doc-1",
 		ProjectCode: "demo",
 	})
 	if err != nil {
@@ -128,8 +132,11 @@ func TestCreateTokenSendsPasswordLoginRequest(t *testing.T) {
 			TokenType:    "Bearer",
 			ExpiresIn:    3600,
 			RefreshToken: "refresh_123",
-			ProjectCode:  "demo",
-			Scope:        []string{"device:read"},
+			User: &AuthUser{Project: &AuthProject{
+				ID:   "project-doc-1",
+				Code: "demo",
+			}},
+			Scope: []string{"device:read"},
 		})
 	}))
 	defer server.Close()
@@ -150,6 +157,9 @@ func TestCreateTokenSendsPasswordLoginRequest(t *testing.T) {
 	}
 	if resp.AccessToken != "access_123" || resp.RefreshToken != "refresh_123" {
 		t.Fatalf("unexpected token response: %#v", resp)
+	}
+	if resp.ProjectID != "project-doc-1" || resp.ProjectCode != "demo" {
+		t.Fatalf("unexpected project context: %#v", resp)
 	}
 }
 
