@@ -19,15 +19,15 @@ selection inside the Keycloak credential form.
 Every environment uses the stable connection name `lingmind-<environment-code>`. A single configured environment
 becomes the default automatically, while a multi-environment package requires an explicit default. The renderer
 stores that preference separately in `references/configured-environments.json`; changing the default cannot rebind a
-cached OAuth session to another environment. The renderer enables only the default standard connection and leaves
-every other stable connection disabled. The agent calls `environment_context_get` on the active connection and
-verifies the returned code before any project or business tool. Switching environments disables the current standard
-connection, enables the target, begins a new Agent turn, and clears project, plan, idempotency, and operation context;
-each connection retains only its own OAuth session and never passes a URL to a business tool.
+cached OAuth session to another environment. The renderer enables every configured stable connection. The agent
+selects the exact connection for the requested environment, calls its `context_get`, and verifies the
+returned code before any project or business tool. Switching environments selects and verifies the target stable
+connection, then clears project, plan, idempotency, and operation context; each connection retains only its own OAuth
+session and never passes a URL to a business tool.
 
 Use Codex MCP 2026 discovery for the full runtime capability catalog. When a supported Codex release is restricted to
 legacy MCP, configure a Host-native `enabled_tools` allowlist for the intended workflow; do not copy business schemas,
-rename tools, or keep several standard environment connections active to work around catalog limits.
+rename tools, or silently disable configured environments to work around catalog limits.
 
 Codex must request only the scopes declared in the templates. The remote resource server remains responsible for
 audience, subject, client, super-administrator role, ownership, target, and state checks.

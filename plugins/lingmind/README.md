@@ -5,9 +5,9 @@
 
 每个连接只绑定一个业务环境和该环境独立的 Keycloak，并始终使用稳定名称
 `lingmind-<environment-code>`。默认环境是安装侧偏好，记录在生成的
-`references/configured-environments.json` 中，不通过重命名连接表达。安装时只启用默认环境连接；切换环境
-由 Host 关闭当前标准连接、启用目标稳定连接，并在新 Agent turn 中重新核验。不能在同一 turn 同时启用
-多个发布同名工具的业务环境。切换环境就是切换 MCP resource；不同
+`references/configured-environments.json` 中，不通过重命名连接表达。安装时启用所有已配置环境连接；未指定
+环境时使用默认连接，指定或切换环境时按稳定连接名选择并通过 `context_get` 重新核验。切换环境就是切换
+MCP resource；不同
 环境的 token、issuer、audience、项目和确认计划不能混用。只有一个环境时可自动设为默认，多个环境时由
 用户选择默认环境。
 
