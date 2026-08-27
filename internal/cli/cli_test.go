@@ -163,7 +163,7 @@ func TestAuthLoginSavesConfig(t *testing.T) {
 			RefreshToken: "refresh_123456",
 			ProjectID:    "project-doc-1",
 			ProjectCode:  "demo",
-			Scope:        []string{"device:read"},
+			Scope:        []string{"device:view"},
 		})
 	}))
 	defer server.Close()

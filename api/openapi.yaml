@@ -131,7 +131,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: device:read
+      x-annex-scope: device:view
   /proxy/radix/api/devices/{deviceId}:
     get:
       tags: [Devices]
@@ -159,7 +159,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: device:read
+      x-annex-scope: device:view
   /proxy/radix/api/missions:
     get:
       tags: [Missions]
@@ -196,7 +196,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: mission:read
+      x-annex-scope: task:view
   /proxy/radix/api/missions/{missionId}:
     get:
       tags: [Missions]
@@ -224,7 +224,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: mission:read
+      x-annex-scope: task:view
   /proxy/radix/api/raw-data:
     get:
       tags: [RawData]
@@ -269,7 +269,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: raw-data:read
+      x-annex-scope: data:view
   /proxy/radix/api/raw-data/{rawDataId}:
     get:
       tags: [RawData]
@@ -297,7 +297,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: raw-data:read
+      x-annex-scope: data:view
   /proxy/radix/api/rule-hits:
     get:
       tags: [RuleHits]
@@ -351,7 +351,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: rule-hit:read
+      x-annex-scope: ai-event:view
   /proxy/radix/api/rule-hits/{ruleHitId}:
     get:
       tags: [RuleHits]
@@ -379,7 +379,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: rule-hit:read
+      x-annex-scope: ai-event:view
 webhooks:
   annexEvent:
     post:

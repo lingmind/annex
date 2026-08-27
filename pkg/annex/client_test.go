@@ -136,7 +136,7 @@ func TestCreateTokenSendsPasswordLoginRequest(t *testing.T) {
 				ID:   "project-doc-1",
 				Code: "demo",
 			}},
-			Scope: []string{"device:read"},
+			Scope: []string{"device:view"},
 		})
 	}))
 	defer server.Close()
@@ -173,7 +173,7 @@ func TestAuthMeDecodesBearerTokenLocally(t *testing.T) {
 		"sub":                "subject_1",
 		"preferred_username": "demo user",
 		"email":              "demo@example.com",
-		"realm_access":       map[string]any{"roles": []any{"device:read"}},
+		"realm_access":       map[string]any{"roles": []any{"device:view"}},
 	})
 	client, err := NewClient(Config{BaseURL: server.URL, Token: token})
 	if err != nil {
