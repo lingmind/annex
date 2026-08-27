@@ -105,7 +105,7 @@ paths:
       operationId: listDevices
       summary: 查询当前集成可见的设备列表。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - name: filters[state][$eq]
@@ -131,14 +131,14 @@ paths:
           $ref: '#/components/responses/Forbidden'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: device:read
+      x-annex-scope: device:view
   /proxy/radix/api/devices/{deviceId}:
     get:
       tags: [Devices]
       operationId: getDevice
       summary: 查询单个设备。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - name: deviceId
           in: path
           required: true
@@ -159,14 +159,14 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: device:read
+      x-annex-scope: device:view
   /proxy/radix/api/missions:
     get:
       tags: [Missions]
       operationId: listMissions
       summary: 查询当前集成可见的任务列表。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - name: filters[state][$eq]
@@ -196,14 +196,14 @@ paths:
           $ref: '#/components/responses/Forbidden'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: mission:read
+      x-annex-scope: task:view
   /proxy/radix/api/missions/{missionId}:
     get:
       tags: [Missions]
       operationId: getMission
       summary: 查询单个任务。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - name: missionId
           in: path
           required: true
@@ -224,14 +224,14 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: mission:read
+      x-annex-scope: task:view
   /proxy/radix/api/raw-data:
     get:
       tags: [RawData]
       operationId: listRawData
       summary: 查询当前集成可见的原始数据列表。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - name: filters[type][$eq]
@@ -269,14 +269,14 @@ paths:
           $ref: '#/components/responses/Forbidden'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: raw-data:read
+      x-annex-scope: data:view
   /proxy/radix/api/raw-data/{rawDataId}:
     get:
       tags: [RawData]
       operationId: getRawData
       summary: 查询单条原始数据记录。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - name: rawDataId
           in: path
           required: true
@@ -297,14 +297,14 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: raw-data:read
+      x-annex-scope: data:view
   /proxy/radix/api/rule-hits:
     get:
       tags: [RuleHits]
       operationId: listRuleHits
       summary: 查询当前集成可见的规则命中列表。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - name: filters[reviewState][$eq]
@@ -351,14 +351,14 @@ paths:
           $ref: '#/components/responses/Forbidden'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: rule-hit:read
+      x-annex-scope: ai-event:view
   /proxy/radix/api/rule-hits/{ruleHitId}:
     get:
       tags: [RuleHits]
       operationId: getRuleHit
       summary: 查询单条规则命中。
       parameters:
-        - $ref: '#/components/parameters/ProjectCode'
+        - $ref: '#/components/parameters/ProjectID'
         - name: ruleHitId
           in: path
           required: true
@@ -379,7 +379,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
-      x-annex-scope: rule-hit:read
+      x-annex-scope: ai-event:view
 webhooks:
   annexEvent:
     post:
@@ -430,10 +430,11 @@ components:
       in: header
       name: X-LM-API-Key
   parameters:
-    ProjectCode:
-      name: X-Requested-Project-Code
+    ProjectID:
+      name: X-Requested-Project
       in: header
       required: false
+      description: Radix project documentId selected for this request.
       schema:
         type: string
     Page:

@@ -39,10 +39,10 @@ Annex 支持两类凭证：
 项目上下文通过 Phoenix header 传递：
 
 ```text
-X-Requested-Project-Code: <project-code>
+X-Requested-Project: <project-documentId>
 ```
 
-如果凭证只绑定一个项目，项目上下文可以省略；如果凭证覆盖多个项目，建议显式传入项目编码。
+如果凭证只绑定一个项目，项目上下文可以省略；如果凭证覆盖多个项目，必须显式传入项目 `documentId`。项目编码不再作为路由 Header。
 
 ## CLI 使用
 
@@ -59,7 +59,8 @@ bin/lm --base-url https://phoenix.example.com \
   auth login \
   --username user@example.com \
   --password 'password' \
-  --project demo
+  --project-id project-document-id \
+  --project-code demo
 ```
 
 也可以用环境变量提供敏感字段，避免进入 shell history：
@@ -67,7 +68,7 @@ bin/lm --base-url https://phoenix.example.com \
 ```bash
 export LM_USERNAME=user@example.com
 export LM_PASSWORD='password'
-bin/lm --base-url https://phoenix.example.com auth login --project demo
+bin/lm --base-url https://phoenix.example.com auth login --project-id project-document-id --project-code demo
 ```
 
 默认配置文件：
@@ -76,7 +77,7 @@ bin/lm --base-url https://phoenix.example.com auth login --project demo
 ~/.lm/config.json
 ```
 
-配置文件会保存 `baseUrl`、`token`、`refreshToken`、`projectCode` 和 `expiresAt`。后续命令会自动读取配置：
+配置文件会保存 `baseUrl`、`token`、`refreshToken`、`projectId`、`projectCode` 和 `expiresAt`。后续命令会自动读取配置：
 
 ```bash
 bin/lm devices list
@@ -115,7 +116,8 @@ bin/lm --base-url https://phoenix.example.com \
   auth login \
   --username user@example.com \
   --password 'password' \
-  --project demo \
+  --project-id project-document-id \
+  --project-code demo \
   --format env \
   --save=false
 ```
@@ -126,6 +128,7 @@ bin/lm --base-url https://phoenix.example.com \
 export LM_BASE_URL=https://phoenix.example.com
 export LM_TOKEN=access_token_xxx
 export LM_REFRESH_TOKEN=refresh_token_xxx
+export LM_PROJECT_ID=project-document-id
 export LM_PROJECT_CODE=demo
 ```
 
@@ -158,6 +161,7 @@ if err != nil {
 client, err := annex.NewClient(annex.Config{
 	BaseURL:     "https://phoenix.example.com",
 	Token:       token.AccessToken,
+	ProjectID:   token.ProjectID,
 	ProjectCode: token.ProjectCode,
 })
 if err != nil {
@@ -234,7 +238,7 @@ curl -sS https://phoenix.example.com/api/auth/login \
 ```bash
 curl -sS 'https://phoenix.example.com/proxy/radix/api/devices?pagination[pageSize]=20&filters[state][$eq]=online' \
   -H 'Authorization: Bearer access_token_xxx' \
-  -H 'X-Requested-Project-Code: demo'
+  -H 'X-Requested-Project: project-document-id'
 ```
 
 不要默认追加 `populate=*`。如果确实需要关系数据，应按业务场景显式指定最小关系；Annex SDK 默认不使用 `populate=*`。

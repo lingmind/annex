@@ -40,9 +40,24 @@ type AuthTokenResponse struct {
 	TokenType    string       `json:"token_type"`
 	ExpiresIn    int          `json:"expires_in"`
 	RefreshToken string       `json:"refresh_token,omitempty"`
+	ProjectID    string       `json:"projectId,omitempty"`
 	ProjectCode  string       `json:"projectCode,omitempty"`
 	Scope        []string     `json:"scope,omitempty"`
 	Subject      *AuthSubject `json:"subject,omitempty"`
+	User         *AuthUser    `json:"user,omitempty"`
+}
+
+type AuthUser struct {
+	ID       string       `json:"documentId,omitempty"`
+	Username string       `json:"username,omitempty"`
+	Email    string       `json:"email,omitempty"`
+	Project  *AuthProject `json:"project,omitempty"`
+}
+
+type AuthProject struct {
+	ID   string `json:"documentId"`
+	Code string `json:"code,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type AuthSubject struct {
@@ -50,6 +65,7 @@ type AuthSubject struct {
 	Type        string          `json:"type"`
 	Name        string          `json:"name,omitempty"`
 	Email       string          `json:"email,omitempty"`
+	ProjectID   string          `json:"projectId,omitempty"`
 	ProjectCode string          `json:"projectCode,omitempty"`
 	Projects    []ProjectAccess `json:"projects,omitempty"`
 	Scopes      []string        `json:"scopes,omitempty"`
@@ -57,6 +73,7 @@ type AuthSubject struct {
 }
 
 type ProjectAccess struct {
+	ProjectID   string   `json:"projectId"`
 	ProjectCode string   `json:"projectCode"`
 	Name        string   `json:"name,omitempty"`
 	Scopes      []string `json:"scopes,omitempty"`

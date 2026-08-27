@@ -31,6 +31,7 @@ type globalOptions struct {
 	token        string
 	apiKey       string
 	refreshToken string
+	projectID    string
 	projectCode  string
 	format       string
 }
@@ -39,6 +40,7 @@ type storedConfig struct {
 	BaseURL      string     `json:"baseUrl,omitempty"`
 	Token        string     `json:"token,omitempty"`
 	RefreshToken string     `json:"refreshToken,omitempty"`
+	ProjectID    string     `json:"projectId,omitempty"`
 	ProjectCode  string     `json:"projectCode,omitempty"`
 	ExpiresAt    *time.Time `json:"expiresAt,omitempty"`
 }
@@ -107,12 +109,14 @@ func (c Command) parseGlobal(args []string) (globalOptions, []string, error) {
 		baseURL:      config.BaseURL,
 		token:        config.Token,
 		refreshToken: config.RefreshToken,
+		projectID:    config.ProjectID,
 		projectCode:  config.ProjectCode,
 		format:       "json",
 	}
 	overrideString(&opts.baseURL, c.Env("LM_BASE_URL"))
 	overrideString(&opts.token, c.Env("LM_TOKEN"))
 	overrideString(&opts.refreshToken, c.Env("LM_REFRESH_TOKEN"))
+	overrideString(&opts.projectID, c.Env("LM_PROJECT_ID"))
 	overrideString(&opts.projectCode, c.Env("LM_PROJECT_CODE"))
 	opts.apiKey = c.Env("LM_API_KEY")
 	if format := c.Env("LM_FORMAT"); strings.TrimSpace(format) != "" {
@@ -125,7 +129,8 @@ func (c Command) parseGlobal(args []string) (globalOptions, []string, error) {
 	fs.StringVar(&opts.token, "token", opts.token, "Bearer token")
 	fs.StringVar(&opts.apiKey, "api-key", opts.apiKey, "API key")
 	fs.StringVar(&opts.refreshToken, "refresh-token", opts.refreshToken, "refresh token")
-	fs.StringVar(&opts.projectCode, "project", opts.projectCode, "project code")
+	fs.StringVar(&opts.projectID, "project-id", opts.projectID, "project documentId")
+	fs.StringVar(&opts.projectCode, "project-code", opts.projectCode, "project code used by authentication and DTOs")
 	fs.StringVar(&opts.format, "format", opts.format, "output format: json, table, or env")
 	if err := fs.Parse(args); err != nil {
 		return opts, nil, err
@@ -203,7 +208,11 @@ func (c Command) configForToken(global globalOptions, response *annex.AuthTokenR
 		BaseURL:      global.baseURL,
 		Token:        response.AccessToken,
 		RefreshToken: response.RefreshToken,
+		ProjectID:    response.ProjectID,
 		ProjectCode:  response.ProjectCode,
+	}
+	if config.ProjectID == "" {
+		config.ProjectID = global.projectID
 	}
 	if config.ProjectCode == "" {
 		config.ProjectCode = global.projectCode
@@ -237,6 +246,7 @@ func (c Command) runAuth(ctx context.Context, global globalOptions, args []strin
 func (c Command) runAuthLogin(ctx context.Context, global globalOptions, args []string) int {
 	username := c.Env("LM_USERNAME")
 	password := c.Env("LM_PASSWORD")
+	projectID := global.projectID
 	projectCode := global.projectCode
 	format := global.format
 	save := true
@@ -245,7 +255,8 @@ func (c Command) runAuthLogin(ctx context.Context, global globalOptions, args []
 	fs.SetOutput(c.Stderr)
 	fs.StringVar(&username, "username", username, "LingMind username")
 	fs.StringVar(&password, "password", password, "LingMind password")
-	fs.StringVar(&projectCode, "project", projectCode, "project code")
+	fs.StringVar(&projectID, "project-id", projectID, "project documentId")
+	fs.StringVar(&projectCode, "project-code", projectCode, "project code")
 	fs.StringVar(&format, "format", format, "output format: json, table, or env")
 	fs.BoolVar(&save, "save", save, "save token to local config")
 	if err := fs.Parse(args); err != nil {
@@ -271,6 +282,9 @@ func (c Command) runAuthLogin(ctx context.Context, global globalOptions, args []
 	if err != nil {
 		return c.error(err)
 	}
+	if response.ProjectID == "" {
+		response.ProjectID = projectID
+	}
 
 	savedPath := ""
 	if save {
@@ -284,6 +298,7 @@ func (c Command) runAuthLogin(ctx context.Context, global globalOptions, args []
 
 func (c Command) runAuthRefresh(ctx context.Context, global globalOptions, args []string) int {
 	refreshToken := global.refreshToken
+	projectID := global.projectID
 	projectCode := global.projectCode
 	format := global.format
 	save := true
@@ -291,7 +306,8 @@ func (c Command) runAuthRefresh(ctx context.Context, global globalOptions, args 
 	fs := flag.NewFlagSet("auth refresh", flag.ContinueOnError)
 	fs.SetOutput(c.Stderr)
 	fs.StringVar(&refreshToken, "refresh-token", refreshToken, "refresh token")
-	fs.StringVar(&projectCode, "project", projectCode, "project code")
+	fs.StringVar(&projectID, "project-id", projectID, "project documentId")
+	fs.StringVar(&projectCode, "project-code", projectCode, "project code")
 	fs.StringVar(&format, "format", format, "output format: json, table, or env")
 	fs.BoolVar(&save, "save", save, "save refreshed token to local config")
 	if err := fs.Parse(args); err != nil {
@@ -314,6 +330,9 @@ func (c Command) runAuthRefresh(ctx context.Context, global globalOptions, args 
 	}
 	if response.RefreshToken == "" {
 		response.RefreshToken = refreshToken
+	}
+	if response.ProjectID == "" {
+		response.ProjectID = projectID
 	}
 
 	savedPath := ""
@@ -393,6 +412,7 @@ func (c Command) client(opts globalOptions) (*annex.Client, error) {
 		BaseURL:     opts.baseURL,
 		Token:       opts.token,
 		APIKey:      opts.apiKey,
+		ProjectID:   opts.projectID,
 		ProjectCode: opts.projectCode,
 	})
 }
@@ -401,7 +421,7 @@ func (c Command) anonymousClient(opts globalOptions) (*annex.Client, error) {
 	if strings.TrimSpace(opts.baseURL) == "" {
 		return nil, errors.New("base URL is required; set --base-url or LM_BASE_URL")
 	}
-	return annex.NewClient(annex.Config{BaseURL: opts.baseURL, ProjectCode: opts.projectCode})
+	return annex.NewClient(annex.Config{BaseURL: opts.baseURL, ProjectID: opts.projectID, ProjectCode: opts.projectCode})
 }
 
 func (c Command) runDevices(ctx context.Context, global globalOptions, args []string) int {
@@ -767,6 +787,9 @@ func (c Command) printTokenResponse(format string, response *annex.AuthTokenResp
 		if response.RefreshToken != "" {
 			fmt.Fprintf(c.Stdout, "export LM_REFRESH_TOKEN=%s\n", shellQuote(response.RefreshToken))
 		}
+		if response.ProjectID != "" {
+			fmt.Fprintf(c.Stdout, "export LM_PROJECT_ID=%s\n", shellQuote(response.ProjectID))
+		}
 		if response.ProjectCode != "" {
 			fmt.Fprintf(c.Stdout, "export LM_PROJECT_CODE=%s\n", shellQuote(response.ProjectCode))
 		}
@@ -779,6 +802,9 @@ func (c Command) printTokenResponse(format string, response *annex.AuthTokenResp
 		}
 		if response.RefreshToken != "" {
 			rows = append(rows, []string{"refreshToken", maskToken(response.RefreshToken)})
+		}
+		if response.ProjectID != "" {
+			rows = append(rows, []string{"projectId", response.ProjectID})
 		}
 		if response.ProjectCode != "" {
 			rows = append(rows, []string{"projectCode", response.ProjectCode})
@@ -1020,7 +1046,9 @@ Global flags:
   --api-key    API key, or LM_API_KEY
   --refresh-token
                refresh token, or LM_REFRESH_TOKEN
-  --project    project code, or LM_PROJECT_CODE
+  --project-id project documentId, or LM_PROJECT_ID
+  --project-code
+               project code used by authentication and DTOs, or LM_PROJECT_CODE
   --format     json, table, or env; default json`)
 }
 

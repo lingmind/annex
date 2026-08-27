@@ -22,7 +22,7 @@ func TestDevicesListCommand(t *testing.T) {
 		if got := r.Header.Get("Authorization"); got != "Bearer token_123" {
 			t.Fatalf("unexpected authorization header: %s", got)
 		}
-		if got := r.Header.Get("X-Requested-Project-Code"); got != "demo" {
+		if got := r.Header.Get("X-Requested-Project"); got != "project-doc-1" {
 			t.Fatalf("unexpected project header: %s", got)
 		}
 		if got := r.URL.Query().Get("filters[state][$eq]"); got != "online" {
@@ -63,7 +63,8 @@ func TestDevicesListCommand(t *testing.T) {
 		"lm",
 		"--base-url", server.URL,
 		"--token", "token_123",
-		"--project", "demo",
+		"--project-id", "project-doc-1",
+		"--project-code", "demo",
 		"devices", "list",
 		"--state", "online",
 	})
@@ -160,8 +161,9 @@ func TestAuthLoginSavesConfig(t *testing.T) {
 			TokenType:    "Bearer",
 			ExpiresIn:    3600,
 			RefreshToken: "refresh_123456",
+			ProjectID:    "project-doc-1",
 			ProjectCode:  "demo",
-			Scope:        []string{"device:read"},
+			Scope:        []string{"device:view"},
 		})
 	}))
 	defer server.Close()
@@ -184,7 +186,8 @@ func TestAuthLoginSavesConfig(t *testing.T) {
 		"auth", "login",
 		"--username", "demo@example.com",
 		"--password", "secret_123",
-		"--project", "demo",
+		"--project-id", "project-doc-1",
+		"--project-code", "demo",
 	})
 	if code != 0 {
 		t.Fatalf("unexpected exit code %d, stderr: %s", code, stderr.String())
@@ -220,6 +223,7 @@ func TestAuthMeUsesSavedConfig(t *testing.T) {
 	config := storedConfig{
 		BaseURL:     server.URL,
 		Token:       fakeJWT(map[string]any{"sub": "subject_1", "preferred_username": "demo integration"}),
+		ProjectID:   "project-doc-1",
 		ProjectCode: "demo",
 	}
 	configFile, err := os.Create(filepath.Join(configDir, "config.json"))

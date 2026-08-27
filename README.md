@@ -121,7 +121,8 @@ if err != nil {
 client, err := annex.NewClient(annex.Config{
 	BaseURL:     "https://phoenix.example.com",
 	Token:       token.AccessToken,
-	ProjectCode: "demo",
+	ProjectID:   token.ProjectID,
+	ProjectCode: token.ProjectCode,
 })
 if err != nil {
 	return err
@@ -144,14 +145,15 @@ make build
 
 完整认证流程见 [客户端认证使用指南](docs/client-authentication.md)。
 
-使用 Phoenix 用户名密码登录。默认会把 `baseUrl`、`token`、`refreshToken` 和 `projectCode` 保存到 `~/.lm/config.json`，后续 `lm devices list` 等命令会自动读取。
+使用 Phoenix 用户名密码登录。默认会把 `baseUrl`、`token`、`refreshToken`、`projectId` 和 `projectCode` 保存到 `~/.lm/config.json`，后续 `lm devices list` 等命令会自动读取。
 
 ```bash
 bin/lm --base-url https://phoenix.example.com \
   auth login \
   --username user@example.com \
   --password 'password' \
-  --project demo
+  --project-id project-document-id \
+  --project-code demo
 ```
 
 刷新 token：
