@@ -1,4 +1,4 @@
-.PHONY: build test fmt lint generate-sdks validate-plugins configure-codex-lingmind configure-workbuddy-lingmind
+.PHONY: build test fmt lint generate-sdks validate-plugins configure-codex-lingmind configure-workbuddy-lingmind configure-doubao-lingmind
 
 PYTHON ?= python3
 CODEX_APP_CLI := $(firstword $(wildcard /Applications/ChatGPT.app/Contents/Resources/codex /Applications/Codex.app/Contents/Resources/codex))
@@ -16,8 +16,10 @@ LINGMIND_DEFAULT_ENVIRONMENT ?=
 CODEX_ENVIRONMENT_ARGS = $(foreach environment,$(LINGMIND_ENVIRONMENTS),--environment-code "$(environment)")
 CODEX_DEFAULT_ENVIRONMENT_ARG = $(if $(strip $(LINGMIND_DEFAULT_ENVIRONMENT)),--default-environment "$(LINGMIND_DEFAULT_ENVIRONMENT)")
 WORKBUDDY_HOME ?= $(HOME)/.workbuddy
+DOUBAO_WORKSPACE ?= $(HOME)/Library/Application Support/Doubao/Default/.doubao/agent_mode/workspace
 ENV ?=
 WORKBUDDY_ENVIRONMENT_ARG = $(if $(strip $(ENV)),--environment-code "$(ENV)")
+DOUBAO_ENVIRONMENT_ARG = $(if $(strip $(ENV)),--environment-code "$(ENV)")
 
 build:
 	go build ./...
@@ -38,9 +40,13 @@ generate-sdks:
 validate-plugins:
 	$(PYTHON) scripts/test-render-codex-plugins.py
 	$(PYTHON) scripts/test-configure-workbuddy-lingmind.py
+	$(PYTHON) scripts/test-configure-doubao-lingmind.py
 	$(PYTHON) $(PLUGIN_VALIDATOR) plugins/lingmind
 	$(PYTHON) $(PLUGIN_VALIDATOR) plugins/lingmind-operator
 	@for skill in plugins/lingmind/skills/* plugins/lingmind-operator/skills/*; do \
+		$(PYTHON) $(SKILL_VALIDATOR) "$$skill" || exit 1; \
+	done
+	@for skill in platforms/doubao/skills/*; do \
 		$(PYTHON) $(SKILL_VALIDATOR) "$$skill" || exit 1; \
 	done
 	$(PYTHON) scripts/validate-agent-plugins.py
@@ -83,3 +89,9 @@ configure-workbuddy-lingmind:
 		--workbuddy-home "$(WORKBUDDY_HOME)" \
 		--apex-url "$(LINGMIND_APEX_URL)" \
 		$(WORKBUDDY_ENVIRONMENT_ARG)
+
+configure-doubao-lingmind:
+	$(PYTHON) scripts/configure-doubao-lingmind.py \
+		--doubao-workspace "$(DOUBAO_WORKSPACE)" \
+		--apex-url "$(LINGMIND_APEX_URL)" \
+		$(DOUBAO_ENVIRONMENT_ARG)

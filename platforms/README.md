@@ -6,6 +6,7 @@ Annex exposes the same two server contracts through platform-specific authentica
 | --- | --- | --- | --- |
 | Codex | multiple named native HTTP connections in one plugin package; exactly one active per Host turn | one global connection | OAuth 2.1 Authorization Code + PKCE S256 |
 | WorkBuddy | one DCR-created connection per business environment | one global DCR-created connection | OAuth protected-resource discovery + DCR public client + PKCE S256 |
+| Doubao Desktop | one local HTTP connector per business environment | not qualified | host-managed OAuth; no bearer or secret in connector metadata |
 | DeepSeek Harness | one loopback bridge profile per business environment | one global loopback bridge profile | Annex local OAuth 2.1 bridge + system keychain |
 
 Host compatibility is an explicit adapter contract, not a property inferred from the words “supports MCP”:
@@ -14,6 +15,7 @@ Host compatibility is an explicit adapter contract, not a property inferred from
 | --- | --- | --- | --- | --- |
 | Codex | pre-registered public client per resource | direct remote HTTP; Phoenix/Apex accept legacy 2025 and stateless 2026 requests | use MCP 2026 for the full catalog; legacy mode requires a Host-native tool allowlist | validate default activation, OAuth redirect, environment switch and one direct call on every supported Codex release |
 | WorkBuddy | DCR public client with PKCE | direct streamable HTTP; legacy 2025 is the required baseline | do not require tool search or custom capability metadata | reject installation when protected-resource discovery, DCR or PKCE cannot complete |
+| Doubao Desktop | host-managed OAuth | direct remote streamable HTTP | register connectors through the supported local custom-connector UI; do not write internal app databases | validate login, `context_get`, project resolution and direct calls on every supported Doubao release |
 | DeepSeek Harness | pre-registered public client owned by the loopback bridge | bridge translates the harness connection to the same remote MCP contract | bridge may cache only the current subject's private catalog TTL | validate loopback isolation, keychain storage, OAuth resource binding and remote call forwarding |
 
 The checked-in profile describes the adapter requirement; it is not evidence that a particular Host version has

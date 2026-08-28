@@ -1,0 +1,20 @@
+{
+  "profileVersion": 1,
+  "developmentTemplate": true,
+  "connectionCardinality": "one-per-business-environment",
+  "distribution": "tenant-private",
+  "host": {
+    "name": "doubao-desktop",
+    "observedVersion": "2.26.9",
+    "transport": "http",
+    "connectorRegistration": "local-custom-connector-ui",
+    "oauth": "host-managed"
+  },
+  "connection": {
+    "transport": "streamable-http",
+    "urlSource": "apex-environment-resolver",
+    "persistTokensInRepository": false,
+    "longLivedBearerInConnector": false,
+    "customHeaders": {}
+  }
+}

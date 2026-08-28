@@ -1,0 +1,4 @@
+interface:
+  display_name: "凌析"
+  short_description: "LingMind运营专家，安全处理项目、设备、任务、告警、航线、媒体与日报"
+  default_prompt: "使用 $lingmind-operations-expert 帮我处理当前 LingMind 环境中的运营工作。"

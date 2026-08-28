@@ -203,6 +203,37 @@ def validate_platforms() -> None:
         if not secure_storage or not oauth21 or oauth.get("scopes") != scopes:
             fail(f"DeepSeek bridge security contract drifted: {filename}")
 
+    doubao = require_connection_profile(
+        ROOT / "platforms" / "doubao" / "standard-business-environment.http.json",
+        standard_cardinality,
+    )
+    host = doubao["host"]
+    connection = doubao["connection"]
+    partner = load_json(ROOT / "platforms" / "doubao" / "partner.json")
+    if not (
+        host.get("name") == "doubao-desktop"
+        and host.get("transport") == "http"
+        and host.get("connectorRegistration") == "local-custom-connector-ui"
+        and host.get("oauth") == "host-managed"
+        and connection.get("transport") == "streamable-http"
+        and connection.get("urlSource") == "apex-environment-resolver"
+        and connection.get("persistTokensInRepository") is False
+        and connection.get("longLivedBearerInConnector") is False
+        and connection.get("customHeaders") == {}
+    ):
+        fail("Doubao HTTP connector security contract drifted")
+    if not (
+        partner.get("profileVersion") == 1
+        and partner.get("developmentTemplate") is True
+        and partner.get("nickname") == "凌析"
+        and partner.get("profession") == "LingMind运营专家"
+        and partner.get("description")
+        == "面向 LingMind 铁路物联网，安全查询项目、设备、任务与告警，编排航线、媒体、日报等业务操作。"
+        and partner.get("marketplaceStatus") == "not-published"
+        and partner.get("localRepresentation") == "lingmind-operations-expert"
+    ):
+        fail("Doubao LingMind expert metadata drifted")
+
 
 def validate_repository_hygiene() -> None:
     roots = [ROOT / "plugins", ROOT / "platforms", ROOT / "metadata"]

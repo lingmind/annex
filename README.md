@@ -107,6 +107,25 @@ make configure-workbuddy-lingmind
 
 安装或更新后需重启 WorkBuddy 或新建任务，使新的 Skills 和 MCP 连接进入 Host 工具目录。
 
+为豆包桌面端首次安装“凌析”、LingMind 业务 Skills 和 HTTP MCP 连接信息：
+
+```bash
+make configure-doubao-lingmind ENV="sandbox"
+```
+
+命令会打印每个连接器的名称和 Phoenix MCP URL；在豆包的“技能 · 连接器 · 伙伴 > 新建 > 新建自定义
+连接器”中选择 `HTTP`，填入打印值，自定义 Headers 留空并完成 OAuth 授权。豆包没有公开可写的本地
+连接器配置文件，所以首次 UI 注册不会被脚本绕过。
+
+已经安装后，可沿用环境和 OAuth 状态更新 Skills 与启动器：
+
+```bash
+make configure-doubao-lingmind
+```
+
+安装或更新后需重启豆包或新建工作任务。平台契约和资格验证边界见 `platforms/doubao/README.md`。
+“凌析”是本地自定义 Skill；豆包“工作伙伴”是独立的云端上架市场，本地安装不会使它出现在伙伴页。
+
 本目录的 marketplace 用于仓库内开发和团队测试，不会创建或修改用户目录下的 marketplace。
 
 ## Go SDK
