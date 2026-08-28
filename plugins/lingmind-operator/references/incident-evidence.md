@@ -8,10 +8,11 @@ Build an incident conclusion from current, bounded evidence returned by Operator
 
 1. Environment and its freshly resolved Agent binding and availability.
 2. Operator capability availability for the selected environment.
-3. Named-service status and bounded service diagnostics returned through the target Agent.
-4. Workload readiness, images, replicas, restarts, and rollout state.
-5. Pod conditions, recent namespace events, and safe resource inspection.
-6. Narrow bounded container logs.
+3. Verified runtime identity: configuration service, namespace, Deployment, and container.
+4. Named-service status and bounded service diagnostics returned through the target Agent.
+5. Workload readiness, images, replicas, restarts, and rollout state.
+6. Pod conditions, recent namespace events, and safe resource inspection.
+7. Narrow bounded container logs.
 
 Correlate all evidence by environment, namespace, service, request ID, workload identity, and time window. Separate:
 
@@ -20,6 +21,11 @@ Correlate all evidence by environment, namespace, service, request ID, workload 
 - remaining uncertainty;
 - proposed next action;
 - verification that would prove recovery.
+
+When a call returns a generic request failure, first prove the namespace and workload identity independently. A
+healthy Agent plus successful calls for a verified target rules out general Agent unavailability; a failure for an
+assumed namespace or Deployment does not. Report unresolved target identity separately from connectivity, capability,
+authorization, and workload failures.
 
 Ask for a narrower time range or target when a result is truncated. Do not claim recovery from an aggregate status
 alone when concrete workload, pod, event, log, diagnostic, or rollout evidence is available. Metrics, arbitrary

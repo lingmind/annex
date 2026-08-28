@@ -13,7 +13,9 @@ Resolve the environment first and read [Operator Agent binding](../../references
 
 1. Re-read the Environment, let Apex resolve its current `agentConfig.endpoint`, confirm the requested capability is
    published for that same environment, and let Apex authorize it.
-2. Resolve the safe configuration and current service state required by the selected tool contract.
+2. Resolve the safe configuration and exact runtime workload identity required by the selected tool contract. Keep the
+   configuration service, namespace, Deployment, and container as separate identities; require a verified CI/CD handoff
+   or owner-published runtime identity and never derive one from another by naming convention.
 3. Create the owner-declared installation or upgrade plan using only schema-accepted inputs.
 4. Present immutable targets, impact, availability risk, preconditions, and expiry; obtain confirmation for that exact
    plan and execute it once.
