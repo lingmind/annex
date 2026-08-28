@@ -12,11 +12,12 @@ Environment's `agentConfig.endpoint` for each target-specific observe or operate
 
 ## Workflow
 
-1. Call `environments_list` and consider only active records returned to the authenticated Operator administrator.
+1. Call `environments_list` and consider every non-deleted record returned to the authenticated Operator administrator.
 2. Resolve an explicit stable ID directly, or match a user-provided environment code/name exactly. If multiple records
    remain, show a short disambiguation list and wait for the user to choose.
-3. Call `environment_get` for the selected ID and read `operator_capabilities_list` before target-specific work. Do not
-   copy or retain an Agent URL; Apex owns endpoint resolution from the current Environment record.
+3. Call `environment_get` for the selected ID. If it is not active, report its lifecycle state and stop before
+   Agent-backed observation or a modifying plan. Otherwise read `operator_capabilities_list` before target-specific
+   work. Do not copy or retain an Agent URL; Apex owns endpoint resolution from the current Environment record.
 4. Pass the exact `environmentId` to every Agent-backed observation, plan, execute/status, and verification call. State
    the selected code/name before the first modifying plan.
 5. Re-run selection when the user changes environment; never carry target state, plan IDs, or assumptions across IDs.

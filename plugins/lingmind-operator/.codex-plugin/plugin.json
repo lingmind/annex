@@ -18,8 +18,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "LingMind Operator",
-    "shortDescription": "Administer active LingMind environments",
-    "longDescription": "Use one global Apex Operator connection as a super administrator to select active environments, inspect safe Agent-backed evidence, and execute Apex Mongo persisted maintenance, service deployment, backup, or checksum-bound restore plans.",
+    "shortDescription": "Administer LingMind environments",
+    "longDescription": "Use one global Apex Operator connection as a super administrator to discover all non-deleted environments, inspect safe Agent-backed evidence for active targets, and execute Apex Mongo persisted maintenance, service deployment, backup, or checksum-bound restore plans.",
     "developerName": "LingMind",
     "category": "Developer Tools",
     "capabilities": [
