@@ -88,6 +88,25 @@ Phoenix MCP 地址；也可用 `--environment` 显式注入连接供发布自动
 make validate-plugins PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
 ```
 
+为 WorkBuddy 首次安装 LingMind 业务 Skills 和 MCP 连接：
+
+```bash
+make configure-workbuddy-lingmind ENV="sandbox"
+```
+
+该命令把 `plugins/lingmind` 的 Skills 和参考资料同步到 `~/.workbuddy`，通过 Apex 将每个环境编码解析为
+直接 Phoenix MCP 连接，并合并写入 WorkBuddy 的 `mcp.json`。它只替换上次由 LingMind 配置管理的业务环境
+连接，保留其他 MCP 连接和 `lingmind-operator`；OAuth token 不写入或复制到这些文件。
+
+已经安装后，直接执行同一命令即可沿用现有环境和 MCP URL 更新 Skills，无需重新解析环境或改变 OAuth
+状态：
+
+```bash
+make configure-workbuddy-lingmind
+```
+
+安装或更新后需重启 WorkBuddy 或新建任务，使新的 Skills 和 MCP 连接进入 Host 工具目录。
+
 本目录的 marketplace 用于仓库内开发和团队测试，不会创建或修改用户目录下的 marketplace。
 
 ## Go SDK

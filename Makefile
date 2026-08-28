@@ -1,4 +1,4 @@
-.PHONY: build test fmt lint generate-sdks validate-plugins configure-codex-lingmind
+.PHONY: build test fmt lint generate-sdks validate-plugins configure-codex-lingmind configure-workbuddy-lingmind
 
 PYTHON ?= python3
 CODEX_APP_CLI := $(firstword $(wildcard /Applications/ChatGPT.app/Contents/Resources/codex /Applications/Codex.app/Contents/Resources/codex))
@@ -15,6 +15,9 @@ LINGMIND_ENVIRONMENTS ?= beta
 LINGMIND_DEFAULT_ENVIRONMENT ?=
 CODEX_ENVIRONMENT_ARGS = $(foreach environment,$(LINGMIND_ENVIRONMENTS),--environment-code "$(environment)")
 CODEX_DEFAULT_ENVIRONMENT_ARG = $(if $(strip $(LINGMIND_DEFAULT_ENVIRONMENT)),--default-environment "$(LINGMIND_DEFAULT_ENVIRONMENT)")
+WORKBUDDY_HOME ?= $(HOME)/.workbuddy
+ENV ?=
+WORKBUDDY_ENVIRONMENT_ARG = $(if $(strip $(ENV)),--environment-code "$(ENV)")
 
 build:
 	go build ./...
@@ -34,6 +37,7 @@ generate-sdks:
 
 validate-plugins:
 	$(PYTHON) scripts/test-render-codex-plugins.py
+	$(PYTHON) scripts/test-configure-workbuddy-lingmind.py
 	$(PYTHON) $(PLUGIN_VALIDATOR) plugins/lingmind
 	$(PYTHON) $(PLUGIN_VALIDATOR) plugins/lingmind-operator
 	@for skill in plugins/lingmind/skills/* plugins/lingmind-operator/skills/*; do \
@@ -73,3 +77,9 @@ configure-codex-lingmind:
 	fi
 	'$(CODEX)' plugin add "lingmind@$(CODEX_MARKETPLACE_NAME)"
 	@echo 'LingMind MCP configuration installed. Start a new Codex task to load the updated connections.'
+
+configure-workbuddy-lingmind:
+	$(PYTHON) scripts/configure-workbuddy-lingmind.py \
+		--workbuddy-home "$(WORKBUDDY_HOME)" \
+		--apex-url "$(LINGMIND_APEX_URL)" \
+		$(WORKBUDDY_ENVIRONMENT_ARG)
