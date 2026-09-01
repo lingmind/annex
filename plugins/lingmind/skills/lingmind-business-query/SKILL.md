@@ -25,6 +25,20 @@ memorizing a complete tool list.
 6. Preserve returned document IDs, timestamps, project identity, and pagination metadata for follow-up calls.
 7. Separate returned facts from interpretation and state when a bounded result was truncated or incomplete.
 
+## Users, projects, roles, and permissions
+
+- Read project information only from the verified `context_get.projects` result. It already contains the projects
+  accessible to the current login, so do not discover or call a separate project-list capability.
+- Discover user reads with `domain=identity`, `action=read`, and `invokeVia=records_search`. Select one accessible
+  project before invoking; `organization:view` plus the live project and data-scope policy determine visible users.
+- Discover role and permission-catalog reads with `domain=authorization`, `action=read`, and
+  `invokeVia=records_search`. These reads require `authorization:view` in the selected accessible project.
+- Treat an empty result, a missing capability, or `permission_denied` as the current login's effective access. Never
+  bypass it with a service credential, direct API, shell, or a different environment connection.
+
+The plugin service account is transport-only. Every result inherits the logged-in user's token, accessible projects,
+and current Access Policy; the plugin cannot expand that authority.
+
 If `context_get`, capability discovery, or a dispatcher omits data required by its declared output, stop with a concise
 contract error. Do not inspect local memory, Skill directories, source repositories, kubeconfigs, shell, CLI, or direct
 APIs to reconstruct MCP results, and do not retry the same failed discovery with guessed capability or project IDs.

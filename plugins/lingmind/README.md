@@ -14,6 +14,7 @@ MCP resource；不同
 插件负责：
 
 - 环境和项目选择、消歧与当前上下文展示；
+- 在登录用户的项目和权限范围内查询用户、角色与有效权限目录；
 - 根据运行时 `tools/list` 选择能力；
 - 将只读、普通写、异步任务和高风险确认组织成清晰工作流；
 - 解释稳定业务概念并向用户展示风险和结果。
@@ -22,6 +23,9 @@ MCP resource；不同
 Onyx、Vertex 等业务所有者发布工具及公开 DTO；Phoenix 负责认证、项目准入和通用治理。任何能力缺失时，
 插件必须明确报告，不能改用 shell、CLI、直接 REST 或猜测的工具。
 
+所有查询继承插件当前登录用户的 token、可访问项目和实时 Access Policy。Phoenix 使用的服务账号只负责
+服务间传输，不会赋予登录用户额外权限。
+
 repo-local `.mcp.json` 是空的环境无关模板，不能直接访问业务数据。OAuth 使用 Authorization Code + PKCE
 S256 和目标 MCP resource discovery；插件包不包含 client secret 或用户 token。
 
@@ -29,7 +33,7 @@ S256 和目标 MCP resource discovery；插件包不包含 client secret 或用�
 
 - `lingmind-environment-context`：选择、核验和切换业务环境。
 - `lingmind-project-context`：选择和核验当前项目。
-- `lingmind-business-query`：执行有界业务查询。
+- `lingmind-business-query`：执行有界业务查询，包括已授权的用户、角色和权限目录查询。
 - `lingmind-business-write`：执行普通写操作和安全重试。
 - `lingmind-async-job`：提交并跟踪异步任务。
 - `lingmind-business-planned-action`：完成 prepare、用户确认、execute 和结果核验。
