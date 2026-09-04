@@ -6,7 +6,8 @@ description: Submit and follow LingMind data-processing, export, schedule-execut
 # LingMind asynchronous job
 
 Read [asynchronous job rules](../../references/async-jobs.md), verify the environment with
-`lingmind-environment-context`, and resolve the project on that same connection before submission.
+`lingmind-environment-context`, and apply `lingmind-project-context` on that same connection.
+Use a supplied job ID without project filtering; use the explicit or default user project for a new submission.
 
 ## Workflow
 

@@ -1,6 +1,6 @@
 ---
 name: lingmind-business-query
-description: Query LingMind business records, details, counts, statistics, and safe runtime summaries in one or all explicitly resolved accessible projects.
+description: Query LingMind business records, details, counts, statistics, and safe runtime summaries by target ID, in the user default or explicit project, or across explicitly requested accessible projects.
 ---
 
 # LingMind business query
@@ -11,8 +11,9 @@ memorizing a complete tool list.
 
 ## Workflow
 
-1. Call `context_get` through `lingmind-environment-context`, then resolve one project or the explicit all-project read
-   set through `lingmind-project-context` from the same result.
+1. Call `context_get` through `lingmind-environment-context`, then apply `lingmind-project-context`: query a supplied
+   target data ID without project filtering; otherwise use the explicit project, the user default, or an explicitly
+   requested all-project read set. Do not ask for a project merely because several are accessible.
 2. Call `capability_search` with the business concept plus narrow `domain`, `action=read`, and `invokeVia` filters when
    known. Call `capability_get` once for the selected capability and reuse that exact contract and catalog revision.
 3. Invoke only the dispatcher named by `invokeVia`, using declared filters, pagination and time-range inputs.
@@ -29,8 +30,8 @@ memorizing a complete tool list.
 
 - Read project information only from the verified `context_get.projects` result. It already contains the projects
   accessible to the current login, so do not discover or call a separate project-list capability.
-- Discover user reads with `domain=identity`, `action=read`, and `invokeVia=records_search`. Select one accessible
-  project before invoking; `organization:view` plus the live project and data-scope policy determine visible users.
+- Discover user reads with `domain=identity`, `action=read`, and `invokeVia=records_search`. Apply the explicit or default user
+  project through `lingmind-project-context`; `organization:view` plus the live project and data-scope policy determine visible users.
 - Discover role and permission-catalog reads with `domain=authorization`, `action=read`, and
   `invokeVia=records_search`. These reads require `authorization:view` in the selected accessible project.
 - Treat an empty result, a missing capability, or `permission_denied` as the current login's effective access. Never

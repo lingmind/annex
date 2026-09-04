@@ -5,7 +5,7 @@ description: Query and safely operate LingMind streams, recordings, cameras, PTZ
 
 # LingMind media and device operations
 
-Verify the environment with `lingmind-environment-context`, then resolve the project and read the concrete device,
+Verify the environment with `lingmind-environment-context`, then apply `lingmind-project-context` and read the concrete device,
 stream, capability, runtime state, and current version on that same connection before an operation. Use
 [business action safety](../../references/safe-actions.md) for direct and planned actions.
 

@@ -1,11 +1,11 @@
 ---
 name: lingmind-business-write
-description: Create or update LingMind business records using the owner-published schema and explicit project context.
+description: Create or update LingMind business records using the owner-published schema and target-ID or explicit/default user project context.
 ---
 
 # LingMind business write
 
-Resolve and verify the environment with `lingmind-environment-context`, resolve the project with
+Resolve and verify the environment with `lingmind-environment-context`, apply the selection rules in
 `lingmind-project-context` on that same connection, then read [business action safety](../../references/safe-actions.md)
 before a mutation. Use only the explicit domain tool published by the connected Phoenix `CapabilityRegistry`.
 

@@ -2,7 +2,8 @@
 
 ## Direct writes
 
-- Require an explicit user request and an unambiguous environment, project and target.
+- Require an explicit user request and an unambiguous environment and target. Apply
+  [project context](project-context.md) for target-ID addressing or explicit/default user project selection.
 - Read current state first when the runtime schema or description requires a version value.
 - Generate an idempotency key only when the input schema declares one. Reuse it solely for the same logical request.
 - Send only fields accepted by the runtime schema; never add credentials, URLs, paths, manifests or commands.

@@ -4,7 +4,7 @@ Submitting an action and proving its business result are separate steps.
 
 ## Workflow
 
-1. Resolve the project and read each input required by the submission contract.
+1. Apply [project context](project-context.md) and read each input required by the submission contract.
 2. Use one stable idempotency key only when the schema declares it.
 3. Record the returned business job or process identity.
 4. Use the owner-declared status or idempotency contract to resolve delivery uncertainty.

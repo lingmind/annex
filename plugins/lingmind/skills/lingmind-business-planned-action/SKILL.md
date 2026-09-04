@@ -11,7 +11,7 @@ Use this Skill whenever a runtime tool declares a prepare/execute lifecycle. Rea
 
 ## Workflow
 
-1. Resolve the exact project and read the target state required by the prepare schema.
+1. Apply `lingmind-project-context` and read the target state required by the prepare schema.
 2. Call the declared prepare tool with only its accepted arguments.
 3. Present the plan target, action, impact, risk, preconditions, and expiry without exposing confirmation material.
 4. Obtain explicit confirmation for that exact plan after presenting it.
