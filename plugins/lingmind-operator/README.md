@@ -13,7 +13,8 @@ schema、角色名称、工具目录或当前可用性清单。
 Environment 当前的 `agentConfig.endpoint` 解析 Agent URL 并分发 observe/operate 请求。插件可以保存本地
 默认环境，但不得缓存默认 Agent、沿用上一个环境的 Agent，或把 Agent URL 暴露给模型。多个环境可以共享
 同一个 Agent，Plugin 不假设 Agent 部署在目标环境中。所有观察和修改操作都必须经过 Apex Agent；Agent
-不可用时明确失败，不存在直接集群客户端、SSH、shell 或其他环境访问 fallback。命名服务的安装与运行
+不可用时明确失败，不向模型暴露直接集群客户端、SSH、shell 或其他任意命令 fallback。节点侧连接方式只可
+作为 Agent 内部固定、只读能力的实现细节；当前资源观测通过类型化 Kubernetes Metrics API 完成。命名服务的安装与运行
 状态以该 Environment 的 Agent-backed 工具为准；Prometheus 聚合状态冲突时报告监控绑定问题，不能据此
 误判 `not_installed`。
 

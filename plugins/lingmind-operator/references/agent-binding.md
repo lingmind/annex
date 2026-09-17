@@ -20,7 +20,7 @@ or reuse an Agent URL from another environment.
 ## Evidence precedence
 
 Use the target-specific Agent-backed tools such as `service_status_get`, `service_diagnostics_get`,
-workload, pod, event, rollout, and operation-status tools for service truth. An Environment DTO's
+`service_resource_usage_get`, workload, pod, event, rollout, and operation-status tools for service truth. An Environment DTO's
 aggregate `observedStatus` is monitoring context, not proof that a named service is installed or
 absent.
 
