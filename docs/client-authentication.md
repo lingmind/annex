@@ -13,7 +13,7 @@ https://<phoenix-host>
 - 认证：`/api/auth/login`、`/api/auth/refresh`、`/api/auth/logout`
 - 资源查询：`/proxy/radix/api/devices`、`/proxy/radix/api/missions`、`/proxy/radix/api/raw-data`、`/proxy/radix/api/rule-hits`
 
-客户端不要直接访问 LingMind 内部服务、数据库、对象存储或 Strapi 地址。
+客户端不要直接访问 LingMind 内部服务、数据库、对象存储或内容服务地址。
 
 ## 认证方式
 
@@ -241,7 +241,8 @@ curl -sS 'https://phoenix.example.com/proxy/radix/api/devices?pagination[pageSiz
   -H 'X-Requested-Project: project-document-id'
 ```
 
-不要默认追加 `populate=*`。如果确实需要关系数据，应按业务场景显式指定最小关系；Annex SDK 默认不使用 `populate=*`。
+不要使用通配展开。如果确实需要关系数据，应按业务场景显式指定最小关系；Annex SDK
+只接受明确的单个根关系名。
 
 刷新 token：
 
