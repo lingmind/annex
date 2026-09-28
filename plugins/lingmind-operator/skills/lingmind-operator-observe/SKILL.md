@@ -16,6 +16,8 @@ identified by a stable ID, and always read [Operator Agent binding](../../refere
 3. Resolve the exact runtime workload identity before a named-service call. A configuration service name is not
    necessarily its namespace, Deployment, or container name. Use owner-published runtime identity or verified safe
    workload evidence; never guess a generic namespace or reuse the logical service name as the Deployment name.
+   If the user supplies only a logical service name, check its published service metadata for the namespace and
+   Deployment manifest for the workload name before invoking a namespace-scoped Operator tool.
 4. For that verified namespace and Deployment, prefer `service_status_get` and `service_diagnostics_get`; use
    `k8s_resource_inspect` for one safe Deployment or Pod when a narrower current snapshot is needed.
 5. For CPU or memory symptoms, call `service_resource_usage_get` for the verified Deployment and report the current

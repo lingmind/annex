@@ -29,6 +29,10 @@ healthy Agent plus successful calls for a verified target rules out general Agen
 assumed namespace or Deployment does not. Report unresolved target identity separately from connectivity, capability,
 authorization, and workload failures.
 
+`target_not_found` means the selected Agent could not find the named Kubernetes target. Recheck the namespace and
+Deployment or Pod name using owner-published metadata and a namespace-scoped workload or pod listing. Do not describe
+this result as an Agent connection failure.
+
 Ask for a narrower time range or target when a result is truncated. Do not claim recovery from an aggregate status
 alone when concrete workload, pod, event, log, diagnostic, resource-usage, or rollout evidence is available. A current
 resource-usage snapshot is not a historical time series and does not expose CPU throttling; report that gap rather than
