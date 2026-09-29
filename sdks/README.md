@@ -63,6 +63,20 @@ const result = await api.listDevices({
 npx tsx sdks/examples/typescript/devices.ts
 ```
 
+查询 RuleHit 的 `evidences[].observation.detections[]`：
+
+```bash
+export LM_RULE_HIT_ID=rule_hit_document_id
+npx tsx sdks/examples/typescript/rule-hit-detections.ts
+```
+
+完整样例见 [examples/typescript/rule-hit-detections.ts](examples/typescript/rule-hit-detections.ts)。
+生成版 SDK 的 `populate` 字符串参数只适用于单个根字段；该样例通过 SDK 的
+`withPreMiddleware` 将 `populate[evidences][populate][observation][populate][0]=detections`
+作为独立查询参数添加到 `getRuleHit` 请求。返回值沿
+`response.data.evidences[].observation.detections[]` 读取。若还要展开 Observation
+中的其他组件，可在同一 middleware 里用 `[1]`、`[2]` 追加字段。
+
 ## Python
 
 完整样例：[examples/python/devices.py](examples/python/devices.py)

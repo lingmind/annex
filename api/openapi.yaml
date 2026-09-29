@@ -414,10 +414,13 @@ paths:
       tags: [RuleHits]
       operationId: listRuleHits
       summary: 查询当前集成可见的规则命中列表。
-      description: >
+      description: |
         默认只返回规则命中标量字段。可通过 populate 展开 rule、evidences、rawDatum、
         primaryIncident、relatedIncidents、reviewedBy、assignedReviewer 和 project；evidences 内部的
-        observation、rule 等关系需要使用深层 populate。
+        observation、rule 等关系需要使用深层 populate。查询证据关联观测的检测结果：
+        `populate[evidences][populate][observation][populate][0]=detections`。
+        该路径依次展开 evidences 组件、observation 关系和 detections 组件；响应中的
+        `data[].evidences[].observation.detections[]` 结构见 ObservationRecord 和 DetectionRecord。
       parameters:
         - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Populate'
@@ -471,10 +474,13 @@ paths:
       tags: [RuleHits]
       operationId: getRuleHit
       summary: 查询单条规则命中。
-      description: >
+      description: |
         默认只返回规则命中标量字段。可通过 populate 展开 rule、evidences、rawDatum、
         primaryIncident、relatedIncidents、reviewedBy、assignedReviewer 和 project；evidences 内部的
-        observation、rule 等关系需要使用深层 populate。
+        observation、rule 等关系需要使用深层 populate。查询证据关联观测的检测结果：
+        `populate[evidences][populate][observation][populate][0]=detections`。
+        该路径依次展开 evidences 组件、observation 关系和 detections 组件；响应中的
+        `data.evidences[].observation.detections[]` 结构见 ObservationRecord 和 DetectionRecord。
       parameters:
         - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Populate'
@@ -567,12 +573,18 @@ components:
       name: populate
       in: query
       required: false
-      description: >
+      description: |
         关系、媒体和组件展开参数。省略时这些字段不会出现在响应中；传单个根字段名
         （如 project）只展开该字段。对外集成禁止通配展开，必须显式选择所需关系。
-        多关系、深层关系或字段裁剪使用方括号查询语法，例如
-        populate[project][fields][0]=documentId&populate[project][fields][1]=code。populate 不扩大
-        当前用户的项目、权限或对象访问范围。
+        多关系、深层关系或字段裁剪使用方括号查询语法，例如：
+        - 裁剪项目字段：`populate[project][fields][0]=documentId&populate[project][fields][1]=code`
+        - 展开 RuleHit 证据中的 Observation 检测结果：
+          `populate[evidences][populate][observation][populate][0]=detections`
+        每一级 `populate[字段名][populate]` 指向当前字段的子对象；末级 `[0]=detections`
+        选择 Observation 的 detections 组件。其他同级字段可用 `[1]` 等索引添加。
+        方括号形式中的每个 `key=value` 是独立查询参数；不要把整段表达式作为
+        `populate` 的单个值传入。
+        populate 不扩大当前用户的项目、权限或对象访问范围。
       schema:
         type: string
         minLength: 1
@@ -1191,9 +1203,234 @@ components:
           type: object
           additionalProperties: true
         observation:
-          $ref: '#/components/schemas/RelationRecord'
+          $ref: '#/components/schemas/ObservationRecord'
         rule:
           $ref: '#/components/schemas/RelationRecord'
+      additionalProperties: true
+    ObservationRecord:
+      allOf:
+        - $ref: '#/components/schemas/RadixRecord'
+        - type: object
+          required: [sceneType, occurredAt]
+          properties:
+            observationKey:
+              type: [string, 'null']
+              description: Canonical 观测幂等键。
+            sceneType:
+              type: string
+              enum: [image, video_frame, video_clip]
+            occurredAt:
+              type: string
+              format: date-time
+            sourceUrl:
+              type: [string, 'null']
+            confidence:
+              type: [number, 'null']
+              minimum: 0
+              maximum: 1
+            frameTimeMs:
+              type: [string, 'null']
+              description: 视频帧相对时间，毫秒；Radix biginteger 字段。
+            mediaTimeMs:
+              type: [number, string, 'null']
+              description: 统一视频时间轴，毫秒；Radix decimal 字段。
+            frameUtcAt:
+              type: [string, 'null']
+              format: date-time
+            payloadIndex:
+              type: [string, 'null']
+            cameraType:
+              type: [string, 'null']
+            traceId:
+              type: [string, 'null']
+            selectionRank:
+              type: [object, array, 'null']
+              description: Canonical 最优证据选择序位；JSON 值由生产者定义。
+            bestSnapshotRank:
+              type: [object, array, 'null']
+              description: 真实媒体快照选择序位；JSON 值由生产者定义。
+            primaryFrameAnchor:
+              type: [object, array, 'null']
+              description: 主判定槽位的来源帧锚点。
+            observationFrameAnchor:
+              type: [object, array, 'null']
+              description: 当前观测投影的来源帧锚点。
+            observationFactIds:
+              description: 观测帧投影中的依赖闭合事实 ID；JSON 结构由生产者定义。
+            primaryPayloadDigest:
+              type: [string, 'null']
+            mediaPayloadDigest:
+              type: [string, 'null']
+            mediaRef:
+              description: 观测媒体引用；JSON 结构由生产者定义。
+            viewpointMatch:
+              description: 观测视点匹配结果；JSON 结构由生产者定义。
+            detections:
+              type: array
+              description: 显式 populate detections 后返回的模型原始检测结果。
+              items:
+                $ref: '#/components/schemas/DetectionRecord'
+            classifications:
+              type: array
+              items:
+                $ref: '#/components/schemas/ClassificationRecord'
+            insights:
+              type: array
+              items:
+                $ref: '#/components/schemas/InsightRecord'
+            imageSize:
+              $ref: '#/components/schemas/ImageSizeRecord'
+            inferenceMeta:
+              $ref: '#/components/schemas/InferenceMetaRecord'
+            stream:
+              $ref: '#/components/schemas/RelationRecord'
+            rawDatum:
+              $ref: '#/components/schemas/RelationRecord'
+            device:
+              $ref: '#/components/schemas/RelationRecord'
+            mission:
+              $ref: '#/components/schemas/RelationRecord'
+            wayline:
+              $ref: '#/components/schemas/RelationRecord'
+            trajectory:
+              $ref: '#/components/schemas/RelationRecord'
+            viewpoint:
+              $ref: '#/components/schemas/RelationRecord'
+            project:
+              $ref: '#/components/schemas/RelationRecord'
+            landmark:
+              $ref: '#/components/schemas/RelationRecord'
+            aiModel:
+              $ref: '#/components/schemas/RelationRecord'
+            aiModelVersion:
+              $ref: '#/components/schemas/RelationRecord'
+            dataProcess:
+              $ref: '#/components/schemas/RelationRecord'
+            detectionProfile:
+              $ref: '#/components/schemas/RelationRecord'
+            spatialZone:
+              $ref: '#/components/schemas/RelationRecord'
+          additionalProperties: true
+          description: >
+            RuleHit Evidence 关联的 Radix Observation。关系及组件仅在各级显式 populate 时返回；
+            其他观测标量字段和空间组件可能随记录一同返回。
+    DetectionRecord:
+      type: object
+      required: [class, bboxX, bboxY, bboxW, bboxH]
+      properties:
+        id:
+          type: integer
+          description: Radix 组件内部 ID。
+        class:
+          type: string
+        label:
+          type: [string, 'null']
+        confidence:
+          type: [number, 'null']
+          minimum: 0
+          maximum: 1
+        bboxX:
+          type: number
+        bboxY:
+          type: number
+        bboxW:
+          type: number
+        bboxH:
+          type: number
+        bboxNormX:
+          type: [number, 'null']
+        bboxNormY:
+          type: [number, 'null']
+        bboxNormW:
+          type: [number, 'null']
+        bboxNormH:
+          type: [number, 'null']
+        outputType:
+          type: [string, 'null']
+          description: 检测几何类型，如 bbox、obb 或 segmentation。
+        geometrySource:
+          type: [string, 'null']
+        obb:
+          description: 模型原始旋转框 JSON。
+        obbPoints:
+          description: 原图像素坐标系下的旋转框角点 JSON。
+        obbPointsNorm:
+          description: 归一化旋转框角点 JSON。
+        maskPolygons:
+          description: 原图像素坐标系下的分割多边形 JSON。
+        maskPolygonsNorm:
+          description: 归一化分割多边形 JSON。
+        frameTimeMs:
+          type: [integer, 'null']
+        trackId:
+          type: [string, 'null']
+        riskLevel:
+          type: [string, 'null']
+          enum: [low, medium, high, critical, null]
+      additionalProperties: true
+    ClassificationRecord:
+      type: object
+      required: [class]
+      properties:
+        id:
+          type: integer
+        class:
+          type: string
+        label:
+          type: [string, 'null']
+        confidence:
+          type: [number, 'null']
+        rank:
+          type: [integer, 'null']
+        classId:
+          type: [integer, 'null']
+      additionalProperties: true
+    InsightRecord:
+      type: object
+      required: [message]
+      properties:
+        id:
+          type: integer
+        type:
+          type: [string, 'null']
+        message:
+          type: string
+        score:
+          type: [number, 'null']
+      additionalProperties: true
+    ImageSizeRecord:
+      type: object
+      required: [width, height]
+      properties:
+        id:
+          type: integer
+        width:
+          type: integer
+        height:
+          type: integer
+      additionalProperties: true
+    InferenceMetaRecord:
+      type: object
+      required: [modelId]
+      properties:
+        id:
+          type: integer
+        modelId:
+          type: string
+        modelVersion:
+          type: [string, 'null']
+        aiModel:
+          description: 推理时模型身份快照；JSON 结构由生产者定义。
+        modelVersionRef:
+          description: 推理时模型版本引用；JSON 结构由生产者定义。
+        inferenceConfig:
+          description: 推理配置快照；JSON 结构由生产者定义。
+        detectionProfile:
+          description: 检测配置快照；JSON 结构由生产者定义。
+        inferenceTimeMs:
+          type: [integer, 'null']
+        confidenceAvg:
+          type: [number, 'null']
       additionalProperties: true
     RadixMeta:
       type: object
