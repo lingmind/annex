@@ -469,6 +469,143 @@ paths:
         default:
           $ref: '#/components/responses/Error'
       x-annex-scope: ai-event:view
+  /proxy/radix/api/rule-hits/facets:
+    get:
+      tags: [RuleHits]
+      operationId: getRuleHitFacets
+      summary: 按指定维度查询规则命中分组及审核计数。
+      description: |
+        用于规则命中目录和筛选导航，基于 filters 匹配的全部记录分组，不受分页限制，
+        排除 deleted=true 的记录。dimension 必填，每次选择一个维度。
+        rule 使用命中关联的规则；spatialZone、viewpoint、aiModel 使用首条证据关联观测的关系。
+        occurredAt 按指定时区的自然日分组，并返回 UTC 起止时间（含起点、不含终点）。
+        其他维度的 value 为关联对象 documentId；缺失关联或时间时 value 为 null。
+        日期分组倒序，其他分组按名称排序，缺失值分组排在最后；无记录的分组不返回。
+        stats 和 totals 包含待审核、已领取以及已审核的各类结论计数。
+        响应直接返回分组对象，不包含 data/meta 包装。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - name: dimension
+          in: query
+          required: true
+          description: 分组维度：区域、发生日期、规则、机位或模型。
+          schema:
+            type: string
+            enum: [spatialZone, occurredAt, rule, viewpoint, aiModel]
+        - name: tzOffsetMinutes
+          in: query
+          description: 相对 UTC 的时区偏移分钟数；北京时间为 480，用于 occurredAt 分组。
+          schema:
+            type: integer
+            minimum: -840
+            maximum: 840
+            default: 0
+        - name: filters
+          in: query
+          description: |
+            Strapi 过滤对象，使用方括号编码，例如 filters[reviewState][$eq]=pending、
+            filters[occurredAt][$gte]=2026-09-01T00:00:00Z。
+          style: deepObject
+          explode: true
+          schema:
+            type: object
+            additionalProperties: true
+      responses:
+        '200':
+          description: 分组及审核计数。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleHitFacetsResponse'
+        '400':
+          description: 分组维度或时区参数无效。
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error]
+                properties:
+                  error:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:view
+  /proxy/radix/api/rule-hits/stats:
+    get:
+      tags: [RuleHits]
+      operationId: getRuleHitStats
+      summary: 查询当前集成可见的规则命中统计。
+      description: |
+        按 occurredAt 统计截至当前时刻的滚动时间窗口，返回分类汇总、时间序列和最近命中。
+        day 按小时分桶，week 和 month 按天分桶，year 按月分桶；空时间桶补零。
+        tzOffsetMinutes 用于时间桶边界和标签，窗口起止时间仍返回 UTC 时间。
+        category 和 categories 的值合并去重；未分类命中使用 uncategorized。
+        响应直接返回统计对象，不包含 data/meta 包装。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - name: range
+          in: query
+          description: 滚动时间范围：最近一天、七天、一个月或一年。
+          schema:
+            type: string
+            enum: [day, week, month, year]
+            default: day
+        - name: tzOffsetMinutes
+          in: query
+          description: 相对 UTC 的时区偏移分钟数；北京时间为 480。
+          schema:
+            type: integer
+            minimum: -840
+            maximum: 840
+            default: 0
+        - name: category
+          in: query
+          description: 分类筛选，多个分类以逗号分隔。
+          schema:
+            type: string
+        - name: categories
+          in: query
+          description: 分类筛选数组，也支持在每个值中使用逗号分隔。
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: recentLimit
+          in: query
+          description: 最近命中数量；服务端向下取整并限制在 1 到 100 之间。
+          schema:
+            type: number
+            default: 10
+      responses:
+        '200':
+          description: 规则命中统计。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleHitStatsResponse'
+        '400':
+          description: 统计参数无效。
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error]
+                properties:
+                  error:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:view
   /proxy/radix/api/rule-hits/{ruleHitId}:
     get:
       tags: [RuleHits]
@@ -900,6 +1037,182 @@ components:
             $ref: '#/components/schemas/RuleHitRecord'
         meta:
           $ref: '#/components/schemas/RadixMeta'
+    RuleHitFacetsResponse:
+      type: object
+      required: [generatedAt, dimension, tzOffsetMinutes, total, totals, facets]
+      properties:
+        generatedAt:
+          type: string
+          format: date-time
+        dimension:
+          type: string
+          enum: [spatialZone, occurredAt, rule, viewpoint, aiModel]
+        tzOffsetMinutes:
+          type: integer
+          minimum: -840
+          maximum: 840
+        total:
+          type: integer
+          minimum: 0
+          description: 匹配记录总数，按命中去重。
+        totals:
+          $ref: '#/components/schemas/RuleHitFacetReviewCounts'
+        facets:
+          type: array
+          items:
+            type: object
+            required: [key, label, count, value, stats]
+            properties:
+              key:
+                type: string
+                description: 分组标识，由 [dimension, value] 的 JSON 字符串组成。
+              label:
+                type: string
+                description: 关联对象名称、YYYY-MM-DD 日期或缺失值提示。
+              count:
+                type: integer
+                minimum: 0
+              value:
+                type: [string, 'null']
+                description: 关联对象 documentId 或 YYYY-MM-DD 日期；缺失时为 null。
+              range:
+                type: object
+                description: 仅 occurredAt 维度且日期有效时返回。
+                required: [start, end]
+                properties:
+                  start:
+                    type: string
+                    format: date-time
+                  end:
+                    type: string
+                    format: date-time
+              stats:
+                $ref: '#/components/schemas/RuleHitFacetReviewCounts'
+    RuleHitFacetReviewCounts:
+      type: object
+      required: [total, pending, claimed, true_positive, false_positive, uncertain, duplicate]
+      description: pending、claimed 按 reviewState 计数；reviewed 按 reviewDecision 计入各结论。
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        pending:
+          type: integer
+          minimum: 0
+        claimed:
+          type: integer
+          minimum: 0
+        true_positive:
+          type: integer
+          minimum: 0
+        false_positive:
+          type: integer
+          minimum: 0
+        uncertain:
+          type: integer
+          minimum: 0
+        duplicate:
+          type: integer
+          minimum: 0
+    RuleHitStatsResponse:
+      type: object
+      required: [generatedAt, range, totals, categories, series, recent]
+      properties:
+        generatedAt:
+          type: string
+          format: date-time
+        range:
+          type: object
+          required: [type, start, end, bucket, tzOffsetMinutes]
+          properties:
+            type:
+              type: string
+              enum: [day, week, month, year]
+            start:
+              type: string
+              format: date-time
+              description: 统计窗口起点，包含该时刻。
+            end:
+              type: string
+              format: date-time
+              description: 统计窗口终点，不包含该时刻。
+            bucket:
+              type: string
+              enum: [hour, day, month]
+            tzOffsetMinutes:
+              type: integer
+              minimum: -840
+              maximum: 840
+        totals:
+          type: object
+          required: [total, categories]
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            categories:
+              $ref: '#/components/schemas/RuleHitCategoryCounts'
+        categories:
+          type: array
+          description: 窗口内出现的分类，按名称升序排列。
+          items:
+            type: string
+        series:
+          type: array
+          description: 按时间桶升序排列，包含空时间桶。
+          items:
+            type: object
+            required: [date, total, categories]
+            properties:
+              date:
+                type: string
+                description: 按指定时区生成的时间桶标签；hour 为 HH:00，day 为 M.DD，month 为 YYYY.MM。
+              total:
+                type: integer
+                minimum: 0
+              categories:
+                $ref: '#/components/schemas/RuleHitCategoryCounts'
+        recent:
+          type: array
+          description: 窗口内最近的命中，按 occurredAt、createdAt 降序排列。
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/RuleHitStatsRecentHit'
+    RuleHitCategoryCounts:
+      type: object
+      description: 分类名称到命中数量的映射；未分类使用 uncategorized。
+      additionalProperties:
+        type: integer
+        minimum: 0
+    RuleHitStatsRecentHit:
+      type: object
+      required: [id, occurredAt, category]
+      properties:
+        id:
+          type: string
+          description: 规则命中 documentId。
+        occurredAt:
+          type: string
+          format: date-time
+        category:
+          type: string
+        severity:
+          type: [string, 'null']
+          enum: [info, warning, major, critical, null]
+        ruleName:
+          type: [string, 'null']
+        ruleCode:
+          type: [string, 'null']
+        ruleId:
+          type: [string, 'null']
+        stream:
+          type: object
+          description: 首条证据关联观测的流；无关联流时省略。
+          properties:
+            documentId:
+              type: string
+            name:
+              type: [string, 'null']
     DeviceItemResponse:
       type: object
       required: [data]
