@@ -18,6 +18,12 @@ Environment 当前的 `agentConfig.endpoint` 解析 Agent URL 并分发 observe/
 状态以该 Environment 的 Agent-backed 工具为准；Prometheus 聚合状态冲突时报告监控绑定问题，不能据此
 误判 `not_installed`。
 
+只读巡检的 namespace 枚举使用 Agent 现有 Kubernetes 身份，遵循已有 policy 和 RBAC；枚举权限不代表各
+namespace 的 Pod 读取权限。查询被拒绝时直接报告，不探测其他访问路径或扩大权限。列表结果须说明覆盖范围
+和分页截断。Pod 状态保留普通、init、临时容器的当前状态与最近终止原因、退出码、信号和时间，不返回原始终止
+消息或容器 ID，也不把累计重启数解释为近期重启次数。已有资源指标工具覆盖命名 Deployment 的当前容器样本；
+区分权限拒绝、Metrics API 不可用及样本缺失/不完整，缺失用量为空值，部分汇总仅包含有样本的容器。
+
 修改类操作遵循运行时工具声明的 prepare/confirm/execute 流程。用户确认前展示环境、目标、影响、
 前置条件和过期时间；执行后使用运行时状态或证据能力核验结果。具体参数、允许动作、计划规则和结果结构
 始终以 Apex MCP `tools/list` 为准。
