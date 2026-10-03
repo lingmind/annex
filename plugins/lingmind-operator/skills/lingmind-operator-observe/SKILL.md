@@ -23,7 +23,17 @@ identified by a stable ID, and always read [Operator Agent binding](../../refere
 5. For CPU or memory symptoms, call `service_resource_usage_get` for the verified Deployment and report the current
    per-container usage, requests, limits, percentages, sample coverage, and timestamp. Do not turn one snapshot into a
    historical trend or a CPU-throttling conclusion.
-6. Narrow workload, pod, and event lists by namespace, then select stable workload and pod identities from results.
+   Distinguish a forbidden metrics read, an unavailable Metrics API, and an empty or partial sample. Missing usage is
+   unknown, not zero; partial summary usage includes sampled containers only. This tool covers Deployment pods, not
+   static pods, other workload kinds, or node metrics.
+6. When namespace discovery is needed, use the runtime namespace-list capability for the selected environment.
+   Report its policy/cluster coverage and follow continuation until complete. Namespace discovery does not prove
+   permission to read pods in every namespace. If denied or unavailable, report that limit; do not infer a complete
+   cluster inventory from guessed namespace names or retry through another access path.
+   Narrow workload, pod, and event lists by namespace, follow continuation, and report any truncation and denied reads.
+   Use container current state and last termination state (including init and ephemeral containers) as restart evidence.
+   `restartCount` is cumulative; a previous termination finish and current running start are evidence timestamps,
+   not a complete restart history. An unknown last termination state does not prove there were no restarts.
 7. Use an explicit pod, optional container, bounded log size, and bounded time window for log requests.
 8. Summarize observed state, anomalies, truncation, and request IDs without exposing sensitive values. When aggregate
    Prometheus state conflicts with a named-service Agent result, report the monitoring mismatch and use the Agent result
