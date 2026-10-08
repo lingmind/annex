@@ -476,7 +476,7 @@ paths:
       summary: 按指定维度查询规则命中分组及审核计数。
       description: |
         用于规则命中目录和筛选导航，基于 filters 匹配的全部记录分组，不受分页限制，
-        排除 deleted=true 的记录。dimension 必填，每次选择一个维度。
+        dimension 必填，每次选择一个维度。
         rule 使用命中关联的规则；spatialZone、viewpoint、aiModel 使用首条证据关联观测的关系。
         occurredAt 按指定时区的自然日分组，并返回 UTC 起止时间（含起点、不含终点）。
         其他维度的 value 为关联对象 documentId；缺失关联或时间时 value 为 null。
@@ -1308,11 +1308,6 @@ components:
               $ref: '#/components/schemas/RelationRecord'
             edge:
               $ref: '#/components/schemas/RelationRecord'
-            deleted:
-              type: boolean
-            deletedAt:
-              type: [string, 'null']
-              format: date-time
           additionalProperties: true
     MissionRecord:
       allOf:
@@ -1356,11 +1351,6 @@ components:
               $ref: '#/components/schemas/RelationRecord'
             project:
               $ref: '#/components/schemas/RelationRecord'
-            deleted:
-              type: boolean
-            deletedAt:
-              type: [string, 'null']
-              format: date-time
           additionalProperties: true
     RawDataRecord:
       allOf:
@@ -1481,11 +1471,6 @@ components:
             tags:
               type: object
               additionalProperties: true
-            deleted:
-              type: boolean
-            deletedAt:
-              type: [string, 'null']
-              format: date-time
           additionalProperties: true
     RuleHitEvidenceRecord:
       type: object
