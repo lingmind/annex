@@ -12,7 +12,7 @@ Environment's `agentConfig.endpoint` for each target-specific observe or operate
 
 ## Workflow
 
-1. Call `environments_list` and consider every non-deleted record returned to the authenticated Operator administrator.
+1. Call `environments_list` and consider every record returned to the authenticated Operator administrator.
 2. Resolve an explicit stable ID directly, or match a user-provided environment code/name exactly. If multiple records
    remain, show a short disambiguation list and wait for the user to choose.
 3. Call `environment_get` for the selected ID. If it is not active, report its lifecycle state and stop before
