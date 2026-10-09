@@ -16,7 +16,10 @@ Resolve the environment first and read [Operator Agent binding](../../references
    the namespace and workload are independently verified.
 3. Collect environment, Agent capability, service status/diagnostics, workload, safe resource, pod, event,
    bounded-log, and rollout evidence in order.
-4. Correlate evidence by workload identity, request ID, and timestamp.
+4. Correlate evidence by workload identity, request ID, and timestamp. For a supplied failure time or trace, query
+   logs with a narrow timezone-qualified `sinceTime`/`untilTime` and `traceId`/`requestId` before asking for more
+   identifiers. Search the verified gateway and MQTT client separately. Distinguish `scanTruncated` from
+   `resultTruncated`; report scanned coverage even when there are no matching lines.
 5. State the supported cause, alternatives ruled out, uncertainty, and smallest useful next action.
 6. Route an explicitly requested repair to the matching maintenance, service-deploy, or backup/restore Skill; do not
    invent a mutation from diagnosis.

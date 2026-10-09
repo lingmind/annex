@@ -33,6 +33,20 @@ authorization, and workload failures.
 Deployment or Pod name using owner-published metadata and a namespace-scoped workload or pod listing. Do not describe
 this result as an Agent connection failure.
 
+For log incidents, use RFC3339 `sinceTime`/`untilTime` around the reported time (include timezone),
+then `traceId` or `requestId` for exact top-level JSON field matching. `contains` is a literal filter on redacted
+text, useful for device SN or a stage name. Filtering happens before the matched tail is selected, so successful
+traffic after the incident cannot push the incident out of a Kubernetes tail. `sinceSeconds` and `sinceTime` are
+mutually exclusive; `untilTime` requires a positive window of at most 24 hours. Without a start, lookback is one hour.
+Use `previous=true` only for the last terminated instance of the verified container.
+
+Read `firstScannedTime`/`lastScannedTime`, `firstReturnedTime`/`lastReturnedTime`, and the line counts.
+`scanTruncated` means the 16 MiB scan budget was reached: an empty match does not prove absence, and the reported
+window is incomplete. Narrow the time window, starting near the failure. `resultTruncated` means more matches were
+found than the requested tail or the 4 MiB output budget can return; increase `tailLines` (1–10000) or narrow the
+filters/window. Limits are validated explicitly, never silently reset to 500. Queries only access Kubernetes-retained
+logs; they cannot recover rotated logs or previous Pod instances. There is no archive or pagination cursor.
+
 Ask for a narrower time range or target when a result is truncated. Do not claim recovery from an aggregate status
 alone when concrete workload, pod, event, log, diagnostic, resource-usage, or rollout evidence is available. A current
 resource-usage snapshot is not a historical time series and does not expose CPU throttling; report that gap rather than
