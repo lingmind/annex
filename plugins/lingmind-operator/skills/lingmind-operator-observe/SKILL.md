@@ -34,7 +34,9 @@ identified by a stable ID, and always read [Operator Agent binding](../../refere
    Use container current state and last termination state (including init and ephemeral containers) as restart evidence.
    `restartCount` is cumulative; a previous termination finish and current running start are evidence timestamps,
    not a complete restart history. An unknown last termination state does not prove there were no restarts.
-7. Use an explicit pod, optional container, bounded log size, and bounded time window for log requests.
+7. Use an explicit pod, optional container, bounded log size, and bounded time window for log requests. Prefer
+   `sinceTime`/`untilTime` for historical incidents and `traceId`/`requestId` for correlation; use `previous` for
+   the last terminated container. Report scanned and returned timestamps and both scan/result truncation flags.
 8. Summarize observed state, anomalies, truncation, and request IDs without exposing sensitive values. When aggregate
    Prometheus state conflicts with a named-service Agent result, report the monitoring mismatch and use the Agent result
    as service truth.
