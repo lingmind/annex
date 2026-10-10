@@ -1,4 +1,4 @@
-.PHONY: build test fmt lint generate-sdks validate-plugins configure-codex-lingmind configure-workbuddy-lingmind configure-doubao-lingmind
+.PHONY: build test fmt lint generate-sdks test-generated-sdks validate-plugins configure-codex-lingmind configure-workbuddy-lingmind configure-doubao-lingmind
 
 PYTHON ?= python3
 CODEX_APP_CLI := $(firstword $(wildcard /Applications/ChatGPT.app/Contents/Resources/codex /Applications/Codex.app/Contents/Resources/codex))
@@ -36,6 +36,12 @@ lint:
 
 generate-sdks:
 	./scripts/generate-sdks.sh
+
+test-generated-sdks:
+	npm --prefix generated/typescript run build
+	node scripts/test-generated-sdks.cjs
+	$(PYTHON) scripts/test-generated-sdks.py
+	cd generated/java && bash ./gradlew compileJava
 
 validate-plugins:
 	$(PYTHON) scripts/test-render-codex-plugins.py

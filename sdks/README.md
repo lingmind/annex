@@ -11,13 +11,28 @@ Annex 使用 `api/openapi.yaml` 生成 TypeScript、Python 和 Java 客户端。
 make generate-sdks
 ```
 
-该命令要求 `openapi-generator-cli` 已在 `PATH` 中。目标包及本地安装方式：
+该命令要求官方生成器已在 `PATH` 中，可通过 `npm install -g @openapitools/openapi-generator-cli` 安装。
+生成的客户端包含 Auth、Devices、Missions、RawData、RuleHits、Incidents、ClosedLoopActions 和 Messages。
+Messages API 提供个人消息查询、单条已读和全部已读；不包含通知投递或通知规则接口。
+目标包及本地安装方式：
 
 | 语言 | 包 | 本地安装或构建 |
 | --- | --- | --- |
 | TypeScript | `@lingmind/annex` | `npm install ./generated/typescript` |
 | Python | `lingmind-annex` | `python -m pip install ./generated/python` |
 | Java | `com.lingmind:annex:0.2.0` | `mvn -f generated/java/pom.xml install` |
+
+生成脚本在三个生成器全部成功后替换 SDK 目录，旧目录备份到 `.local/sdk-backups/`，避免旧模型残留。
+本次新增接口已使用 OpenAPI Generator 7.25.0 验证。生成后可运行构建及离线请求测试：
+
+```bash
+npm --prefix generated/typescript install --ignore-scripts
+../.codex-venv/bin/pip install ./generated/python
+make test-generated-sdks PYTHON=../.codex-venv/bin/python
+```
+
+测试覆盖新增接口的路径、认证、项目 Header、筛选参数、处置请求体和个人消息响应，
+并编译 Java SDK；不调用真实环境。Java 构建需要 JDK 11 或更高版本。
 
 发布后应改用团队制品仓库中的固定版本，不要在生产项目中引用本地 `generated/` 目录。
 

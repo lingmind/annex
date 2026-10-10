@@ -261,10 +261,11 @@ TypeScript、Python 和 Java SDK 从 `api/openapi.yaml` 生成：
 make generate-sdks
 ```
 
-生成器只产出 Auth、Devices、Missions、RawData 和 RuleHits 客户端 API；`webhooks`
+生成器产出 Auth、Devices、Missions、RawData、RuleHits、Incidents、ClosedLoopActions 和 Messages 客户端 API；`webhooks`
 是 Annex 向集成方投递事件的接收契约，不会生成反向调用客户端，其事件模型仍会包含在 SDK 中。
 
-执行脚本前需要确保 `openapi-generator-cli` 已在 `PATH` 中。
+执行脚本前需要确保官方生成器已在 `PATH` 中：`npm install -g @openapitools/openapi-generator-cli`。
+不要安装同名的 `openapi-generator-cli` 占位包；脚本会验证生成器版本并拒绝无效工具。
 
 安装、认证、项目上下文和 TypeScript/Python/Java 调用样例见
 [`sdks/README.md`](sdks/README.md)。

@@ -30,6 +30,12 @@ tags:
     description: AI 和规则检测结果。
   - name: Webhooks
     description: Annex 向外部系统投递的签名事件。
+  - name: Incidents
+    description: 事件查询、统计与闭环处置。
+  - name: ClosedLoopActions
+    description: 事件闭环策略执行和处理记录。
+  - name: Messages
+    description: 当前登录用户的个人消息和已读操作。
 paths:
   /api/auth/login:
     post:
@@ -500,16 +506,34 @@ paths:
             minimum: -840
             maximum: 840
             default: 0
-        - name: filters
+        - name: filters[reviewState][$eq]
           in: query
-          description: |
-            Strapi 过滤对象，使用方括号编码，例如 filters[reviewState][$eq]=pending、
-            filters[occurredAt][$gte]=2026-09-01T00:00:00Z。
-          style: deepObject
-          explode: true
           schema:
-            type: object
-            additionalProperties: true
+            type: string
+            enum: [pending, claimed, reviewed]
+        - name: filters[severity][$eq]
+          in: query
+          schema:
+            type: string
+            enum: [info, warning, major, critical]
+        - name: filters[ruleId][$eq]
+          in: query
+          schema:
+            type: string
+        - name: filters[rawDatum][documentId][$eq]
+          in: query
+          schema:
+            type: string
+        - name: filters[occurredAt][$gte]
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: filters[occurredAt][$lte]
+          in: query
+          schema:
+            type: string
+            format: date-time
       responses:
         '200':
           description: 分组及审核计数。
@@ -640,6 +664,566 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:view
+  /proxy/radix/api/incidents:
+    get:
+      tags:
+        - Incidents
+      operationId: listIncidents
+      summary: 查询事件列表。
+      description: 默认只返回标量字段；关系需显式 populate，查询受当前用户的项目和数据权限约束。 可展开 project、primaryRuleHit、relatedRuleHits、responsibleUsers、alerts、closedLoopActions、acknowledgedBy、resolvedBy、displacement、responsibilityZone、dispositionEvidence。区域负责人可处置，其他获授权用户可查看事件和处理记录；处置必须调用
+        Crux resolve/ignore 操作。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - $ref: '#/components/parameters/Populate'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: filters[state][$eq]
+          in: query
+          schema:
+            type: string
+            enum:
+              - open
+              - acknowledged
+              - resolved
+              - ignored
+            description: 事件状态
+        - name: filters[severity][$eq]
+          in: query
+          schema:
+            type: string
+            enum:
+              - info
+              - warning
+              - major
+              - critical
+            description: 事件严重级别
+        - name: filters[type][$eq]
+          in: query
+          schema:
+            type: string
+            enum:
+              - ai_incident
+              - system_event
+              - platform_event
+              - mission_event
+              - displacement_incident
+            description: 事件类型
+        - name: filters[primaryRuleHit][documentId][$eq]
+          in: query
+          schema:
+            type: string
+        - name: filters[occurredAt][$gte]
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: filters[occurredAt][$lte]
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: sort
+          in: query
+          description: Strapi 排序，例如 occurredAt:desc；多字段使用 sort[0]、sort[1]。
+          schema:
+            type: string
+        - name: responsibleForMe
+          in: query
+          description: true 时按主规则命中首条证据所在区域的活跃负责人筛选。
+          schema:
+            type: boolean
+        - name: spatialZoneId
+          in: query
+          description: 按主规则命中首条证据所在区域的 documentId 筛选。
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 查询事件列表。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:view
+  /proxy/radix/api/incidents/{incidentId}:
+    get:
+      tags:
+        - Incidents
+      operationId: getIncident
+      summary: 查询单条事件。
+      description: 关系仅在显式 populate 后返回；不会扩大当前用户的数据访问范围。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - $ref: '#/components/parameters/Populate'
+        - name: incidentId
+          in: path
+          required: true
+          description: 事件 documentId。
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 查询单条事件。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentItemResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:view
+  /proxy/radix/api/closed-loop-actions:
+    get:
+      tags:
+        - ClosedLoopActions
+      operationId: listClosedLoopActions
+      summary: 查询闭环动作记录列表。
+      description: 默认只返回标量字段；关系需显式 populate，查询受当前用户的项目和数据权限约束。 按事件查询使用 filters[incident][documentId][$eq]。可展开
+        project、detectionProfile、ruleHit、incident、alert、device、creator、updater。incident_resolved/incident_ignored
+        为不可修改、不可删除的处置审计记录。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - $ref: '#/components/parameters/Populate'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: filters[state][$eq]
+          in: query
+          schema:
+            type: string
+            enum:
+              - pending
+              - processing
+              - succeeded
+              - failed
+              - skipped
+              - cancelled
+              - requires_approval
+        - name: filters[type][$eq]
+          in: query
+          schema:
+            type: string
+            enum:
+              - notification_dispatch
+              - uav_speaker_tts
+              - incident_resolved
+              - incident_ignored
+        - name: filters[mode][$eq]
+          in: query
+          schema:
+            type: string
+            enum:
+              - auto
+              - manual
+              - manual_approval
+        - name: filters[incident][documentId][$eq]
+          in: query
+          schema:
+            type: string
+        - name: filters[triggeredAt][$gte]
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: filters[triggeredAt][$lte]
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: sort
+          in: query
+          description: Strapi 排序，例如 occurredAt:desc；多字段使用 sort[0]、sort[1]。
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 查询闭环动作记录列表。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosedLoopActionListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:view
+  /proxy/radix/api/closed-loop-actions/{closedLoopActionId}:
+    get:
+      tags:
+        - ClosedLoopActions
+      operationId: getClosedLoopAction
+      summary: 查询单条闭环动作记录。
+      description: 关系仅在显式 populate 后返回；不会扩大当前用户的数据访问范围。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - $ref: '#/components/parameters/Populate'
+        - name: closedLoopActionId
+          in: path
+          required: true
+          description: 闭环动作记录 documentId。
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 查询单条闭环动作记录。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosedLoopActionItemResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:view
+  /proxy/crux/api/ai/incidents/{incidentId}/resolve:
+    post:
+      tags:
+        - Incidents
+      operationId: resolveIncident
+      summary: 解决事件。
+      description: 需要 ai-event:resolve 权限且调用者为事件所在区域的活跃负责人。仅 open/acknowledged 事件可处理，已处理事件返回 409。处理与审计记录及个人消息在同一持久化事务中写入。
+        位移事件解决须提交合格复测成果和 1 至 20 份不重复的现场处置证据；同时校验成果和证据访问权限。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - name: incidentId
+          in: path
+          required: true
+          description: 事件 documentId。
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisposeIncidentRequest'
+      responses:
+        '201':
+          description: 解决事件。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentDispositionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:resolve
+  /proxy/crux/api/ai/incidents/{incidentId}/ignore:
+    post:
+      tags:
+        - Incidents
+      operationId: ignoreIncident
+      summary: 忽略事件。
+      description: 需要 ai-event:resolve 权限且调用者为事件所在区域的活跃负责人。仅 open/acknowledged 事件可处理，已处理事件返回 409。处理与审计记录及个人消息在同一持久化事务中写入。
+        忽略只使用 note；不要求复测成果和处置证据。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - name: incidentId
+          in: path
+          required: true
+          description: 事件 documentId。
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisposeIncidentRequest'
+      responses:
+        '201':
+          description: 忽略事件。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentDispositionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:resolve
+  /proxy/crux/api/ai/incidents/{incidentId}/closed-loop/dispatch:
+    post:
+      tags:
+        - ClosedLoopActions
+      operationId: dispatchIncidentClosedLoop
+      summary: 执行事件闭环策略。
+      description: 根据事件主规则命中的检测配置规划并执行闭环动作，可能包含无人机喊话等设备操作。需要 ai-event:resolve 权限。响应直接返回动作 ID 汇总，不含 data/meta
+        包装；各动作最终状态通过 closed-loop-actions 查询。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - name: incidentId
+          in: path
+          required: true
+          description: 事件 documentId。
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClosedLoopDispatchRequest'
+      responses:
+        '201':
+          description: 执行事件闭环策略。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosedLoopDispatchResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+      x-annex-scope: ai-event:resolve
+  /proxy/radix/api/messages:
+    get:
+      tags:
+        - Messages
+      operationId: listMessages
+      summary: 查询当前用户的个人消息。
+      description: 需要登录用户身份，仅返回 recipient 为当前用户的消息，跨项目汇总，不使用 X-Requested-Project。按 createdAt:desc、documentId:desc
+        排序。meta.pagination.total 是筛选后数量；meta.total 和 meta.unread 是整个个人收件箱计数。
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: unread
+          in: query
+          description: true 时仅查询未读消息。
+          schema:
+            type: boolean
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum:
+              - incident
+              - alert
+              - operation
+              - task
+              - workorder
+              - approval
+              - system
+              - reminder
+        - name: search
+          in: query
+          description: 标题和内容不区分大小写搜索；去除首尾空白后取前 200 字。
+          schema:
+            type: string
+        - name: days
+          in: query
+          description: 最近 7 或 30 天；省略时不限制时间。
+          schema:
+            type: string
+            enum:
+              - '7'
+              - '30'
+      responses:
+        '200':
+          description: 查询当前用户的个人消息。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+  /proxy/radix/api/messages/read-all:
+    post:
+      tags:
+        - Messages
+      operationId: markAllMessagesRead
+      summary: 将当前用户的全部未读消息标记已读。
+      description: 仅更新当前登录用户的未读消息，不需要请求体。消息已读、不存在或属于其他用户时返回 count=0；操作可重复调用。全部已读不受列表筛选条件限制。
+      parameters: []
+      responses:
+        '200':
+          description: 将当前用户的全部未读消息标记已读。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageReadResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+  /proxy/radix/api/messages/{messageId}/read:
+    post:
+      tags:
+        - Messages
+      operationId: markMessageRead
+      summary: 将当前用户的一条消息标记已读。
+      description: 仅更新当前登录用户的未读消息，不需要请求体。消息已读、不存在或属于其他用户时返回 count=0；操作可重复调用。全部已读不受列表筛选条件限制。
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          description: 消息 documentId。
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 将当前用户的一条消息标记已读。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageReadResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/Error'
+  /proxy/radix/api/incidents/stats:
+    get:
+      tags:
+        - Incidents
+      operationId: getIncidentStats
+      summary: 查询事件闭环统计。
+      description: 按发生时间统计事件，resolved 和 ignored 均计入已闭环。响应直接返回报告对象，不含 data/meta 包装；趋势包括严重级别、类型、项目、区域和规则。当前最多扫描
+        5000 条，limit 控制各分组和最近事件条数。
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - name: range
+          in: query
+          schema:
+            type: string
+            enum:
+              - day
+              - week
+              - month
+              - quarter
+              - custom
+            default: month
+        - name: start
+          in: query
+          description: range=custom 时必填，包含起点。
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          description: range=custom 时必填，不包含终点；须晚于 start。
+          schema:
+            type: string
+            format: date-time
+        - name: tzOffsetMinutes
+          in: query
+          schema:
+            type: integer
+            minimum: -840
+            maximum: 840
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 8
+        - name: overdueHours
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 720
+            default: 24
+        - name: project
+          in: query
+          description: 项目 documentId，多个值以逗号分隔。
+          schema:
+            type: string
+        - name: spatialZone
+          in: query
+          description: 区域 documentId，多个值以逗号分隔。
+          schema:
+            type: string
+        - name: rule
+          in: query
+          description: 规则 code 或名称，多个值以逗号分隔。
+          schema:
+            type: string
+        - name: severity
+          in: query
+          description: 严重级别，多个值以逗号分隔。
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: 事件状态，多个值以逗号分隔。
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 查询事件闭环统计。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentStatsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         default:
           $ref: '#/components/responses/Error'
       x-annex-scope: ai-event:view
@@ -778,6 +1362,12 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: 资源不存在，或不在调用方权限边界内。
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: 事件状态冲突；事件已被处理，请刷新后查看最新记录。
       content:
         application/json:
           schema:
@@ -1237,6 +1827,589 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/RuleHitRecord'
+    IncidentListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/IncidentRecord'
+        meta:
+          $ref: '#/components/schemas/RadixMeta'
+    IncidentItemResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/IncidentRecord'
+    ClosedLoopActionListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClosedLoopActionRecord'
+        meta:
+          $ref: '#/components/schemas/RadixMeta'
+    ClosedLoopActionItemResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ClosedLoopActionRecord'
+    IncidentRecord:
+      allOf:
+        - $ref: '#/components/schemas/RadixRecord'
+        - type: object
+          properties:
+            withdrawalCorrections: {}
+            code:
+              type: string
+              maxLength: 128
+              description: 事件编码，唯一标识
+            title:
+              type: string
+              maxLength: 255
+              description: 事件标题
+            description:
+              type: string
+              description: 事件描述
+            type:
+              type: string
+              enum:
+                - ai_incident
+                - system_event
+                - platform_event
+                - mission_event
+                - displacement_incident
+              description: 事件类型
+            severity:
+              type: string
+              enum:
+                - info
+                - warning
+                - major
+                - critical
+              description: 事件严重级别
+            state:
+              type: string
+              enum:
+                - open
+                - acknowledged
+                - resolved
+                - ignored
+              description: 事件状态
+            project:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+              description: 所属项目
+            context:
+              description: 事件级结构化上下文
+            occurredAt:
+              type:
+                - string
+                - 'null'
+              format: date-time
+              description: 发生时间
+            acknowledgedAt:
+              type:
+                - string
+                - 'null'
+              format: date-time
+              description: 确认时间
+            resolvedAt:
+              type:
+                - string
+                - 'null'
+              format: date-time
+              description: 解决时间
+            acknowledgedBy:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+              description: 确认人
+            resolvedBy:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+              description: 解决人
+            primaryRuleHit:
+              anyOf:
+                - $ref: '#/components/schemas/RuleHitRecord'
+                - type: 'null'
+              description: 生成该事件的主规则命中
+            relatedRuleHits:
+              type: array
+              items:
+                $ref: '#/components/schemas/RuleHitRecord'
+              description: 合并到该事件的相关规则命中
+            responsibleUsers:
+              type: array
+              items:
+                $ref: '#/components/schemas/RelationRecord'
+              description: 负责处置并接收通知的用户
+            alerts:
+              type: array
+              items:
+                $ref: '#/components/schemas/RelationRecord'
+              description: 触发的告警
+            closedLoopActions:
+              type: array
+              items:
+                $ref: '#/components/schemas/RelationRecord'
+              description: 关联的闭环动作记录
+            resolutionNote:
+              type: string
+              description: 处置说明或忽略原因
+            displacement:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+            dispositionEvidence:
+              type: array
+              items:
+                $ref: '#/components/schemas/RawDataRecord'
+              description: 由位移事件关闭事务冻结并保留的现场处置原始证据
+            responsibilityZone:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+    ClosedLoopActionRecord:
+      allOf:
+        - $ref: '#/components/schemas/RadixRecord'
+        - type: object
+          properties:
+            code:
+              type: string
+              maxLength: 160
+            type:
+              type: string
+              enum:
+                - notification_dispatch
+                - uav_speaker_tts
+                - incident_resolved
+                - incident_ignored
+            state:
+              type: string
+              enum:
+                - pending
+                - processing
+                - succeeded
+                - failed
+                - skipped
+                - cancelled
+                - requires_approval
+            mode:
+              type: string
+              enum:
+                - auto
+                - manual
+                - manual_approval
+            priority:
+              type: string
+              enum:
+                - urgent
+                - high
+                - normal
+                - low
+            triggeredAt:
+              type:
+                - string
+                - 'null'
+              format: date-time
+            scheduledAt:
+              type:
+                - string
+                - 'null'
+              format: date-time
+            startedAt:
+              type:
+                - string
+                - 'null'
+              format: date-time
+            completedAt:
+              type:
+                - string
+                - 'null'
+              format: date-time
+            retryCount:
+              type: integer
+            cooldownKey:
+              type: string
+              maxLength: 255
+            dedupeKey:
+              type: string
+              maxLength: 255
+            payload: {}
+            result: {}
+            error: {}
+            metadata: {}
+            project:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+            detectionProfile:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+            ruleHit:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+            incident:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+            alert:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+            device:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+            creator:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+            updater:
+              anyOf:
+                - $ref: '#/components/schemas/RelationRecord'
+                - type: 'null'
+    DisposeIncidentRequest:
+      type: object
+      required:
+        - note
+      properties:
+        note:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: 处置说明或忽略原因，服务端去除首尾空白后校验。
+        retestResultId:
+          type: string
+          description: 位移事件解决时必填，合格复测 displacement 的 documentId。
+        dispositionEvidenceIds:
+          type: array
+          maxItems: 30
+          items:
+            type: string
+          description: 现场处置原始数据 documentId；位移事件解决时须提供 1 至 20 个不重复 ID。
+    IncidentDispositionResponse:
+      type: object
+      required:
+        - incidentId
+        - state
+        - resolvedAt
+        - resolutionNote
+      properties:
+        incidentId:
+          type: string
+        state:
+          type: string
+          enum:
+            - resolved
+            - ignored
+        resolvedAt:
+          type: string
+          format: date-time
+        resolutionNote:
+          type: string
+    ClosedLoopDispatchRequest:
+      type: object
+      description: 提交空对象；当前接口不使用请求体中的字段。
+      additionalProperties: false
+    ClosedLoopDispatchResponse:
+      type: object
+      required:
+        - incidentId
+        - plannedActionIds
+        - executedActionIds
+        - skippedActionIds
+        - failedActionIds
+      properties:
+        incidentId:
+          type: string
+        plannedActionIds:
+          type: array
+          items:
+            type: string
+        executedActionIds:
+          type: array
+          items:
+            type: string
+        skippedActionIds:
+          type: array
+          items:
+            type: string
+        failedActionIds:
+          type: array
+          items:
+            type: string
+    MessageRecord:
+      type: object
+      required:
+        - documentId
+        - type
+        - title
+        - content
+        - sourceType
+        - sourceId
+        - createdAt
+      properties:
+        documentId:
+          type: string
+        type:
+          type: string
+          enum:
+            - incident
+            - alert
+            - operation
+            - task
+            - workorder
+            - approval
+            - system
+            - reminder
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+        sourceType:
+          type: string
+          maxLength: 50
+        sourceId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        actions: {}
+        metadata: {}
+    MessageListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageRecord'
+        meta:
+          type: object
+          required:
+            - unread
+            - total
+            - pagination
+          properties:
+            unread:
+              type: integer
+              minimum: 0
+              description: 当前用户全部消息的未读数量，不受列表筛选限制。
+            total:
+              type: integer
+              minimum: 0
+              description: 当前用户全部消息数量，不受列表筛选限制。
+            pagination:
+              $ref: '#/components/schemas/RadixPagination'
+    MessageReadResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - count
+          properties:
+            count:
+              type: integer
+              minimum: 0
+              description: 本次实际标记已读的消息数量。
+    IncidentStatsDimension:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        incidentTotal:
+          type: integer
+          minimum: 0
+        openIncidentTotal:
+          type: integer
+          minimum: 0
+        highSeverityIncidentTotal:
+          type: integer
+          minimum: 0
+        closureRate:
+          type: number
+        latestOccurredAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+    IncidentStatsTrend:
+      type: object
+      properties:
+        date:
+          type: string
+        total:
+          type: integer
+        values:
+          type: object
+          additionalProperties:
+            type: integer
+    IncidentStatsRecentIncident:
+      type: object
+      properties:
+        incidentId:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        severity:
+          type: string
+        state:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        project:
+          anyOf:
+            - $ref: '#/components/schemas/RelationRecord'
+            - type: 'null'
+        primaryRuleHit:
+          anyOf:
+            - $ref: '#/components/schemas/RuleHitRecord'
+            - type: 'null'
+        ruleLabel:
+          type: string
+        spatialZoneLabel:
+          type: string
+        previewUrl:
+          type:
+            - string
+            - 'null'
+    IncidentStatsResponse:
+      type: object
+      required:
+        - generatedAt
+        - range
+        - summary
+        - categories
+        - trends
+        - recentIncidents
+      properties:
+        generatedAt:
+          type: string
+          format: date-time
+        range:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - day
+                - week
+                - month
+                - quarter
+                - custom
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+            bucket:
+              type: string
+              enum:
+                - hour
+                - day
+                - week
+            tzOffsetMinutes:
+              type: integer
+        summary:
+          type: object
+          properties:
+            incidentTotal:
+              type: integer
+              minimum: 0
+            openIncidentTotal:
+              type: integer
+              minimum: 0
+            overdueIncidentTotal:
+              type: integer
+              minimum: 0
+            highSeverityIncidentTotal:
+              type: integer
+              minimum: 0
+            closedIncidentTotal:
+              type: integer
+              minimum: 0
+            closureRate:
+              type: number
+            averageResolutionHours:
+              type:
+                - number
+                - 'null'
+        categories:
+          type: object
+          properties:
+            projects:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncidentStatsDimension'
+            spatialZones:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncidentStatsDimension'
+            rules:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncidentStatsDimension'
+        trends:
+          type: object
+          properties:
+            severity:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncidentStatsTrend'
+            types:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncidentStatsTrend'
+            projects:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncidentStatsTrend'
+            spatialZones:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncidentStatsTrend'
+            rules:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncidentStatsTrend'
+        recentIncidents:
+          type: array
+          items:
+            $ref: '#/components/schemas/IncidentStatsRecentIncident'
     RadixRecord:
       type: object
       required: [documentId]
@@ -1933,9 +3106,36 @@ components:
         - $ref: '#/components/schemas/PhoenixErrorResponse'
         - $ref: '#/components/schemas/RadixErrorResponse'
         - $ref: '#/components/schemas/AnnexErrorResponse'
+        - $ref: '#/components/schemas/CruxErrorResponse'
+        - $ref: '#/components/schemas/CruxValidationErrorResponse'
       description: >
         Phoenix 自身错误通常使用字符串 error；上游资源错误保留结构化错误对象；
-        Annex 适配层可使用带 code 和 requestId 的结构化错误。
+        Annex 适配层可使用带 code 和 requestId 的结构化错误；Crux 工作流错误使用 statusCode、message 和 error。
+    CruxErrorResponse:
+      type: object
+      required: [statusCode, message]
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        error:
+          type: string
+      description: Crux 工作流的 NestJS 错误响应。
+    CruxValidationErrorResponse:
+      type: object
+      required: [statusCode, message]
+      properties:
+        statusCode:
+          type: integer
+          enum: [400]
+        message:
+          type: array
+          items:
+            type: string
+        error:
+          type: string
+      description: Crux DTO 校验错误响应，message 包含各字段的校验错误。
     PhoenixErrorResponse:
       type: object
       required: [error]
