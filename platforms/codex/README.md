@@ -1,5 +1,25 @@
 # Codex adapter
 
+## Cloud connections
+
+The cloud LingMind plugin binds the verified LingMind Connect App at `https://connect.lingmind.cn/mcp`.
+New users have no environments. Add a host account connection, enter an environment code, resolve it through
+Apex, and independently authorize that environment through its own Phoenix gateway. Add another host account
+for another environment. Host account inventory and authorization are user-specific; package-time profiles do
+not grant or select environments. The connection service runs only on the control platform and uses no control
+account to authorize business requests.
+
+Use `connection_profile_get` to identify a candidate connection and `context_get` to verify its environment.
+Pass `envCode` on named-environment business calls; it must match that connection. A sole connected environment
+is the default; with multiple environments, ask for the code when omitted. See the complete
+[connection contract and acceptance matrix](user-environment-connections.md).
+
+`make package-cloud-plugins` exports App bindings and skills without resolving or preconfiguring any environment.
+Portable `mcp.json` declarations alone are desktop-only until converted by the supported cloud publication flow.
+The adapter below remains the direct-connection workflow for local Codex.
+
+## Local direct connections
+
 Codex connects directly to the remote HTTP MCP endpoint and owns OAuth 2.1 Authorization Code + PKCE S256. Use
 [`standard-business-environment.mcp.json`](standard-business-environment.mcp.json) as the shape for each direct
 business-environment connection, and [`global-operator.mcp.json`](global-operator.mcp.json) for the single global

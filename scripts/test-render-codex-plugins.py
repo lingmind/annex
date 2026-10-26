@@ -22,6 +22,34 @@ SPEC.loader.exec_module(MODULE)
 
 
 class RenderCodexPluginsTest(unittest.TestCase):
+    def test_direct_mcp_release_has_independent_environment_connections_without_app_bindings(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "marketplace"
+            args = MODULE.parser().parse_args([
+                "--output", str(output), "--default-environment", "beta",
+                "--environment", "beta", "https://phoenix.beta.example/mcp", "lingmind-codex", "1455",
+                "--environment", "sandbox", "https://phoenix.sandbox.example/mcp", "lingmind-codex", "1455",
+            ])
+            MODULE.render(args, cachebust=False, cloud_apps=False)
+            for name in ("lingmind", "lingmind-operator"):
+                plugin = output / "plugins" / name
+                self.assertFalse((plugin / ".app.json").exists())
+                manifest = json.loads((plugin / "plugin.json").read_text())
+                self.assertNotIn("apps", manifest["extensions"]["com.openai"])
+                self.assertNotIn("+codex.", manifest["version"])
+            plugin = output / "plugins/lingmind"
+            servers = json.loads((plugin / "mcp.json").read_text())["mcpServers"]
+            self.assertEqual(list(servers), ["lingmind-beta", "lingmind-sandbox"])
+            for code in ("beta", "sandbox"):
+                server = servers[f"lingmind-{code}"]
+                auth = server["extensions"]["com.openai"]["auth"]
+                self.assertEqual(server["url"], f"https://phoenix.{code}.example/mcp")
+                self.assertTrue(auth["authorizationUrl"].startswith(f"https://phoenix.{code}.example/"))
+                self.assertNotIn("secret", str(auth).lower())
+            skill = (plugin / "skills/lingmind-environment-context/SKILL.md").read_text()
+            self.assertIn("`lingmind-beta` (build hint), `lingmind-sandbox`", skill)
+            self.assertNotIn("Cloud App bindings", skill)
+
     def test_cloud_environment_subset_keeps_only_its_app_and_context(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -113,9 +141,13 @@ class RenderCodexPluginsTest(unittest.TestCase):
             environment_skill = (
                 output / "plugins/lingmind/skills/lingmind-environment-context/SKILL.md"
             ).read_text(encoding="utf-8")
-            self.assertIn("authoritative default for this installed package is `lingmind-alpha`", environment_skill)
-            self.assertIn("`lingmind-alpha` (default), `lingmind-beta`", environment_skill)
-            self.assertIn("Every configured connection stays enabled", environment_skill)
+            self.assertIn("build profile names `lingmind-alpha`", environment_skill)
+            self.assertIn("not an authenticated user's connection inventory or a runtime default", environment_skill)
+            self.assertIn("`lingmind-alpha` (build hint), `lingmind-beta`", environment_skill)
+            self.assertIn("Exactly one connected environment is the implicit default", environment_skill)
+            self.assertIn("multiple connected environments require an explicit code", environment_skill)
+            self.assertIn("environment_connections_unavailable", environment_skill)
+            self.assertNotIn("authoritative default for this installed package", environment_skill)
             self.assertIn("Select and verify the exact `lingmind-<environment-code>`", environment_skill)
             self.assertNotIn("Host connection activation change", environment_skill)
             self.assertIn("connection's `context_get`", environment_skill)

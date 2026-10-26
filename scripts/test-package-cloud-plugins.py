@@ -73,8 +73,23 @@ class CloudPackageTests(unittest.TestCase):
 
     def test_empty_business_template_cannot_publish_without_connection(self):
         with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "source"
+            shutil.copytree(ROOT / "plugins/lingmind", source)
+            (source / ".app.json").unlink(missing_ok=True)
             with self.assertRaisesRegex(ValueError, "Configure a business environment"):
-                PACKAGER.package_plugin(ROOT / "plugins/lingmind", Path(temporary))
+                PACKAGER.package_plugin(source, Path(temporary) / "output")
+
+    def test_dynamic_cloud_app_packages_without_environment_or_network(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = ROOT / "plugins/lingmind"
+            self.assertEqual(json.loads((source / "mcp.json").read_text())["mcpServers"], {})
+            with ZipFile(PACKAGER.package_plugin(source, Path(temporary))) as archive:
+                self.assertIn(".app.json", archive.namelist())
+                self.assertNotIn("mcp.json", archive.namelist())
+                self.assertNotIn(".mcp.json", archive.namelist())
+                skill = archive.read("skills/lingmind-environment-context/SKILL.md").decode()
+                self.assertIn("newly installed plugin has no default", skill)
+                self.assertIn("connection_profile_get", skill)
 
     def test_symlinks_are_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:

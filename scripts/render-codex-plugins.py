@@ -184,7 +184,7 @@ def cachebusted_version(version: str, timestamp: str) -> str:
     return f"{base}+codex.{timestamp}"
 
 
-def copy_plugin(name: str, destination: Path, timestamp: str | None) -> Path:
+def copy_plugin(name: str, destination: Path, timestamp: str | None, *, cloud_apps: bool = True) -> Path:
     source = ROOT / "plugins" / name
     target = destination / "plugins" / name
     shutil.copytree(source, target)
@@ -196,7 +196,7 @@ def copy_plugin(name: str, destination: Path, timestamp: str | None) -> Path:
     portable_path = target / "plugin.json"
     portable = json.loads(portable_path.read_text(encoding="utf-8"))
     portable["version"] = manifest["version"]
-    if timestamp:
+    if timestamp or not cloud_apps:
         portable.get("extensions", {}).get("com.openai", {}).pop("apps", None)
         (target / ".app.json").unlink(missing_ok=True)
     write_json(portable_path, portable)
@@ -215,18 +215,20 @@ def write_environment_skill_context(plugin: Path, environment_codes: list[str], 
         raise ValueError("environment context Skill must contain exactly one generated-context marker")
     connections = []
     for code in environment_codes:
-        default_suffix = " (default)" if code == default_environment else ""
+        default_suffix = " (build hint)" if code == default_environment else ""
         connections.append(f"`lingmind-{code}`{default_suffix}")
     generated = "\n".join(
         [
-            "## Installed connection map",
+            "## Packaged connection hints",
             "",
-            f"The authoritative default for this installed package is `lingmind-{default_environment}`",
-            f"(environment code `{default_environment}`). Use it only when the user does not name an environment;",
-            "never choose another connection by alphabetical or tool-list order.",
+            f"The build profile names `lingmind-{default_environment}` (environment code `{default_environment}`) as its default hint.",
+            "This is not an authenticated user's connection inventory or a runtime default.",
+            "Never choose an environment from this hint, alphabetical order, or tool-list order.",
             "",
-            "Configured connections: " + ", ".join(connections) + ".",
-            "Every configured connection stays enabled. Select and verify the exact `lingmind-<environment-code>`",
+            "Declared connection slots: " + ", ".join(connections) + ".",
+            "A declared slot does not establish that the current user connected or authorized it.",
+            "Use only the current user's authenticated connection inventory. Exactly one connected environment is the implicit default;",
+            "multiple connected environments require an explicit code. Select and verify the exact `lingmind-<environment-code>`",
             "connection for each request, and keep all subsequent calls on that connection until the user switches.",
             "This block is generated at installation time and contains no URL, issuer, token, or credential.",
         ]
@@ -249,7 +251,7 @@ def replace_generated_output(staged: Path, output: Path) -> None:
     os.replace(staged, output)
 
 
-def render(args: argparse.Namespace, *, cachebust: bool = True) -> Path:
+def render(args: argparse.Namespace, *, cachebust: bool = True, cloud_apps: bool = True) -> Path:
     marketplace_name = validate_identifier(args.marketplace_name, "marketplace name")
     environments: dict[str, tuple[str, str, int]] = {}
     for raw_code, raw_url, raw_client_id, raw_port in getattr(args, "environment", None) or []:
@@ -297,7 +299,7 @@ def render(args: argparse.Namespace, *, cachebust: bool = True) -> Path:
     staged = Path(tempfile.mkdtemp(prefix=f".{output.name}.", dir=output.parent))
     try:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") if cachebust else None
-        standard = copy_plugin("lingmind", staged, timestamp)
+        standard = copy_plugin("lingmind", staged, timestamp, cloud_apps=cloud_apps)
         apps_path = standard / ".app.json"
         if apps_path.exists():
             apps = json.loads(apps_path.read_text(encoding="utf-8"))["apps"]
@@ -314,6 +316,7 @@ def render(args: argparse.Namespace, *, cachebust: bool = True) -> Path:
         write_json(
             standard / "references" / "configured-environments.json",
             {
+                "inventoryScope": "package_hints",
                 "defaultEnvironmentCode": default_environment,
                 "connections": [
                     {
@@ -326,7 +329,7 @@ def render(args: argparse.Namespace, *, cachebust: bool = True) -> Path:
             },
         )
 
-        copy_plugin("lingmind-operator", staged, timestamp)
+        copy_plugin("lingmind-operator", staged, timestamp, cloud_apps=cloud_apps)
         entries = [
             {
                 "name": "lingmind",

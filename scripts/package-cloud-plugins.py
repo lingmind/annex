@@ -32,11 +32,13 @@ def package_plugin(source: Path, output: Path) -> Path:
         raise ValueError("Cloud releases require an explicit stable SemVer in plugin.json")
 
     mcp = json.loads((source / "mcp.json").read_text(encoding="utf-8"))
-    if not mcp["mcpServers"]:
-        raise ValueError("Configure a business environment before cloud packaging")
     apps_path = source / ".app.json"
     apps = json.loads(apps_path.read_text(encoding="utf-8")) if apps_path.exists() else None
-    if apps is not None and set(apps["apps"]) != set(mcp["mcpServers"]):
+    if apps is None and not mcp["mcpServers"]:
+        raise ValueError("Configure a business environment or verified cloud App before packaging")
+    if apps is not None and not apps["apps"]:
+        raise ValueError("Cloud packaging requires a verified App binding")
+    if apps is not None and mcp["mcpServers"] and set(apps["apps"]) != set(mcp["mcpServers"]):
         raise ValueError("Cloud App bindings must match the selected MCP connections exactly")
     output.mkdir(parents=True, exist_ok=True)
     archive_path = output / f"{manifest['name']}-{manifest['version']}.zip"
@@ -69,10 +71,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--environment-code", action="append")
     parser.add_argument("--profile", type=Path, default=ROOT / "platforms/codex/cloud-environments.json")
+    parser.add_argument("--connection-mode", choices=("apps", "mcp"), default="apps",
+                        help="Use existing cloud App bindings or direct portable MCP declarations")
     parser.add_argument("--default-environment")
     parser.add_argument("--apex-url", default="https://apex.lingmind.cn")
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
+    if args.connection_mode == "apps":
+        if args.environment_code or args.default_environment:
+            parser.error("Cloud environments are connected independently by each user, not selected at package time")
+        for name in ("lingmind", "lingmind-operator"):
+            print(package_plugin(ROOT / "plugins" / name, args.output.resolve()))
+        return
     select_environments(args)
     spec = importlib.util.spec_from_file_location("render_codex_plugins", ROOT / "scripts/render-codex-plugins.py")
     renderer = importlib.util.module_from_spec(spec)
@@ -84,7 +94,7 @@ def main() -> None:
             *[value for code in args.environment_code for value in ("--environment-code", code)],
             *(["--default-environment", args.default_environment] if args.default_environment else []),
         ])
-        marketplace = renderer.render(config, cachebust=False)
+        marketplace = renderer.render(config, cachebust=False, cloud_apps=args.connection_mode == "apps")
         for name in ("lingmind", "lingmind-operator"):
             print(package_plugin(marketplace / "plugins" / name, args.output.resolve()))
 

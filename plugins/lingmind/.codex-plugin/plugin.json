@@ -3,7 +3,7 @@
     "name": "LingMind",
     "url": "https://lingmind.cn"
   },
-  "description": "Use project-scoped LingMind business, user, role, and permission queries plus authorized operations through Phoenix MCP.",
+  "description": "连接 LingMind，查询项目与业务数据，处理任务、设备与日常工作。",
   "homepage": "https://lingmind.cn",
   "keywords": [
     "lingmind",
@@ -14,7 +14,7 @@
   "license": "MIT",
   "name": "lingmind",
   "repository": "https://github.com/lingmind/annex",
-  "version": "0.3.3",
+  "version": "0.5.1",
   "interface": {
     "brandColor": "#1677FF",
     "capabilities": [
@@ -32,8 +32,8 @@
     "developerName": "LingMind",
     "displayName": "LingMind",
     "logo": "./assets/lingmind-logo.png",
-    "longDescription": "Use one LingMind business environment through Phoenix's explicit CapabilityRegistry. Resolve project context; query business records, users, roles, and the active permission catalog within the logged-in user's effective access; operate jobs, missions, waylines, media, streams, UAV, NVR, robots, and devices; generate daily business reports; and use plan/confirm/execute for destructive or physical actions.",
-    "shortDescription": "Operate LingMind business",
+    "longDescription": "连接你的 LingMind 工作环境，查看项目、设备、任务和告警，处理业务数据并生成报告。重要操作会在执行前请求确认。",
+    "shortDescription": "连接 LingMind 工作环境",
     "websiteURL": "https://lingmind.cn"
   },
   "skills": "./skills/",

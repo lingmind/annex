@@ -1,19 +1,22 @@
 # Environment context
 
-One installed LingMind plugin may expose multiple direct Phoenix MCP connections. Every connection has the stable
-name `lingmind-<environment-code>` and remains bound to exactly one business environment, Keycloak issuer, OAuth
-audience, and token set. The generated `configured-environments.json` stores a separate default-environment pointer;
-changing that pointer never renames or rebinds a connection.
+One LingMind business plugin supports each authenticated user's own set of environment connections. A connection has
+a stable environment code, a verified environment name, and an independent Keycloak issuer, OAuth audience and token
+set. Host namespaces may use `lingmind-<environment-code>`; a namespace is not proof of identity or authorization.
 
-All configured standard LingMind connections remain active so the agent can route directly to the stable connection
-named for the requested environment. The default-environment pointer is only a selection preference when the user does
-not name an environment; it does not disable other connections or change their independent OAuth sessions.
+`configured-environments.json` describes build-time connection slots. It is not the user's connected-environment list,
+and `defaultEnvironmentCode` is not a global runtime default. Beta and sandbox are examples, not a fixed global tenant
+catalog. Different users may connect completely different environments. Discovery and selection must use an authoritative
+inventory scoped to the current authenticated principal; inventory and credentials must never be shared by username,
+email, browser profile, plugin package, or another user's earlier session.
 
 ## Selection
 
-1. If the user supplies no environment code, select the connection for `defaultEnvironmentCode`.
-2. If the user supplies another environment code, select the exact active `lingmind-<environment-code>` connection.
-3. Never ask a single-environment user to select an environment merely because the request omitted one.
+1. Read the current user's authenticated connection inventory. If unavailable, return `environment_connections_unavailable`.
+2. Resolve an explicit code exactly within that inventory. Resolve a name to a code only for one unique match;
+   ambiguous names require the user to give a code. A missing or unauthorized code returns `environment_not_connected`.
+3. With no selector, use the sole connected environment automatically. With multiple connections, ask for a code;
+   with none, report that an environment must be connected. Never use a build profile to choose among users' environments.
 4. Call `context_get` on the selected connection before any business tool. Use its `projects` array as the accessible
    project set; the public facade has no separate `projects_list` tool.
 5. Accept the connection only when its returned `code` exactly matches the selected environment code and its

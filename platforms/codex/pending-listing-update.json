@@ -1,5 +1,5 @@
 {
-  "state": "blocked_app_owned_presentation_editing",
+  "state": "superseded_by_standard_cloud_plugins",
   "desiredCloudPluginVersion": "1.0.2",
   "portableSourceVersion": "0.3.3",
   "interface": {
@@ -15,7 +15,7 @@
   },
   "homepage": "https://lingmind.cn",
   "logoSource": "docs/assets/logo.png",
-  "publisherIdentityVerification": "pending_platform_check",
+  "publisherIdentityVerification": "backend_normalizes_to_account_name",
   "plugins": [
     {
       "pluginId": "plugin_asdk_app_6adefee15e388191b0999e2cce22e295",
@@ -43,5 +43,15 @@
     ],
     "logoClick": "no editor opened",
     "publication": "not attempted through unsupported presentation update"
-  }
+  },
+  "replacementPlugins": [
+    {
+      "pluginId": "plugins_6adf2cd2518481918e10b4a0a745205a",
+      "version": "0.5.1"
+    },
+    {
+      "pluginId": "Plugin_54b65c47855c819197cf0ffef589aeb1",
+      "version": "0.4.2"
+    }
+  ]
 }
