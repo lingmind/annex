@@ -3,13 +3,13 @@
     "plugin_id": "plugin_asdk_app_6adf007fddb08191ab7d36bfe4463f64",
     "name": "dev-6adf007fddb08191ab7d36bfe4463f64",
     "description": "LingMind 全局 Operator 云端连接，登录经 Phoenix 网关。",
-    "version": "1.0.0",
-    "current_release_id": "PluginRelease_2c36ab571874819193a37f59d31a2492",
+    "version": "1.0.1",
+    "current_release_id": "pluginrel_6adf0923412c81919e4d99b52655b8b1",
     "scope": "USER",
     "discoverability": "PRIVATE"
   },
   "files": {
     ".app.json": "{\n  \"apps\": {\n    \"dev-6adf007fddb08191ab7d36bfe4463f64\": {\n      \"id\": \"asdk_app_6adf007fddb08191ab7d36bfe4463f64\"\n    }\n  }\n}",
-    ".codex-plugin/plugin.json": "{\n  \"apps\": \"./.app.json\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"description\": \"LingMind \\u5168\\u5c40 Operator \\u4e91\\u7aef\\u8fde\\u63a5\\uff0c\\u767b\\u5f55\\u7ecf Phoenix \\u7f51\\u5173\\u3002\",\n  \"interface\": {\n    \"capabilities\": [],\n    \"category\": \"Other\",\n    \"defaultPrompt\": null,\n    \"developerName\": \"App developer\",\n    \"displayName\": \"LingMind Operator MCP\",\n    \"longDescription\": \"LingMind \\u5168\\u5c40 Operator \\u4e91\\u7aef\\u8fde\\u63a5\\uff0c\\u767b\\u5f55\\u7ecf Phoenix \\u7f51\\u5173\\u3002\",\n    \"shortDescription\": \"LingMind \\u5168\\u5c40 Operator \\u4e91\\u7aef\\u8fde\\u63a5\\uff0c\\u767b\\u5f55\\u7ecf Phoenix \\u7f51\\u5173\\u3002\"\n  },\n  \"name\": \"dev-6adf007fddb08191ab7d36bfe4463f64\",\n  \"version\": \"1.0.0\"\n}"
+    ".codex-plugin/plugin.json": "{\n  \"apps\": \"./.app.json\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"description\": \"LingMind \\u5168\\u5c40 Operator \\u4e91\\u7aef\\u8fde\\u63a5\\uff0c\\u767b\\u5f55\\u7ecf Phoenix \\u7f51\\u5173\\u3002\",\n  \"interface\": {\n    \"capabilities\": [],\n    \"category\": \"Other\",\n    \"defaultPrompt\": null,\n    \"developerName\": \"App developer\",\n    \"displayName\": \"LingMind Operator\",\n    \"longDescription\": \"LingMind \\u5168\\u5c40 Operator \\u4e91\\u7aef\\u8fde\\u63a5\\uff0c\\u767b\\u5f55\\u7ecf Phoenix \\u7f51\\u5173\\u3002\",\n    \"shortDescription\": \"LingMind \\u5168\\u5c40 Operator \\u4e91\\u7aef\\u8fde\\u63a5\\uff0c\\u767b\\u5f55\\u7ecf Phoenix \\u7f51\\u5173\\u3002\"\n  },\n  \"name\": \"dev-6adf007fddb08191ab7d36bfe4463f64\",\n  \"skills\": \"./skills/\",\n  \"version\": \"1.0.1\"\n}"
   }
 }

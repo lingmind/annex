@@ -27,6 +27,13 @@
     "operatorReconnect": "ChatGPT OAuth callback failed; not restored",
     "sandbox": "callback configured, Phoenix 2.2-b107 running, cloud OAuth not granted",
     "branding": "not completed",
-    "multiEnvironmentCloudInvocation": "not verified"
+    "multiEnvironmentCloudInvocation": "not verified",
+    "operatorInstallation": "restored; cloud OAuth still pending",
+    "displayNames": [
+      "LingMind",
+      "LingMind Operator"
+    ],
+    "betaCloudCall": "16:09 Asia/Shanghai context_get passed, code beta, five projects, 420 capabilities",
+    "supersededPluginsUninstall": "API reports not_installed; visible entry count not verified"
   }
 }

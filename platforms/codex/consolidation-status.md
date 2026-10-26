@@ -21,12 +21,15 @@ and App-owned presentation. Both private USER plugins were updated to `1.0.1` an
 | LingMind Beta MCP | `plugin_asdk_app_6adefee15e388191b0999e2cce22e295` | `pluginrel_6adf094ba71481918541166afe3ce7ab` | 9 |
 | LingMind Operator MCP | `plugin_asdk_app_6adf007fddb08191ab7d36bfe4463f64` | `pluginrel_6adf0923412c81919e4d99b52655b8b1` | 6 |
 
-`account-plugins/*.json` retains pre-consolidation App metadata and exact bindings. Use a fresh
+`account-plugins/*.json` retains the latest read-back App metadata and exact bindings. Use a fresh
 source read before subsequent updates. `scripts/package-connected-plugins.py` overlays Annex
 Skills and support files onto those identities without provisioning duplicate MCP connections.
-App-owned name/icon changes must go through the App management UI; these releases have not
-yet changed the visible name or icon. The original Skills-only packages remain installed until
-the connected packages are installed, branded, and actually callable.
+App-owned name/icon changes must go through the App management UI. Both names were changed
+there to `LingMind` and `LingMind Operator` and verified by source read-back; icons remain
+unchanged. Operator installation was restored (the settings page now has Uninstall and six
+enabled Skills), but its OAuth connection is still pending. The uninstall API reported both
+original Skills-only packages as `not_installed`; stale sidebar entries have not established
+the final installed-entry count.
 
 ## Sandbox preparation
 
@@ -46,7 +49,7 @@ Its example profile remains separate from the active beta-only cloud profile.
 1. Restore the existing Operator cloud connection. Installation attempts reached a failing
    ChatGPT OAuth callback; settings/detail pages also intermittently timed out. Do not create
    another Operator App as a retry or claim that the connection has been restored.
-2. Apply both display names and the LingMind logo through App management.
+2. Apply the LingMind logo through App management; both display names are now verified.
 3. Verify the connected plugins directly, then uninstall the two superseded Skills packages.
 4. Resolve whether one installed business connection can expose independent beta/sandbox App
    sessions without requiring additional installed connection plugins. If the host cannot,
@@ -55,3 +58,9 @@ Its example profile remains separate from the active beta-only cloud profile.
 5. Complete sandbox cloud authorization and verify beta → sandbox → beta `context_get`, then
    Operator `environments_list`, using only cloud MCP tools.
 6. Record final branded releases and publish matching version tags only after acceptance.
+
+At 16:09 Asia/Shanghai the existing cloud dot made a new successful
+`mcp__codex_apps__lingmind_beta_mcp_context_get` call: code `beta`, five projects, catalog
+ready with 420 capabilities. Operator `environments_list` was still absent from its current
+callable tools, so Operator recovery has not passed acceptance. The merged Skills alone
+must not be described as a successful Operator connection.
