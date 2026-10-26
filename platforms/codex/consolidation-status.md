@@ -95,3 +95,23 @@ The reviewed sandbox registration settings are retained in
 [`pending-sandbox-connection.json`](./pending-sandbox-connection.json), resolved afresh from
 Apex. It contains only public client configuration, not tokens or a fabricated App ID.
 Do not add sandbox to the active cloud profile until its App binding and OAuth grant exist.
+
+## Publisher and listing follow-up
+
+The user requested developer `LingMind`, website `https://lingmind.cn`, and an enterprise
+application category. Portable source `0.3.3` declares author/developer `LingMind`, sets
+`homepage` and `interface.websiteURL` to the exact supplied HTTPS URL, and uses the platform's
+supported `Business & Operations` category. The public website was checked and identifies
+LingMind; no cloud publisher identity verification has been established by this check.
+
+[`pending-listing-update.json`](./pending-listing-update.json) records the intended cloud
+App metadata change and next cloud version separately from the live `1.0.1` versions.
+The current Plugin Creator App-backed update workflow permits Skills/support files and version
+edits while preserving App-owned presentation. The logo, website, category and displayed
+developer therefore still require a supported App metadata update and identity verification,
+not a claim that uploading an unused asset changed the icon. Source-reader requests also
+failed with a connection error during this follow-up, so no guarded cloud update was attempted.
+
+Both `0.3.3` archives were built offline with the unchanged, previously verified beta resource
+and cloud App bindings after live Apex resolution failed during TLS negotiation. Package
+metadata, exact logo checksum, unchanged starter prompts and all nine/six Skills were verified.

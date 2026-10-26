@@ -1,0 +1,29 @@
+{
+  "state": "awaiting_supported_app_metadata_update",
+  "desiredCloudPluginVersion": "1.0.2",
+  "portableSourceVersion": "0.3.3",
+  "interface": {
+    "developerName": "LingMind",
+    "websiteURL": "https://lingmind.cn",
+    "category": "Business & Operations",
+    "logo": "./assets/lingmind-logo.png",
+    "composerIcon": "./assets/lingmind-logo.png"
+  },
+  "author": {
+    "name": "LingMind",
+    "url": "https://lingmind.cn"
+  },
+  "homepage": "https://lingmind.cn",
+  "logoSource": "docs/assets/logo.png",
+  "publisherIdentityVerification": "pending_platform_check",
+  "plugins": [
+    {
+      "pluginId": "plugin_asdk_app_6adefee15e388191b0999e2cce22e295",
+      "appId": "asdk_app_6adefee15e388191b0999e2cce22e295"
+    },
+    {
+      "pluginId": "plugin_asdk_app_6adf007fddb08191ab7d36bfe4463f64",
+      "appId": "asdk_app_6adf007fddb08191ab7d36bfe4463f64"
+    }
+  ]
+}

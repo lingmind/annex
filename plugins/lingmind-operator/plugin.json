@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "author": {
     "name": "LingMind",
-    "url": "https://www.lingmind.cn"
+    "url": "https://lingmind.cn"
   },
   "description": "Observe and maintain active LingMind environments as an Operator administrator, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
   "extensions": {
@@ -26,11 +26,12 @@
         "displayName": "LingMind Operator",
         "logo": "./assets/lingmind-logo.png",
         "longDescription": "Use one global Apex Operator connection as a super administrator to discover all non-deleted environments, inspect safe Agent-backed evidence for active targets, and execute Apex Mongo persisted maintenance, service deployment, backup, or checksum-bound restore plans.",
-        "shortDescription": "Manage LingMind environments"
+        "shortDescription": "Manage LingMind environments",
+        "websiteURL": "https://lingmind.cn"
       }
     }
   },
-  "homepage": "https://www.lingmind.cn",
+  "homepage": "https://lingmind.cn",
   "keywords": [
     "lingmind",
     "operator",
@@ -40,5 +41,5 @@
   "license": "MIT",
   "name": "lingmind-operator",
   "repository": "https://github.com/lingmind/annex",
-  "version": "0.3.2"
+  "version": "0.3.3"
 }

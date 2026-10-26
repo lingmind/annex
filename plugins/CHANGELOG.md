@@ -1,5 +1,16 @@
 # Plugin releases
 
+## Portable source 0.3.3 - 2026-10-26 (cloud publication pending)
+
+- Declare `LingMind` as author and developer name for both packages.
+- Set both `homepage` and the listing's `websiteURL` to the user-specified
+  `https://lingmind.cn`; the homepage alone does not populate the listing website.
+- Use the supported `Business & Operations` category for the requested enterprise-business
+  application classification. Preserve the exact selected logo and starter prompts.
+- Retain the intended App-owned listing update in `pending-listing-update.json`. Cloud
+  publisher identity is not verified by setting package fields, and the live App metadata
+  has not been updated or republished by this source release.
+
 ## Portable source 0.3.2 - 2026-10-26 (cloud publication pending)
 
 - Replace both plugin brand assets with the exact user-selected `docs/assets/logo.png`
