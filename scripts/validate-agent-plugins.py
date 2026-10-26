@@ -111,17 +111,19 @@ def validate_manifest(plugin_name: str) -> None:
 
 def validate_marketplace() -> None:
     marketplace = load_json(ROOT / ".agents" / "plugins" / "marketplace.json")
-    if marketplace.get("name") != "lingmind-local":
+    if marketplace.get("name") != "lingmind-annex":
         fail("marketplace name drifted")
     entries = marketplace.get("plugins", [])
     if [entry.get("name") for entry in entries] != ["lingmind", "lingmind-operator"]:
         fail("marketplace plugin order or membership drifted")
     for entry in entries:
         name = entry["name"]
-        if entry.get("source") != {"source": "local", "path": f"./plugins/{name}"}:
+        if entry.get("source") != {"source": "local", "path": f"./distributions/codex/plugins/{name}"}:
             fail(f"invalid marketplace source for {name}")
         if entry.get("policy") != {"installation": "AVAILABLE", "authentication": "ON_INSTALL"}:
             fail(f"invalid marketplace policy for {name}")
+        if entry.get("category") != "Business & Operations":
+            fail(f"invalid marketplace category for {name}")
 
 
 def require_connection_profile(path: Path, cardinality: str) -> dict[str, Any]:

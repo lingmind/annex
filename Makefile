@@ -1,4 +1,4 @@
-.PHONY: build test fmt lint generate-sdks test-generated-sdks validate-plugins package-cloud-plugins configure-codex-lingmind configure-workbuddy-lingmind configure-doubao-lingmind
+.PHONY: build test fmt lint generate-sdks test-generated-sdks validate-plugins validate-repository-plugins render-repository-plugins package-cloud-plugins configure-codex-lingmind configure-workbuddy-lingmind configure-doubao-lingmind
 
 PYTHON ?= python3
 CODEX_APP_CLI := $(firstword $(wildcard /Applications/ChatGPT.app/Contents/Resources/codex /Applications/Codex.app/Contents/Resources/codex))
@@ -45,6 +45,8 @@ test-generated-sdks:
 	cd generated/java && bash ./gradlew compileJava
 
 validate-plugins:
+	$(PYTHON) scripts/render-repository-plugins.py --check
+	$(PYTHON) scripts/test-repository-plugins.py
 	$(PYTHON) scripts/test-package-cloud-plugins.py
 	$(PYTHON) scripts/test-package-connected-plugins.py
 	$(PYTHON) scripts/test-render-codex-plugins.py
@@ -60,6 +62,13 @@ validate-plugins:
 	done
 	$(PYTHON) scripts/validate-agent-plugins.py
 	@jq empty .agents/plugins/marketplace.json
+
+render-repository-plugins:
+	$(PYTHON) scripts/render-repository-plugins.py
+
+validate-repository-plugins:
+	$(PYTHON) scripts/render-repository-plugins.py --check
+	$(PYTHON) scripts/test-repository-plugins.py
 
 package-cloud-plugins:
 	$(PYTHON) scripts/package-cloud-plugins.py \
