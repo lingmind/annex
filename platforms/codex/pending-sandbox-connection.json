@@ -1,0 +1,41 @@
+{
+  "state": "awaiting_cloud_registration_and_oauth",
+  "environmentCode": "sandbox",
+  "mcpServerName": "lingmind-sandbox",
+  "mcpServer": {
+    "type": "streamable-http",
+    "url": "https://phoenix.sandbox.lingmind.cn/mcp",
+    "extensions": {
+      "com.openai": {
+        "auth": {
+          "type": "oauth",
+          "client": {
+            "mode": "provided",
+            "clientId": "lingmind-codex",
+            "tokenEndpointAuthMethod": "none"
+          },
+          "baseScopes": [
+            "openid",
+            "lingmind.read",
+            "lingmind.write",
+            "lingmind.execute"
+          ],
+          "defaultScopes": [
+            "openid",
+            "lingmind.read",
+            "lingmind.write",
+            "lingmind.execute"
+          ],
+          "oidcEnabled": true,
+          "oidcScopesSupported": [
+            "openid"
+          ],
+          "authorizationUrl": "https://phoenix.sandbox.lingmind.cn/proxy/keycloak/realms/lingmind/protocol/openid-connect/auth",
+          "tokenUrl": "https://phoenix.sandbox.lingmind.cn/proxy/keycloak/realms/lingmind/protocol/openid-connect/token",
+          "oidcConfigurationUrl": "https://phoenix.sandbox.lingmind.cn/proxy/keycloak/realms/lingmind/.well-known/openid-configuration",
+          "oidcUserinfoEndpoint": "https://phoenix.sandbox.lingmind.cn/proxy/keycloak/realms/lingmind/protocol/openid-connect/userinfo"
+        }
+      }
+    }
+  }
+}

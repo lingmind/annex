@@ -1,5 +1,15 @@
 # Plugin releases
 
+## Portable source 0.3.2 - 2026-10-26 (cloud publication pending)
+
+- Replace both plugin brand assets with the exact user-selected `docs/assets/logo.png`
+  (1620 x 1564 RGBA; SHA-256 `74a2c8825c3ba66a010bc176027d099a8cc4118b2f2cc3f091e5586a69841105`).
+- Preserve the active beta connection and existing cloud App IDs. The prepared archives do
+  not establish that cloud App-owned icons have changed.
+- Cloud management is blocked by a visible `cloudflare_challenge`, confirmed by the user.
+  Sandbox authorization and Operator Pod acceptance remain pending. Current Operator
+  environment-list and capability-list calls return `-32001 Unknown tool`.
+
 ## Connected cloud plugins 1.0.1 - 2026-10-26 (acceptance pending)
 
 - Merge the nine business and six Operator Skills into the existing App-backed MCP plugins,

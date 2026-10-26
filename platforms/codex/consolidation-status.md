@@ -64,3 +64,34 @@ At 16:09 Asia/Shanghai the existing cloud dot made a new successful
 ready with 420 capabilities. Operator `environments_list` was still absent from its current
 callable tools, so Operator recovery has not passed acceptance. The merged Skills alone
 must not be described as a successful Operator connection.
+
+## Requested brand asset and subsequent retry
+
+The user explicitly selected `/Users/shoppon/code/lingmind/docs/assets/logo.png` for both
+plugins. Portable source version `0.3.2` retains exact copies in
+`plugins/{lingmind,lingmind-operator}/assets/lingmind-logo.png`, SHA-256
+`74a2c8825c3ba66a010bc176027d099a8cc4118b2f2cc3f091e5586a69841105`.
+This supersedes the earlier Helix icon selection. Prepared archive publication is distinct
+from cloud App-owned presentation updates; the live icons have not been changed.
+
+On the subsequent user-requested retry, the current session successfully invoked
+`mcp__codex_apps__lingmind_context_get`: code `beta`, five projects and 420 ready capabilities.
+Both `mcp__codex_apps__lingmind_operator_environments_list` and
+`mcp__codex_apps__lingmind_operator_operator_capabilities_list` returned `-32001 Unknown tool`.
+No current Pod inventory was obtained and no cluster/REST fallback was used.
+
+The browser's fresh installed list now contains exactly the two App-backed plugin IDs above.
+The old `plugins_6adecb08c47c81919a592797eb3251fd` and
+`plugins_6adecb14ebc08191b377baa97d343c8e` source reads return `NOT_FOUND` and must not be reused
+for updates. They survive only in historical receipts.
+
+After reconnect was retried through the actual Operator plugin, the page DOM reported
+`Unable to load plugin / cloudflare_challenge` (Chinese UI: `无法加载插件`). The user confirmed
+the challenge persists. Desktop-app UI automation was denied by the computer-use safety
+boundary; it was not used as a workaround. Wait for the user to restore normal browser
+access before editing App icons, completing sandbox OAuth, or claiming Operator recovery.
+
+The reviewed sandbox registration settings are retained in
+[`pending-sandbox-connection.json`](./pending-sandbox-connection.json), resolved afresh from
+Apex. It contains only public client configuration, not tokens or a fabricated App ID.
+Do not add sandbox to the active cloud profile until its App binding and OAuth grant exist.
