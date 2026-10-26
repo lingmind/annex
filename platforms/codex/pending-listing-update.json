@@ -43,16 +43,17 @@
     "metadataStatus": "unresolved; App-owned presentation cannot be changed by skill overlays"
   },
   "logoUpdate": {
-    "state": "canonical_app_logo_uploaded; portable_package_logo_preserved",
+    "state": "prepared_in_annex_not_applied_to_cloud_apps",
     "sourceUnchanged": true,
     "outputPixels": [
       256,
       256
     ],
-    "contentWidthPixels": 232,
-    "horizontalPaddingPixels": 12,
-    "bytes": 8259,
-    "script": "scripts/export-plugin-icons.py"
+    "contentWidthPixels": 192,
+    "horizontalPaddingPixels": 32,
+    "bytes": 8031,
+    "script": "scripts/export-plugin-icons.py",
+    "cloudLogo": "previous upload remains; current App management has no logo replacement control"
   },
   "obsoleteWrappers": [
     {
@@ -134,5 +135,24 @@
       "version": "1.1.4",
       "state": "uninstalled_retirement_notice_only_no_app_binding"
     }
-  ]
+  ],
+  "notionComparison": {
+    "pluginId": "plugin_asdk_app_69c18c28f1188191bf5b8445c4ab0a2e",
+    "version": "3.0.2",
+    "scope": "GLOBAL",
+    "catalog": "openai-curated",
+    "canonicalDependencyIsSelf": true,
+    "extraWrapperRequired": false,
+    "manifestPresentationFields": [
+      "category",
+      "developerName",
+      "websiteURL",
+      "logo",
+      "composerIcon"
+    ],
+    "observedCategory": "Productivity",
+    "observedWebsite": "https://mcp.notion.com/mcp",
+    "conclusion": "Single canonical App identity can coexist with complete listing metadata. Notion is globally published; this does not establish that private development Apps expose the same metadata editor.",
+    "lingmindRemainingBlocker": "App-owned presentation is preserved by the supported skills update workflow; current management UI only edits name and description."
+  }
 }

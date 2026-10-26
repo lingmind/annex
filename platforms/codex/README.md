@@ -35,7 +35,7 @@ and the account's developer name. The required category remains `Business & Oper
 queries as acceptance of these fields, and do not introduce duplicate wrappers to make them appear correct.
 
 Run `scripts/export-plugin-icons.py` to regenerate the 256 px PNGs from the unchanged original brand asset.
-The exporter removes source transparency and leaves a 12 px horizontal margin; its output fits the App's
+The exporter crops the source's transparent canvas and leaves a 32 px horizontal margin; its output fits the App's
 10 KB upload limit. The branded packages include this icon; preparing it does not update the provider App icon.
 
 Portable `mcp.json` declarations alone are desktop-only until converted by the supported cloud publication flow.

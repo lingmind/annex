@@ -16,8 +16,8 @@ original = Image.open(source).convert("RGBA")
 bounds = original.getbbox()
 if bounds is None:
     raise ValueError("The LingMind logo is empty")
-# Remove source-canvas whitespace, then leave a 12 px visual safety margin.
-image = ImageOps.contain(original.crop(bounds), (232, 232), Image.Resampling.LANCZOS)
+# Remove source-canvas whitespace, then leave a 32 px visual safety margin.
+image = ImageOps.contain(original.crop(bounds), (192, 192), Image.Resampling.LANCZOS)
 icon = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
 icon.paste(image, ((256 - image.width) // 2, (256 - image.height) // 2))
 buffer = BytesIO()
