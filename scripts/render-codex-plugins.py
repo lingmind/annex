@@ -150,19 +150,47 @@ def server(url: str, client_id: str, callback_port: int, scopes: list[str]) -> d
     }
 
 
+def portable_server(connection: dict) -> dict:
+    return {
+        "type": "streamable-http",
+        "url": connection["url"],
+        "extensions": {
+            "com.openai": {
+                "auth": {
+                    "type": "oauth",
+                    "client": {
+                        "mode": "provided",
+                        "clientId": connection["oauth"]["client_id"],
+                        "tokenEndpointAuthMethod": "none",
+                    },
+                    "baseScopes": connection["scopes"],
+                    "defaultScopes": connection["scopes"],
+                    "oidcEnabled": True,
+                    "oidcScopesSupported": ["openid"],
+                }
+            }
+        },
+    }
+
+
 def cachebusted_version(version: str, timestamp: str) -> str:
     base = version.split("+", 1)[0]
     return f"{base}+codex.{timestamp}"
 
 
-def copy_plugin(name: str, destination: Path, timestamp: str) -> Path:
+def copy_plugin(name: str, destination: Path, timestamp: str | None) -> Path:
     source = ROOT / "plugins" / name
     target = destination / "plugins" / name
     shutil.copytree(source, target)
     manifest_path = target / ".codex-plugin" / "plugin.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest["version"] = cachebusted_version(manifest["version"], timestamp)
+    if timestamp:
+        manifest["version"] = cachebusted_version(manifest["version"], timestamp)
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    portable_path = target / "plugin.json"
+    portable = json.loads(portable_path.read_text(encoding="utf-8"))
+    portable["version"] = manifest["version"]
+    write_json(portable_path, portable)
     return target
 
 
@@ -206,7 +234,7 @@ def replace_generated_output(staged: Path, output: Path) -> None:
     os.replace(staged, output)
 
 
-def render(args: argparse.Namespace) -> Path:
+def render(args: argparse.Namespace, *, cachebust: bool = True) -> Path:
     marketplace_name = validate_identifier(args.marketplace_name, "marketplace name")
     environments: dict[str, tuple[str, str, int]] = {}
     for raw_code, raw_url, raw_client_id, raw_port in getattr(args, "environment", None) or []:
@@ -253,10 +281,14 @@ def render(args: argparse.Namespace) -> Path:
     output.parent.mkdir(parents=True, exist_ok=True)
     staged = Path(tempfile.mkdtemp(prefix=f".{output.name}.", dir=output.parent))
     try:
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") if cachebust else None
         standard = copy_plugin("lingmind", staged, timestamp)
         write_environment_skill_context(standard, list(environments), default_environment)
         write_json(standard / ".mcp.json", {"mcpServers": connections})
+        write_json(standard / "mcp.json", {
+            "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+            "mcpServers": {name: portable_server(connection) for name, connection in connections.items()},
+        })
         write_json(
             standard / "references" / "configured-environments.json",
             {

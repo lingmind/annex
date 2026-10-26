@@ -20,6 +20,9 @@ platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
 
 ## Agent 插件
 
+云端 dots 的标准 Agent Plugins 1.0 打包、账户发布与 OAuth 连接步骤见
+[`platforms/codex/cloud-plugins.md`](platforms/codex/cloud-plugins.md)。
+
 Annex 维护两个 Agent 插件：
 
 - `plugins/lingmind` 是标准业务插件。每个独立业务环境使用一个 Phoenix MCP 连接和该环境自己的

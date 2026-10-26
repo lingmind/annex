@@ -109,8 +109,13 @@ class RenderCodexPluginsTest(unittest.TestCase):
             manifest = json.loads(
                 (output / "plugins/lingmind/.codex-plugin/plugin.json").read_text(encoding="utf-8")
             )
-            self.assertEqual(manifest["interface"]["logo"], "./assets/logo.png")
-            self.assertTrue((output / "plugins/lingmind/assets/logo.png").is_file())
+            self.assertEqual(manifest["interface"]["logo"], "./assets/lingmind-logo.png")
+            self.assertTrue((output / "plugins/lingmind/assets/lingmind-logo.png").is_file())
+            portable = json.loads((output / "plugins/lingmind/mcp.json").read_text(encoding="utf-8"))
+            self.assertEqual(set(portable["mcpServers"]), set(standard["mcpServers"]))
+            for name, connection in portable["mcpServers"].items():
+                self.assertEqual(connection["url"], standard["mcpServers"][name]["url"])
+                self.assertEqual(connection["type"], "streamable-http")
 
     def test_rejects_wrong_mcp_path(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

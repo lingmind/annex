@@ -78,14 +78,19 @@ def validate_manifest(plugin_name: str) -> None:
     if manifest.get("name") != plugin_name:
         fail(f"manifest name mismatch for {plugin_name}")
     version = manifest.get("version", "")
-    if not re.fullmatch(r"0\.2\.0\+codex\.[0-9A-Za-z.-]+", version):
-        fail(f"unexpected development version for {plugin_name}: {version}")
+    if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", version):
+        fail(f"expected an explicit stable release version for {plugin_name}: {version}")
+    portable = load_json(plugin / "plugin.json")
+    if portable.get("version") != version or portable.get("name") != plugin_name:
+        fail(f"portable and local manifest identity/version differ for {plugin_name}")
+    if portable.get("extensions", {}).get("com.openai", {}).get("interface") != manifest.get("interface"):
+        fail(f"portable and local presentation differ for {plugin_name}")
     if manifest.get("mcpServers") != "./.mcp.json" or manifest.get("skills") != "./skills/":
         fail(f"plugin paths drifted for {plugin_name}")
     interface = manifest.get("interface", {})
-    if interface.get("composerIcon") != "./assets/logo.png" or interface.get("logo") != "./assets/logo.png":
+    if interface.get("composerIcon") != "./assets/lingmind-logo.png" or interface.get("logo") != "./assets/lingmind-logo.png":
         fail(f"plugin icon paths drifted for {plugin_name}")
-    if not (plugin / "assets" / "logo.png").is_file():
+    if not (plugin / "assets" / "lingmind-logo.png").is_file():
         fail(f"plugin logo is missing for {plugin_name}")
     prompts = manifest.get("interface", {}).get("defaultPrompt", [])
     if not isinstance(prompts, list) or not prompts or len(prompts) > 3 or not all(isinstance(item, str) and item.strip() for item in prompts):
@@ -240,6 +245,8 @@ def validate_repository_hygiene() -> None:
     for root in roots:
         for path in root.rglob("*"):
             if not path.is_file():
+                continue
+            if path.name == ".DS_Store" or "__pycache__" in path.parts or path.suffix == ".pyc":
                 continue
             relative = path.relative_to(ROOT)
             if path.suffix.lower() in {".pem", ".key", ".p12", ".pfx"}:

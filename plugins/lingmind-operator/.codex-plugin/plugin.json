@@ -1,40 +1,40 @@
 {
-  "name": "lingmind-operator",
-  "version": "0.2.1+codex.20260926",
-  "description": "Observe and maintain active LingMind environments as an Operator administrator, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
   "author": {
     "name": "LingMind",
     "url": "https://www.lingmind.cn"
   },
+  "description": "Observe and maintain active LingMind environments as an Operator administrator, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
   "homepage": "https://www.lingmind.cn",
-  "repository": "https://github.com/lingmind/annex",
-  "license": "MIT",
   "keywords": [
     "lingmind",
     "operator",
     "sre",
     "mcp"
   ],
-  "skills": "./skills/",
+  "license": "MIT",
+  "name": "lingmind-operator",
+  "repository": "https://github.com/lingmind/annex",
+  "version": "0.3.0",
   "interface": {
-    "displayName": "LingMind Operator",
-    "shortDescription": "Administer LingMind environments",
-    "longDescription": "Use one global Apex Operator connection as a super administrator to discover all non-deleted environments, inspect safe Agent-backed evidence for active targets, and execute Apex Mongo persisted maintenance, service deployment, backup, or checksum-bound restore plans.",
-    "developerName": "LingMind",
-    "category": "Developer Tools",
+    "brandColor": "#0F766E",
     "capabilities": [
       "Interactive",
       "Read",
       "Write"
     ],
+    "category": "Business & Operations",
+    "composerIcon": "./assets/lingmind-logo.png",
     "defaultPrompt": [
       "List the LingMind environments I can operate",
       "Diagnose an unhealthy service through its Apex Agent",
       "Prepare and verify a reviewed deployment or backup plan"
     ],
-    "brandColor": "#0F766E",
-    "composerIcon": "./assets/logo.png",
-    "logo": "./assets/logo.png"
+    "developerName": "LingMind",
+    "displayName": "LingMind Operator",
+    "logo": "./assets/lingmind-logo.png",
+    "longDescription": "Use one global Apex Operator connection as a super administrator to discover all non-deleted environments, inspect safe Agent-backed evidence for active targets, and execute Apex Mongo persisted maintenance, service deployment, backup, or checksum-bound restore plans.",
+    "shortDescription": "Manage LingMind environments"
   },
+  "skills": "./skills/",
   "mcpServers": "./.mcp.json"
 }

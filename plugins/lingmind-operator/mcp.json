@@ -1,0 +1,41 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "lingmind-operator": {
+      "type": "streamable-http",
+      "url": "https://apex.lingmind.cn/mcp/operator",
+      "extensions": {
+        "com.openai": {
+          "auth": {
+            "type": "oauth",
+            "client": {
+              "mode": "provided",
+              "clientId": "lingmind-operator-codex",
+              "tokenEndpointAuthMethod": "none"
+            },
+            "baseScopes": [
+              "openid",
+              "apex.backups.operate",
+              "apex.environments.read",
+              "apex.operator.maintain",
+              "apex.operator.observe",
+              "apex.services.deploy"
+            ],
+            "defaultScopes": [
+              "openid",
+              "apex.backups.operate",
+              "apex.environments.read",
+              "apex.operator.maintain",
+              "apex.operator.observe",
+              "apex.services.deploy"
+            ],
+            "oidcEnabled": true,
+            "oidcScopesSupported": [
+              "openid"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
