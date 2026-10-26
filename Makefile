@@ -13,6 +13,7 @@ LINGMIND_OAUTH_CLIENT_ID ?= lingmind-codex
 LINGMIND_CALLBACK_PORT ?= 1455
 LINGMIND_ENVIRONMENTS ?= beta
 LINGMIND_DEFAULT_ENVIRONMENT ?=
+CLOUD_ENVIRONMENT_PROFILE ?= $(CURDIR)/platforms/codex/cloud-environments.json
 CODEX_ENVIRONMENT_ARGS = $(foreach environment,$(LINGMIND_ENVIRONMENTS),--environment-code "$(environment)")
 CODEX_DEFAULT_ENVIRONMENT_ARG = $(if $(strip $(LINGMIND_DEFAULT_ENVIRONMENT)),--default-environment "$(LINGMIND_DEFAULT_ENVIRONMENT)")
 WORKBUDDY_HOME ?= $(HOME)/.workbuddy
@@ -45,6 +46,7 @@ test-generated-sdks:
 
 validate-plugins:
 	$(PYTHON) scripts/test-package-cloud-plugins.py
+	$(PYTHON) scripts/test-package-connected-plugins.py
 	$(PYTHON) scripts/test-render-codex-plugins.py
 	$(PYTHON) scripts/test-configure-workbuddy-lingmind.py
 	$(PYTHON) scripts/test-configure-doubao-lingmind.py
@@ -63,7 +65,7 @@ package-cloud-plugins:
 	$(PYTHON) scripts/package-cloud-plugins.py \
 		--output "$(CURDIR)/dist/cloud-plugins" \
 		--apex-url "$(LINGMIND_APEX_URL)" \
-		$(CODEX_ENVIRONMENT_ARGS) $(CODEX_DEFAULT_ENVIRONMENT_ARG)
+		--profile "$(CLOUD_ENVIRONMENT_PROFILE)"
 
 configure-codex-lingmind:
 	@if [ -z "$(CODEX)" ] || ! command -v "$(CODEX)" >/dev/null 2>&1; then \

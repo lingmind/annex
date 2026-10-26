@@ -298,6 +298,13 @@ def render(args: argparse.Namespace, *, cachebust: bool = True) -> Path:
     try:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") if cachebust else None
         standard = copy_plugin("lingmind", staged, timestamp)
+        apps_path = standard / ".app.json"
+        if apps_path.exists():
+            apps = json.loads(apps_path.read_text(encoding="utf-8"))["apps"]
+            missing = set(connections) - set(apps)
+            if missing:
+                raise ValueError(f"Missing cloud App bindings: {', '.join(sorted(missing))}")
+            write_json(apps_path, {"apps": {name: apps[name] for name in connections}})
         write_environment_skill_context(standard, list(environments), default_environment)
         write_json(standard / ".mcp.json", {"mcpServers": connections})
         write_json(standard / "mcp.json", {

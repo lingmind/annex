@@ -17,6 +17,13 @@ Repeat `--environment-code` to select multiple business environments and pass an
 `--default-environment` in that case. Resolution and the connection map reuse the Codex renderer.
 The source templates and local marketplace remain separate from the generated cloud archives.
 
+With no explicit environment flags, cloud packaging reads the versioned
+`platforms/codex/cloud-environments.json`. Its active codes must already have verified App
+bindings; the beta/sandbox example is `cloud-environments.example.json`. The renderer keeps
+only the explicitly selected App bindings in each archive and rejects missing bindings before
+packaging. A missing environment never falls back to beta. Each environment keeps its own
+OAuth session; switching clears project and action-plan context and verifies `context_get.code`.
+
 Each ZIP contains root `plugin.json`, Skills, references, and assets. Account cloud packages
 use verified `.app.json` bindings to registered remote MCP Apps. They omit raw `mcp.json`
 to avoid provisioning a second local connection alongside the cloud connection. The source
@@ -28,7 +35,7 @@ produces private plugins, not public directory submissions.
 
 ## Version management
 
-- Use explicit stable SemVer in each root `plugin.json` (currently `0.3.0`). Bump the patch
+- Use explicit stable SemVer in each root `plugin.json`. Bump the patch
   for fixes, minor for new capabilities, and major for incompatible plugin contracts.
 - Synchronize the source `.codex-plugin/plugin.json` identity, version, and presentation;
   the Annex validator checks these fields against the standard manifest. Local development

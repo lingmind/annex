@@ -1,0 +1,15 @@
+{
+  "plugin": {
+    "plugin_id": "plugin_asdk_app_6adefee15e388191b0999e2cce22e295",
+    "name": "dev-6adefee15e388191b0999e2cce22e295",
+    "description": "LingMind beta 的云端业务 MCP 连接，由 annex 插件提供操作规则。",
+    "version": "1.0.0",
+    "current_release_id": "PluginRelease_c7fda0767b648191a729dc38601ed914",
+    "scope": "USER",
+    "discoverability": "PRIVATE"
+  },
+  "files": {
+    ".app.json": "{\n  \"apps\": {\n    \"dev-6adefee15e388191b0999e2cce22e295\": {\n      \"id\": \"asdk_app_6adefee15e388191b0999e2cce22e295\"\n    }\n  }\n}",
+    ".codex-plugin/plugin.json": "{\n  \"apps\": \"./.app.json\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"description\": \"LingMind beta \\u7684\\u4e91\\u7aef\\u4e1a\\u52a1 MCP \\u8fde\\u63a5\\uff0c\\u7531 annex \\u63d2\\u4ef6\\u63d0\\u4f9b\\u64cd\\u4f5c\\u89c4\\u5219\\u3002\",\n  \"interface\": {\n    \"capabilities\": [],\n    \"category\": \"Other\",\n    \"defaultPrompt\": null,\n    \"developerName\": \"App developer\",\n    \"displayName\": \"LingMind Beta MCP\",\n    \"longDescription\": \"LingMind beta \\u7684\\u4e91\\u7aef\\u4e1a\\u52a1 MCP \\u8fde\\u63a5\\uff0c\\u7531 annex \\u63d2\\u4ef6\\u63d0\\u4f9b\\u64cd\\u4f5c\\u89c4\\u5219\\u3002\",\n    \"shortDescription\": \"LingMind beta \\u7684\\u4e91\\u7aef\\u4e1a\\u52a1 MCP \\u8fde\\u63a5\\uff0c\\u7531 annex \\u63d2\\u4ef6\\u63d0\\u4f9b\\u64cd\\u4f5c\\u89c4\\u5219\\u3002\"\n  },\n  \"name\": \"dev-6adefee15e388191b0999e2cce22e295\",\n  \"version\": \"1.0.0\"\n}"
+  }
+}

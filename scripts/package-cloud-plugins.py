@@ -15,6 +15,17 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def select_environments(args: argparse.Namespace) -> None:
+    if args.environment_code:
+        return
+    profile = json.loads(args.profile.read_text(encoding="utf-8"))
+    codes = profile["environmentCodes"]
+    if not isinstance(codes, list) or not codes or not all(isinstance(code, str) for code in codes):
+        raise ValueError("Cloud profile requires a non-empty environmentCodes string list")
+    args.environment_code = codes
+    args.default_environment = args.default_environment or profile["defaultEnvironmentCode"]
+
+
 def package_plugin(source: Path, output: Path) -> Path:
     manifest = json.loads((source / "plugin.json").read_text(encoding="utf-8"))
     if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", manifest["version"]):
@@ -56,11 +67,13 @@ def write_entry(archive: ZipFile, name: str, content: bytes | str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--environment-code", required=True, action="append")
+    parser.add_argument("--environment-code", action="append")
+    parser.add_argument("--profile", type=Path, default=ROOT / "platforms/codex/cloud-environments.json")
     parser.add_argument("--default-environment")
     parser.add_argument("--apex-url", default="https://apex.lingmind.cn")
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
+    select_environments(args)
     spec = importlib.util.spec_from_file_location("render_codex_plugins", ROOT / "scripts/render-codex-plugins.py")
     renderer = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(renderer)

@@ -6,6 +6,7 @@ import json
 import shutil
 import tempfile
 import unittest
+from argparse import Namespace
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -19,6 +20,21 @@ SPEC.loader.exec_module(PACKAGER)
 
 
 class CloudPackageTests(unittest.TestCase):
+    def test_profile_defaults_and_explicit_environment_selection(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            profile = Path(temporary) / "profile.json"
+            profile.write_text(json.dumps({"environmentCodes": ["beta", "sandbox"], "defaultEnvironmentCode": "beta"}))
+            args = Namespace(environment_code=None, default_environment=None, profile=profile)
+            PACKAGER.select_environments(args)
+            self.assertEqual(args.environment_code, ["beta", "sandbox"])
+            self.assertEqual(args.default_environment, "beta")
+            explicit = Namespace(environment_code=["sandbox"], default_environment=None, profile=profile)
+            PACKAGER.select_environments(explicit)
+            self.assertIsNone(explicit.default_environment)
+            profile.write_text(json.dumps({"environmentCodes": "beta", "defaultEnvironmentCode": "beta"}))
+            with self.assertRaisesRegex(ValueError, "non-empty environmentCodes"):
+                PACKAGER.select_environments(Namespace(environment_code=None, default_environment=None, profile=profile))
+
     def test_operator_preserves_tools_auth_and_skill_assets(self):
         source = ROOT / "plugins/lingmind-operator"
         original = json.loads((source / "plugin.json").read_text())

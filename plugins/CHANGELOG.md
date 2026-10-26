@@ -1,5 +1,17 @@
 # Plugin releases
 
+## Connected cloud plugins 1.0.1 - 2026-10-26 (acceptance pending)
+
+- Merge the nine business and six Operator Skills into the existing App-backed MCP plugins,
+  preserving App identity and configuration. Retain both original Skills-only packages until
+  replacement connections are callable and branded.
+- Add versioned cloud environment profiles and filter selected App bindings before generating
+  environment instructions. Reject unbound environment codes; never silently route to beta.
+- Prepare sandbox's exact cloud callback and deploy the verified Phoenix `2.2-b107` gateway.
+- Record the failed post-uninstall Operator tool check and incomplete reconnect in
+  `platforms/codex/consolidation-status.md` and `plugins/releases/1.0.1-partial.json`.
+  Two-entry consolidation, branding, and beta/sandbox cloud invocation are not yet accepted.
+
 ## LingMind 0.3.1 / LingMind Operator 0.3.1 - 2026-10-26
 
 - Route OAuth authorization, token exchange, discovery, and userinfo through Phoenix.

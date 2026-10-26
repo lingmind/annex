@@ -1,0 +1,4 @@
+{
+  "defaultEnvironmentCode": "beta",
+  "environmentCodes": ["beta", "sandbox"]
+}

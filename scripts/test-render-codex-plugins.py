@@ -6,6 +6,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import shutil
 import tempfile
 import unittest
 from argparse import Namespace
@@ -21,6 +22,39 @@ SPEC.loader.exec_module(MODULE)
 
 
 class RenderCodexPluginsTest(unittest.TestCase):
+    def test_cloud_environment_subset_keeps_only_its_app_and_context(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(MODULE.ROOT / "plugins", root / "plugins")
+            (root / "plugins/lingmind/.app.json").write_text(json.dumps({"apps": {
+                "lingmind-beta": {"id": "asdk_app_beta"},
+                "lingmind-sandbox": {"id": "asdk_app_sandbox"},
+            }}))
+            with patch.object(MODULE, "ROOT", root):
+                for codes in (["beta", "sandbox"], ["sandbox"]):
+                    output = root / ("marketplace-" + "-".join(codes))
+                    args = MODULE.parser().parse_args([
+                        "--output", str(output), "--default-environment", codes[0],
+                        *[value for code in codes for value in (
+                            "--environment", code, f"https://phoenix.{code}.example/mcp", "lingmind-codex", "1455")],
+                    ])
+                    MODULE.render(args, cachebust=False)
+                    plugin = output / "plugins/lingmind"
+                    apps = json.loads((plugin / ".app.json").read_text())["apps"]
+                    self.assertEqual(list(apps), [f"lingmind-{code}" for code in codes])
+                    skill = (plugin / "skills/lingmind-environment-context/SKILL.md").read_text()
+                    self.assertIn(f"environment code `{codes[0]}`", skill)
+                    for code in codes:
+                        self.assertIn(f"cloud App `asdk_app_{code}`", skill)
+                    if len(codes) == 1:
+                        self.assertNotIn("asdk_app_beta", skill)
+                args = MODULE.parser().parse_args([
+                    "--output", str(root / "missing"),
+                    "--environment", "unknown", "https://phoenix.unknown.example/mcp", "lingmind-codex", "1455",
+                ])
+                with self.assertRaisesRegex(ValueError, "Missing cloud App bindings: lingmind-unknown"):
+                    MODULE.render(args, cachebust=False)
+
     def test_environment_resolver_accepts_only_minimal_mcp_contract(self) -> None:
         payload = io.BytesIO(
             json.dumps(
