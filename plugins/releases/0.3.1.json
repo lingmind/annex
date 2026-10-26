@@ -1,0 +1,99 @@
+{
+  "publishedOn": "2026-10-26",
+  "sourceCommit": "b52938bc2f5b284d0ba406887c5c23ac7568efbf",
+  "scope": "USER",
+  "discoverability": "PRIVATE",
+  "businessEnvironments": [
+    "beta"
+  ],
+  "defaultBusinessEnvironment": "beta",
+  "oauth": {
+    "callback": "https://chatgpt.com/connector_platform_oauth_redirect",
+    "operatorGateway": "https://phoenix.lingmind.cn",
+    "businessGateway": "https://phoenix.beta.lingmind.cn",
+    "businessGatewaySource": "Apex environments/resolve?code=beta",
+    "issuerPolicy": "Keep canonical Keycloak issuer; override public OAuth endpoints to Phoenix",
+    "accountLinkVerification": "Both cloud Apps show a connected primary shoppon account; existing standard plugins are listed as consumers"
+  },
+  "runtime": {
+    "repository": "lingmind/phoenix",
+    "branch": "feat/cloud-oauth-gateway",
+    "commit": "4a9cec86f10fa34eb57955df34a68c08f67c71bc",
+    "jenkinsJob": "phoenix-2.2",
+    "jenkinsBuild": 107,
+    "jenkinsResult": "SUCCESS",
+    "imageTag": "2.2-b107",
+    "environments": [
+      {
+        "id": "68d8d573ac278805b39d3cda",
+        "code": "beta",
+        "name": "Beta环境"
+      },
+      {
+        "id": "68cd4e808e2a4d1d30bc4645",
+        "code": "180",
+        "name": "LingMind"
+      }
+    ],
+    "postconditions": "Both Phoenix service status responses running at version 2.2-b107; login form and session cookie paths remain under /proxy/keycloak; invalid authorization codes return invalid_grant"
+  },
+  "verification": {
+    "time": "2026-10-26T15:38:00+08:00",
+    "host": "Existing LingMind cloud dot",
+    "conversation": "https://chatgpt.com/dots/home",
+    "localComputerUsedForMCPCalls": false,
+    "focusedAnnexTestsPassed": 21,
+    "annexContractValidator": "passed",
+    "phoenixGoTests": "go test ./... passed",
+    "calls": [
+      {
+        "tool": "mcp__codex_apps__lingmind_beta_mcp_context_get",
+        "success": true,
+        "isError": false,
+        "environmentCode": "beta",
+        "projectCount": 5,
+        "capabilityCatalogState": "ready",
+        "capabilities": 420
+      },
+      {
+        "tool": "mcp__codex_apps__lingmind_operator_mcp_environments_list",
+        "success": true,
+        "isError": false,
+        "environmentCount": 30,
+        "betaPresent": true,
+        "globalLingMindRecord": {
+          "id": "68cd4e808e2a4d1d30bc4645",
+          "name": "LingMind",
+          "code": "180"
+        }
+      }
+    ],
+    "boundary": "Verifies cloud MCP calls and login, not whole-environment business health, continuous monitoring or token renewal across expiry"
+  },
+  "plugins": [
+    {
+      "name": "lingmind",
+      "version": "0.3.1",
+      "sourceTag": "lingmind-v0.3.1",
+      "pluginId": "plugins_6adecb08c47c81919a592797eb3251fd",
+      "cloudAppId": "asdk_app_6adefee15e388191b0999e2cce22e295",
+      "cloudConnectionPluginId": "plugin_asdk_app_6adefee15e388191b0999e2cce22e295",
+      "releaseId": "pluginrel_6adf0242fd708191b752e584d69ef236",
+      "previousReleaseId": "pluginrel_6adeccc2ab6081918a3f157c6a606457",
+      "archive": "lingmind-0.3.1.zip",
+      "sha256": "534d3678bd16423ad1143b2f3434bcef4c327b96b855ef8e69b7211e4a77e68e"
+    },
+    {
+      "name": "lingmind-operator",
+      "version": "0.3.1",
+      "sourceTag": "lingmind-operator-v0.3.1",
+      "pluginId": "plugins_6adecb14ebc08191b377baa97d343c8e",
+      "cloudAppId": "asdk_app_6adf007fddb08191ab7d36bfe4463f64",
+      "cloudConnectionPluginId": "plugin_asdk_app_6adf007fddb08191ab7d36bfe4463f64",
+      "releaseId": "pluginrel_6adf02507b2c8191b22056df97a8fb31",
+      "previousReleaseId": "pluginrel_6adeccccd3808191b6762ea280cdc253",
+      "archive": "lingmind-operator-0.3.1.zip",
+      "sha256": "972be6866e749707a590ad9bd75f6e8d632a7a0faf4a79661840b8e3dca38f72"
+    }
+  ]
+}

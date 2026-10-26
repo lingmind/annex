@@ -88,7 +88,7 @@ For rendering reports in a cloud execution environment, install the bundled rend
 dependency and CJK fonts, and select an output directory available to that host. Business and
 Operator tool calls themselves require only the remote MCP connection.
 
-## Account publication on 2026-10-26
+## Historical initial account publication on 2026-10-26
 
 Both packages were saved through Plugin Creator as private USER plugins. Preserve these identities
 for updates; use `update_plugin` with the current release ID instead of creating duplicates.
@@ -102,9 +102,34 @@ LingMind contains only `lingmind-beta`, with beta as its default, and nine Skill
 one global MCP server and six Skills. Account file inspection confirmed both MCP configurations
 and all expected Skills were retained; the web plugin page also listed both installed cloud plugins.
 
-Cloud access remains unverified. Read-only authorization requests using the documented stable
+At that initial publication, cloud access remained unverified. Read-only authorization requests using the documented stable
 cloud redirect `https://chatgpt.com/connector_platform_oauth_redirect` returned
 `无效的参数 : redirect_uri` from both the beta `lingmind-codex` client and global
 `lingmind-operator-codex` client. No OAuth client configuration or deployed service was changed.
 Confirm the actual connection-management callback before changing the allowlist, then complete
 OAuth and verify cloud `context_get` / authorized environment discovery.
+
+## Verified cloud release 0.3.1
+
+On 2026-10-26 at 15:38 Asia/Shanghai, the existing LingMind cloud dot successfully invoked:
+
+- `mcp__codex_apps__lingmind_beta_mcp_context_get`: `isError=false`, code `beta`, five projects,
+  ready capability catalog with 420 capabilities.
+- `mcp__codex_apps__lingmind_operator_mcp_environments_list`: `isError=false`, 30 authorized
+  environment records, including beta. The global LingMind record retains code `180` and ID
+  `68cd4e808e2a4d1d30bc4645`; it was not renamed or inferred to have code `lm`.
+
+Both cloud Apps show the connected primary account and their existing standard-plugin consumers.
+The original LingMind and Operator plugin IDs were updated in place to `0.3.1`. Their uploaded
+packages use `.app.json`, with the old raw MCP declarations removed from the account release.
+Cloud login and token exchange use Phoenix; JWT issuer validation remains on the canonical issuer.
+
+Phoenix `2.2-b107` (Jenkins `phoenix-2.2 #107`, source `4a9cec8`) is running in beta and the global
+LingMind environment. Public OAuth POST handling is restricted to the explicit authentication
+entrypoints; administration, business writes, and edge/project proxy writes retain their existing
+trusted-context requirement. The release also preserves cookie security attributes and external
+ChatGPT callback URLs, and rejects invalid authorization codes through Keycloak.
+
+See the immutable [0.3.1 receipt](../../plugins/releases/0.3.1.json) for exact source, cloud App IDs,
+account release IDs, artifact checksums, and verification boundaries. No monitoring schedule or
+business/runtime mutation was performed by the cloud-dot acceptance test.
