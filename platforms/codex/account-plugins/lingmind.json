@@ -1,0 +1,16 @@
+{
+  "plugin": {
+    "plugin_id": "plugin_asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
+    "name": "dev-6adf7442f5948191b7387c5ac01d3ba4",
+    "description": "连接 LingMind 工作环境，查询业务数据并处理日常工作。",
+    "version": "1.1.6",
+    "current_release_id": "pluginrel_6adf78e8287c81919e10497263403f81",
+    "scope": "USER",
+    "discoverability": "PRIVATE"
+  },
+  "files": {
+    ".app.json": "{\n  \"apps\": {\n    \"dev-6adf7442f5948191b7387c5ac01d3ba4\": {\n      \"id\": \"asdk_app_6adf7442f5948191b7387c5ac01d3ba4\"\n    }\n  }\n}\n",
+    ".codex-plugin/plugin.json": "{\n  \"apps\": \"./.app.json\",\n  \"interface\": {\n    \"capabilities\": [],\n    \"category\": \"Other\",\n    \"defaultPrompt\": null,\n    \"developerName\": \"App developer\",\n    \"displayName\": \"LingMind\",\n    \"longDescription\": \"\\u8fde\\u63a5 LingMind \\u5de5\\u4f5c\\u73af\\u5883\\uff0c\\u67e5\\u8be2\\u4e1a\\u52a1\\u6570\\u636e\\u5e76\\u5904\\u7406\\u65e5\\u5e38\\u5de5\\u4f5c\\u3002\",\n    \"shortDescription\": \"\\u8fde\\u63a5 LingMind \\u5de5\\u4f5c\\u73af\\u5883\\uff0c\\u67e5\\u8be2\\u4e1a\\u52a1\\u6570\\u636e\\u5e76\\u5904\\u7406\\u65e5\\u5e38\\u5de5\\u4f5c\\u3002\"\n  },\n  \"name\": \"dev-6adf7442f5948191b7387c5ac01d3ba4\",\n  \"version\": \"1.1.6\",\n  \"description\": \"\\u8fde\\u63a5 LingMind \\u5de5\\u4f5c\\u73af\\u5883\\uff0c\\u67e5\\u8be2\\u4e1a\\u52a1\\u6570\\u636e\\u5e76\\u5904\\u7406\\u65e5\\u5e38\\u5de5\\u4f5c\\u3002\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"keywords\": [],\n  \"skills\": \"./skills\"\n}\n",
+    "plugin.json": "{\n  \"name\": \"dev-6adf7442f5948191b7387c5ac01d3ba4\",\n  \"version\": \"1.1.6\",\n  \"description\": \"连接 LingMind 工作环境，查询业务数据并处理日常工作。\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"$schema\": \"https://agent-plugins.org/schemas/1.0.0/plugin.schema.json\",\n  \"extensions\": {\n    \"com.openai\": {\n      \"apps\": \"./.app.json\",\n      \"interface\": {\n        \"capabilities\": [],\n        \"category\": \"Other\",\n        \"defaultPrompt\": null,\n        \"developerName\": \"App developer\",\n        \"displayName\": \"LingMind\",\n        \"longDescription\": \"连接 LingMind 工作环境，查询业务数据并处理日常工作。\",\n        \"shortDescription\": \"连接 LingMind 工作环境，查询业务数据并处理日常工作。\"\n      }\n    }\n  }\n}\n"
+  }
+}

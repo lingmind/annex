@@ -1,0 +1,51 @@
+{
+  "observedDate": "2026-10-27",
+  "scope": "USER",
+  "discoverability": "PRIVATE",
+  "state": "two_entry_cloud_queries_passed_listing_metadata_unresolved",
+  "plugins": [
+    {
+      "name": "lingmind",
+      "version": "1.1.6",
+      "pluginId": "plugin_asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
+      "releaseId": "pluginrel_6adf78e8287c81919e10497263403f81",
+      "skills": 9,
+      "uploadedArchiveSha256": "f52b8406503937f892ecc9e0b48849300194999cd7ae89b3ac4a52a84c45e811"
+    },
+    {
+      "name": "lingmind-operator",
+      "version": "1.1.3",
+      "pluginId": "plugin_asdk_app_6adf7571f2ec81919d0c9ac79c2ab0b2",
+      "releaseId": "pluginrel_6adf78f8498481918a81ba0c9627f905",
+      "skills": 6,
+      "uploadedArchiveSha256": "cc2b1c5d30d2c2a40824535e1d1f47ad75d996c8ed5ef28ba73ff1cc8f655fec"
+    }
+  ],
+  "installedLingMindEntries": 2,
+  "deprecationInventory": "../../platforms/codex/deprecated-plugins.json",
+  "validation": {
+    "packageTests": 12,
+    "pluginContracts": "passed",
+    "sandboxDailyQuery": "passed; 8 task records read, newest 5 selected by createdAt; all 5 synthetic and noFlight",
+    "operatorDailyRetry": {
+      "time": "2026-10-27 00:24:34-00:24:48 Asia/Shanghai",
+      "namespaces": 25,
+      "pods": 48,
+      "runningReady": 45,
+      "succeeded": 3,
+      "currentAbnormal": 0,
+      "writes": false
+    },
+    "priorOperatorFailure": "Unknown tool after reinstall; did not recur on retry; root cause unconfirmed"
+  },
+  "listing": {
+    "actualCategory": "Other",
+    "actualWebsite": null,
+    "actualDeveloper": "shoppon shoppon",
+    "requiredCategory": "Business & Operations",
+    "requiredWebsite": "https://lingmind.cn",
+    "requiredDeveloper": "LingMind",
+    "status": "not accepted; preserve two entries without duplicate wrappers"
+  },
+  "publicDirectorySubmission": false
+}

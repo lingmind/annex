@@ -1,0 +1,7 @@
+{
+  "inventoryScope": "host_user_connections",
+  "environmentCodes": [],
+  "defaultEnvironmentCode": null,
+  "connectionProfileTool": "connection_profile_get",
+  "contextTool": "context_get"
+}

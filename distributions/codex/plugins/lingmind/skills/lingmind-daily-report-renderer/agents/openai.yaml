@@ -1,0 +1,4 @@
+interface:
+  display_name: "LingMind Daily Report"
+  short_description: "Query business facts and render UAV or camera daily reports"
+  default_prompt: "Use $lingmind-daily-report-renderer to query the authorized LingMind business facts, render the requested UAV or camera daily report, verify it, and return the exact local image path."

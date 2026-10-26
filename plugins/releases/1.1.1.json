@@ -1,0 +1,91 @@
+{
+  "version": "1.1.1",
+  "scope": "USER",
+  "discoverability": "PRIVATE",
+  "sourceBranch": "feat/cloud-plugin-packages",
+  "sourceTags": [
+    "lingmind-v1.1.1",
+    "lingmind-operator-v1.1.1"
+  ],
+  "plugins": [
+    {
+      "plugin_id": "plugins_6adf58bb1b188191ad4ba541a44ec136",
+      "name": "lingmind",
+      "description": "连接 LingMind，查询项目与业务数据，处理任务、设备与日常工作。",
+      "version": "1.1.1",
+      "current_release_id": "pluginrel_6adf58bd661881919cdceee87d0d778e",
+      "scope": "USER",
+      "discoverability": "PRIVATE",
+      "plugin_url": "https://chatgpt.com/plugins/plugins_6adf58bb1b188191ad4ba541a44ec136",
+      "release_id": "pluginrel_6adf58bd661881919cdceee87d0d778e",
+      "latest_release_id": "pluginrel_6adf58bd661881919cdceee87d0d778e",
+      "status": "created"
+    },
+    {
+      "plugin_id": "plugins_6adf58f3c6fc8191b19b21522d85c9fa",
+      "name": "lingmind-operator",
+      "description": "查看 LingMind 环境与服务的运行状态，排查异常，处理维护、部署及备份工作。",
+      "version": "1.1.1",
+      "current_release_id": "pluginrel_6adf58f59b78819186c8fce7f841e269",
+      "scope": "USER",
+      "discoverability": "PRIVATE",
+      "plugin_url": "https://chatgpt.com/plugins/plugins_6adf58f3c6fc8191b19b21522d85c9fa",
+      "release_id": "pluginrel_6adf58f59b78819186c8fce7f841e269",
+      "latest_release_id": "pluginrel_6adf58f59b78819186c8fce7f841e269",
+      "status": "created"
+    }
+  ],
+  "verification": {
+    "installedEntries": [
+      "LingMind",
+      "LingMind Operator"
+    ],
+    "installedVersions": [
+      "1.1.1",
+      "1.1.1"
+    ],
+    "skills": [
+      9,
+      6
+    ],
+    "detailLogo": "cropped original LingMind logo visible in both detail pages",
+    "category": "Business & Operations",
+    "website": "https://lingmind.cn",
+    "sidebarIcon": "generic host fallback still visible",
+    "publisher": "host normalizes developer name to shoppon shoppon",
+    "cloudInvocationAfterReinstall": "not yet verified; App cards show Connect"
+  },
+  "validation": {
+    "unitTests": 29,
+    "pluginSkills": 15,
+    "contracts": "passed",
+    "makeValidatePlugins": "external .system/plugin-creator validator absent; direct tests, skill validator and repository contract validator run separately"
+  },
+  "oldReleases": {
+    "versions": [
+      "1.0.1",
+      "1.0.1"
+    ],
+    "state": "uninstalled; permanent deletion submitted with user confirmation but host reports failure"
+  },
+  "archives": [
+    {
+      "path": "dist/branded-cloud/lingmind-1.1.1.zip",
+      "sha256": "74ef1d570b98179c0e0b1172a907d20dee7d371afca86635703da401eeae1642"
+    },
+    {
+      "path": "dist/branded-cloud/lingmind-operator-1.1.1.zip",
+      "sha256": "2d9ceb566d8256c7f2fde27289112afb8549d5c8cb541ea68644d0db422cc3e7"
+    }
+  ],
+  "logo": {
+    "originalSha256": "74a2c8825c3ba66a010bc176027d099a8cc4118b2f2cc3f091e5586a69841105",
+    "exportSha256": "b79299311c8d918382b6a7be051f84f3886160b1ebb4fd15d72192359b547349",
+    "sizeBytes": 8259,
+    "pixels": [
+      256,
+      256
+    ],
+    "horizontalPaddingPixels": 12
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "version": "0.3.3",
+  "state": "prepared_not_cloud_published",
+  "sourceCommit": "6e039a44b5d62e62339f09ea0278e5ec84a5c2ac",
+  "listing": {
+    "developerName": "LingMind",
+    "homepage": "https://lingmind.cn",
+    "websiteURL": "https://lingmind.cn",
+    "category": "Business & Operations",
+    "logoSHA256": "74a2c8825c3ba66a010bc176027d099a8cc4118b2f2cc3f091e5586a69841105"
+  },
+  "publisherIdentityVerification": "pending_platform_check",
+  "cloudPluginVersion": "1.0.1",
+  "archives": [
+    {
+      "name": "lingmind-0.3.3.zip",
+      "sha256": "47d7344edde7f198271385c53bc40ed92506fdae25f7c3d0125d3feafa2373d2"
+    },
+    {
+      "name": "lingmind-operator-0.3.3.zip",
+      "sha256": "873b1ed11f17dd8434a81b8793f21559d35e185727c24dc1b15949cd19305508"
+    }
+  ],
+  "checks": [
+    "7 cloud package tests passed",
+    "plugin contracts validated",
+    "both archive metadata and exact logo verified",
+    "starter prompts and App bindings preserved"
+  ],
+  "publicationBlockers": [
+    "App-owned presentation requires its supported metadata workflow",
+    "cloud management page previously reported cloudflare_challenge",
+    "fresh cloud source-reader requests failed with transport connection errors"
+  ]
+}

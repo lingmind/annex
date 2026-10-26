@@ -1,0 +1,41 @@
+{
+  "author": {
+    "name": "LingMind",
+    "url": "https://lingmind.cn"
+  },
+  "description": "查看 LingMind 环境与服务的运行状态，排查异常，处理维护、部署及备份工作。",
+  "homepage": "https://lingmind.cn",
+  "keywords": [
+    "lingmind",
+    "operator",
+    "sre",
+    "mcp"
+  ],
+  "license": "MIT",
+  "name": "lingmind-operator",
+  "repository": "https://github.com/lingmind/annex",
+  "version": "1.2.0",
+  "interface": {
+    "brandColor": "#0F766E",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "category": "Business & Operations",
+    "composerIcon": "./assets/lingmind-logo-256.png",
+    "defaultPrompt": [
+      "List the LingMind environments I can operate",
+      "Diagnose an unhealthy service through its Apex Agent",
+      "Prepare and verify a reviewed deployment or backup plan"
+    ],
+    "developerName": "LingMind",
+    "displayName": "LingMind Operator",
+    "logo": "./assets/lingmind-logo-256.png",
+    "longDescription": "集中查看环境、服务和运行异常，辅助排查问题；维护、部署及备份等重要操作均需确认后执行。",
+    "shortDescription": "管理 LingMind 环境与服务",
+    "websiteURL": "https://lingmind.cn"
+  },
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

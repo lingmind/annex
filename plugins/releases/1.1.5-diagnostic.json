@@ -1,0 +1,43 @@
+{
+  "version": "1.1.5",
+  "pluginId": "plugins_6adf58bb1b188191ad4ba541a44ec136",
+  "releaseId": "pluginrel_6adf633a3fc08191b2f0b22059362009",
+  "operatorVersion": "1.1.1",
+  "scope": "USER",
+  "discoverability": "PRIVATE",
+  "result": "standard icon configuration restored; sidebar remains unresolved",
+  "userDecision": "retain branded complete packages with correct website and category",
+  "controls": [
+    {
+      "version": "1.1.3",
+      "change": "restore original 256px RGBA PNG with original canvas",
+      "imageBytes": 8444,
+      "imageSha256": "bd25dcb47975a0b7da3c5955076dc999d2841e845be8b84a1e13c41a8a6d85bd",
+      "releaseId": "pluginrel_6adf5fb78a948191986a23dba5b963b6",
+      "result": "catalog image fields null; sidebar still puzzle"
+    },
+    {
+      "version": "1.1.4",
+      "change": "stable HTTPS logoUrl and composerIconUrl aliases alongside contained PNG paths",
+      "releaseId": "pluginrel_6adf621343c481919d7919dc5f19360d",
+      "result": "aliases retained in manifests but catalog image fields null; sidebar still puzzle"
+    },
+    {
+      "version": "1.1.5",
+      "change": "remove ineffective URL aliases and restore standard cropped PNG",
+      "result": "cleanup published and read back"
+    }
+  ],
+  "samePageComparison": "canonical App-backed entry renders LingMind image while branded complete-package entry renders puzzle",
+  "duplicateCanonicalEntry": "uninstalled after explicit user choice",
+  "preserved": {
+    "businessSkills": 9,
+    "operatorSkills": 6,
+    "category": "Business & Operations",
+    "website": "https://lingmind.cn",
+    "pluginIds": true,
+    "appBindings": true
+  },
+  "uploadedOverlaySha256": "5338b70046efb9b24625137a23eb6d1420079955233a1f85fb44761a5e498b59",
+  "sidebarFixed": false
+}

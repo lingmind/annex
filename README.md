@@ -20,6 +20,40 @@ platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
 
 ## Agent 插件
 
+### 在 Codex 中从 GitHub 添加
+
+在插件页面选择“添加插件市场”，粘贴：
+
+```text
+https://github.com/lingmind/annex
+```
+
+打开 **LingMind** 市场，安装 **LingMind** 和 **LingMind Operator** 两个插件。
+开发者为 LingMind，类别为企业应用（`Business & Operations`），网站为 `https://lingmind.cn`；
+两者均使用带 32px 留白的 LingMind Logo。
+
+业务插件安装后运行“设置”，或说“连接 beta 环境”。首次设置需要本机 Python 3.11+；
+助手会通过 Apex 解析你提供的环境编码，配置原生 Codex MCP，再由你在对应 Phoenix 登录页面授权。
+添加其他环境时提供它的编码并独立登录；新用户没有默认环境，也不会继承其他人的连接。
+Operator 安装后使用运维账号完成其独立 OAuth 登录。配置完成后新开聊天加载并验证工具。
+
+也可用 CLI 注册同一个仓库：
+
+```bash
+codex plugin marketplace add https://github.com/lingmind/annex
+codex plugin add lingmind@lingmind-annex
+codex plugin add lingmind-operator@lingmind-annex
+```
+
+这是 Codex 桌面/CLI 的仓库分发，不需要全局目录公开审核，也不会自动创建云端 dots 连接。
+已经启用同名插件时应先选定要保留的来源；源码版与私有云端版使用不同安装身份，同时启用会产生重复。
+安装、更新与源码维护说明见 [`platforms/codex/repository/README.md`](platforms/codex/repository/README.md)。
+
+### 云端连接与高级开发配置
+
+云端 dots 的标准 Agent Plugins 1.0 打包、账户发布与 OAuth 连接步骤见
+[`platforms/codex/cloud-plugins.md`](platforms/codex/cloud-plugins.md)。
+
 Annex 维护两个 Agent 插件：
 
 - `plugins/lingmind` 是标准业务插件。每个独立业务环境使用一个 Phoenix MCP 连接和该环境自己的
@@ -126,7 +160,8 @@ make configure-doubao-lingmind
 安装或更新后需重启豆包或新建工作任务。平台契约和资格验证边界见 `platforms/doubao/README.md`。
 “凌析”是本地自定义 Skill；豆包“工作伙伴”是独立的云端上架市场，本地安装不会使它出现在伙伴页。
 
-本目录的 marketplace 用于仓库内开发和团队测试，不会创建或修改用户目录下的 marketplace。
+仓库根目录的 marketplace 提供可直接从 GitHub 安装的完整插件；高级配置命令生成的
+`lingmind-configured` 是独立的开发来源，安装时同样应避免启用多个同名来源。
 
 ## Go SDK
 

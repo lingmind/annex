@@ -1,0 +1,36 @@
+{
+  "publishedOn": "2026-10-26",
+  "sourceCommit": "d8abe423aa5d08cb14409dcf7cd38a6e40e761df",
+  "scope": "USER",
+  "discoverability": "PRIVATE",
+  "businessEnvironments": ["beta"],
+  "defaultBusinessEnvironment": "beta",
+  "verification": {
+    "focusedTestsPassed": 20,
+    "pluginContractValidator": "passed",
+    "accountReadback": "version, logo references, expected Skills and unchanged MCP configuration verified",
+    "cloudOAuth": "pending redirect registration and login; cloud calls unverified"
+  },
+  "plugins": [
+    {
+      "name": "lingmind",
+      "version": "0.3.0",
+      "sourceTag": "lingmind-v0.3.0",
+      "pluginId": "plugins_6adecb08c47c81919a592797eb3251fd",
+      "releaseId": "pluginrel_6adeccc2ab6081918a3f157c6a606457",
+      "previousReleaseId": "pluginrel_6adecb0a3ac48191ae6ea8504fd82d87",
+      "archive": "lingmind-0.3.0.zip",
+      "sha256": "7cc16055fc0d9699ad26ed8f5c431d7670dabf41ef6c5ff7530a5942a99e3066"
+    },
+    {
+      "name": "lingmind-operator",
+      "version": "0.3.0",
+      "sourceTag": "lingmind-operator-v0.3.0",
+      "pluginId": "plugins_6adecb14ebc08191b377baa97d343c8e",
+      "releaseId": "pluginrel_6adeccccd3808191b6762ea280cdc253",
+      "previousReleaseId": "pluginrel_6adecb15d334819192689b408543ee39",
+      "archive": "lingmind-operator-0.3.0.zip",
+      "sha256": "842a860da67fe1e1967da7113dd6fe42fd34bbcece442174fa8b12ff3ac9e6d9"
+    }
+  ]
+}

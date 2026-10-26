@@ -150,19 +150,56 @@ def server(url: str, client_id: str, callback_port: int, scopes: list[str]) -> d
     }
 
 
+def portable_server(connection: dict) -> dict:
+    endpoint = urlparse(connection["url"])
+    oauth_base = f"{endpoint.scheme}://{endpoint.netloc}/proxy/keycloak/realms/lingmind"
+    return {
+        "type": "streamable-http",
+        "url": connection["url"],
+        "extensions": {
+            "com.openai": {
+                "auth": {
+                    "type": "oauth",
+                    "client": {
+                        "mode": "provided",
+                        "clientId": connection["oauth"]["client_id"],
+                        "tokenEndpointAuthMethod": "none",
+                    },
+                    "baseScopes": connection["scopes"],
+                    "defaultScopes": connection["scopes"],
+                    "oidcEnabled": True,
+                    "oidcScopesSupported": ["openid"],
+                    "authorizationUrl": oauth_base + "/protocol/openid-connect/auth",
+                    "tokenUrl": oauth_base + "/protocol/openid-connect/token",
+                    "oidcConfigurationUrl": oauth_base + "/.well-known/openid-configuration",
+                    "oidcUserinfoEndpoint": oauth_base + "/protocol/openid-connect/userinfo",
+                }
+            }
+        },
+    }
+
+
 def cachebusted_version(version: str, timestamp: str) -> str:
     base = version.split("+", 1)[0]
     return f"{base}+codex.{timestamp}"
 
 
-def copy_plugin(name: str, destination: Path, timestamp: str) -> Path:
+def copy_plugin(name: str, destination: Path, timestamp: str | None, *, cloud_apps: bool = True) -> Path:
     source = ROOT / "plugins" / name
     target = destination / "plugins" / name
     shutil.copytree(source, target)
     manifest_path = target / ".codex-plugin" / "plugin.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest["version"] = cachebusted_version(manifest["version"], timestamp)
+    if timestamp:
+        manifest["version"] = cachebusted_version(manifest["version"], timestamp)
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    portable_path = target / "plugin.json"
+    portable = json.loads(portable_path.read_text(encoding="utf-8"))
+    portable["version"] = manifest["version"]
+    if timestamp or not cloud_apps:
+        portable.get("extensions", {}).get("com.openai", {}).pop("apps", None)
+        (target / ".app.json").unlink(missing_ok=True)
+    write_json(portable_path, portable)
     return target
 
 
@@ -178,22 +215,30 @@ def write_environment_skill_context(plugin: Path, environment_codes: list[str], 
         raise ValueError("environment context Skill must contain exactly one generated-context marker")
     connections = []
     for code in environment_codes:
-        default_suffix = " (default)" if code == default_environment else ""
+        default_suffix = " (build hint)" if code == default_environment else ""
         connections.append(f"`lingmind-{code}`{default_suffix}")
     generated = "\n".join(
         [
-            "## Installed connection map",
+            "## Packaged connection hints",
             "",
-            f"The authoritative default for this installed package is `lingmind-{default_environment}`",
-            f"(environment code `{default_environment}`). Use it only when the user does not name an environment;",
-            "never choose another connection by alphabetical or tool-list order.",
+            f"The build profile names `lingmind-{default_environment}` (environment code `{default_environment}`) as its default hint.",
+            "This is not an authenticated user's connection inventory or a runtime default.",
+            "Never choose an environment from this hint, alphabetical order, or tool-list order.",
             "",
-            "Configured connections: " + ", ".join(connections) + ".",
-            "Every configured connection stays enabled. Select and verify the exact `lingmind-<environment-code>`",
+            "Declared connection slots: " + ", ".join(connections) + ".",
+            "A declared slot does not establish that the current user connected or authorized it.",
+            "Use only the current user's authenticated connection inventory. Exactly one connected environment is the implicit default;",
+            "multiple connected environments require an explicit code. Select and verify the exact `lingmind-<environment-code>`",
             "connection for each request, and keep all subsequent calls on that connection until the user switches.",
             "This block is generated at installation time and contains no URL, issuer, token, or credential.",
         ]
     )
+    apps_path = plugin / ".app.json"
+    if apps_path.exists():
+        apps = json.loads(apps_path.read_text(encoding="utf-8"))["apps"]
+        generated += "\n\n## Cloud App bindings\n\n"
+        generated += "\n".join(f"- `{name}` is supplied by cloud App `{app['id']}`." for name, app in apps.items())
+        generated += "\n\nTool namespace prefixes are assigned by the host. Select the bound cloud App's tools, then verify the environment with `context_get`; do not require the namespace prefix to equal the connection slot.\n"
     skill_path.write_text(content.replace(ENVIRONMENT_SKILL_MARKER, generated), encoding="utf-8")
 
 
@@ -206,7 +251,7 @@ def replace_generated_output(staged: Path, output: Path) -> None:
     os.replace(staged, output)
 
 
-def render(args: argparse.Namespace) -> Path:
+def render(args: argparse.Namespace, *, cachebust: bool = True, cloud_apps: bool = True) -> Path:
     marketplace_name = validate_identifier(args.marketplace_name, "marketplace name")
     environments: dict[str, tuple[str, str, int]] = {}
     for raw_code, raw_url, raw_client_id, raw_port in getattr(args, "environment", None) or []:
@@ -253,13 +298,25 @@ def render(args: argparse.Namespace) -> Path:
     output.parent.mkdir(parents=True, exist_ok=True)
     staged = Path(tempfile.mkdtemp(prefix=f".{output.name}.", dir=output.parent))
     try:
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-        standard = copy_plugin("lingmind", staged, timestamp)
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") if cachebust else None
+        standard = copy_plugin("lingmind", staged, timestamp, cloud_apps=cloud_apps)
+        apps_path = standard / ".app.json"
+        if apps_path.exists():
+            apps = json.loads(apps_path.read_text(encoding="utf-8"))["apps"]
+            missing = set(connections) - set(apps)
+            if missing:
+                raise ValueError(f"Missing cloud App bindings: {', '.join(sorted(missing))}")
+            write_json(apps_path, {"apps": {name: apps[name] for name in connections}})
         write_environment_skill_context(standard, list(environments), default_environment)
         write_json(standard / ".mcp.json", {"mcpServers": connections})
+        write_json(standard / "mcp.json", {
+            "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+            "mcpServers": {name: portable_server(connection) for name, connection in connections.items()},
+        })
         write_json(
             standard / "references" / "configured-environments.json",
             {
+                "inventoryScope": "package_hints",
                 "defaultEnvironmentCode": default_environment,
                 "connections": [
                     {
@@ -272,7 +329,7 @@ def render(args: argparse.Namespace) -> Path:
             },
         )
 
-        copy_plugin("lingmind-operator", staged, timestamp)
+        copy_plugin("lingmind-operator", staged, timestamp, cloud_apps=cloud_apps)
         entries = [
             {
                 "name": "lingmind",
