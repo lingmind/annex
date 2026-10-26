@@ -88,9 +88,9 @@ def validate_manifest(plugin_name: str) -> None:
     if manifest.get("mcpServers") != "./.mcp.json" or manifest.get("skills") != "./skills/":
         fail(f"plugin paths drifted for {plugin_name}")
     interface = manifest.get("interface", {})
-    if interface.get("composerIcon") != "./assets/lingmind-logo.png" or interface.get("logo") != "./assets/lingmind-logo.png":
+    if interface.get("composerIcon") != "./assets/lingmind-logo-256.png" or interface.get("logo") != "./assets/lingmind-logo-256.png":
         fail(f"plugin icon paths drifted for {plugin_name}")
-    if not (plugin / "assets" / "lingmind-logo.png").is_file():
+    if not all((plugin / "assets" / name).is_file() for name in ("lingmind-logo.png", "lingmind-logo-256.png")):
         fail(f"plugin logo is missing for {plugin_name}")
     prompts = manifest.get("interface", {}).get("defaultPrompt", [])
     if not isinstance(prompts, list) or not prompts or len(prompts) > 3 or not all(isinstance(item, str) and item.strip() for item in prompts):

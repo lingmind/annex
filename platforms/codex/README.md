@@ -14,7 +14,23 @@ Pass `envCode` on named-environment business calls; it must match that connectio
 is the default; with multiple environments, ask for the code when omitted. See the complete
 [connection contract and acceptance matrix](user-environment-connections.md).
 
-`make package-cloud-plugins` exports App bindings and skills without resolving or preconfiguring any environment.
+The two installed cloud entries are the branded complete plugins **LingMind** and **LingMind Operator**.
+Each entry contains an existing App dependency and all of its skills (nine business skills, six Operator skills).
+The App identities remain the OAuth/tool providers; do not separately install their canonical plugins,
+Connect, or Operator Cloud companion entries. Uninstalling a provider entry is distinct from deleting its App.
+
+`make package-cloud-plugins` exports the branded complete packages without resolving or preconfiguring any
+environment. Their metadata and cropped icons are owned by the `plugins/` manifests. To prepare an App-owned
+skills-only overlay instead, explicitly select `--connection-mode account`. `canonical-cloud-plugins.json`
+records the last verified provider manifests, bindings, versions, and release guards; refresh it from the
+source reader before preparing such an update. App-owned presentation cannot be changed through a skills
+overlay. `pending-listing-update.json` tracks actual cloud presentation results and the failed deletion of
+the two uninstalled 1.0.1 records.
+
+Run `scripts/export-plugin-icons.py` to regenerate the 256 px PNGs from the unchanged original brand asset.
+The exporter removes source transparency and leaves a 12 px horizontal margin; its output fits the App's
+10 KB upload limit. The branded packages include this icon; preparing it does not update the provider App icon.
+
 Portable `mcp.json` declarations alone are desktop-only until converted by the supported cloud publication flow.
 The adapter below remains the direct-connection workflow for local Codex.
 
@@ -36,7 +52,8 @@ result selects the environment-specific MCP resource and Keycloak issuer. Codex 
 `.mcp.json`, so its adapter renders or updates the installed connection after this setup step; do not put environment
 selection inside the Keycloak credential form.
 
-Every environment uses the stable connection name `lingmind-<environment-code>`. A single configured environment
+Every environment uses the stable connection name `lingmind-<environment-code>`. These package-time entries are
+configuration hints, not authenticated per-user connection inventory. A single configured environment
 becomes the default automatically, while a multi-environment package requires an explicit default. The renderer
 stores that preference separately in `references/configured-environments.json`; changing the default cannot rebind a
 cached OAuth session to another environment. The renderer enables every configured stable connection. The agent

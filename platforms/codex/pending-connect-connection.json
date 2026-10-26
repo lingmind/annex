@@ -1,11 +1,11 @@
 {
-  "state": "private_plugin_published_oauth_acceptance_pending",
+  "state": "branded_private_plugin_published_final_identity_acceptance_pending",
   "resourceUrl": "https://connect.lingmind.cn/mcp",
-  "appId": "asdk_app_6adf2b62c84c81919cd4711c114d4512",
-  "providerPluginId": "plugin_asdk_app_6adf2b62c84c81919cd4711c114d4512",
-  "pluginId": "plugins_6adf2cd2518481918e10b4a0a745205a",
-  "pluginVersion": "0.5.1",
-  "releaseId": "pluginrel_6adf370293f88191aa888cd654db79e5",
+  "appId": "asdk_app_6adf48d841188191ac73c1d8711f0a19",
+  "providerPluginId": "plugin_asdk_app_6adf48d841188191ac73c1d8711f0a19",
+  "pluginId": "plugins_6adf58bb1b188191ad4ba541a44ec136",
+  "pluginVersion": "1.1.1",
+  "releaseId": "pluginrel_6adf58bd661881919cdceee87d0d778e",
   "cloudRedirectUri": "https://chatgpt.com/connector/oauth/2bQgY5ZM2Wm2",
   "upstreamRedirectUri": "https://connect.lingmind.cn/oauth/callback",
   "oauthClientId": "lingmind-cloud",
@@ -19,7 +19,12 @@
   "defaultEnvironmentCode": null,
   "oidcEnabled": false,
   "credentialsIncluded": false,
-  "connectImage": "2.2-b111",
+  "connectImage": "2.2-b113",
   "gatewayImage": "2.2-b112",
-  "gatewayRollout": "pending_verification"
+  "gatewayRollout": "verified_before_plugin_reinstall",
+  "grantsBeforeReinstall": [
+    "beta",
+    "sandbox"
+  ],
+  "finalIdentityCloudInvocation": "not_yet_verified"
 }

@@ -1,13 +1,13 @@
 {
-  "state": "superseded_by_standard_cloud_plugins",
-  "desiredCloudPluginVersion": "1.0.2",
-  "portableSourceVersion": "0.3.3",
+  "state": "branded_1.1.1_published_sidebar_icon_pending",
+  "desiredCloudPluginVersion": "1.1.1",
+  "portableSourceVersion": "1.1.1",
   "interface": {
     "developerName": "LingMind",
     "websiteURL": "https://lingmind.cn",
     "category": "Business & Operations",
-    "logo": "./assets/lingmind-logo.png",
-    "composerIcon": "./assets/lingmind-logo.png"
+    "logo": "./assets/lingmind-logo-256.png",
+    "composerIcon": "./assets/lingmind-logo-256.png"
   },
   "author": {
     "name": "LingMind",
@@ -18,12 +18,12 @@
   "publisherIdentityVerification": "backend_normalizes_to_account_name",
   "plugins": [
     {
-      "pluginId": "plugin_asdk_app_6adefee15e388191b0999e2cce22e295",
-      "appId": "asdk_app_6adefee15e388191b0999e2cce22e295"
+      "pluginId": "plugin_asdk_app_6adf48d841188191ac73c1d8711f0a19",
+      "appId": "asdk_app_6adf48d841188191ac73c1d8711f0a19"
     },
     {
-      "pluginId": "plugin_asdk_app_6adf007fddb08191ab7d36bfe4463f64",
-      "appId": "asdk_app_6adf007fddb08191ab7d36bfe4463f64"
+      "pluginId": "plugin_asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc",
+      "appId": "asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc"
     }
   ],
   "lastInspection": {
@@ -31,27 +31,69 @@
     "sourceReader": "available",
     "managementPages": "available",
     "liveCloudVersions": [
-      "1.0.1",
-      "1.0.1"
+      "1.1.1",
+      "1.1.1"
     ],
     "liveDeveloperDisplay": "shoppon shoppon",
-    "liveCategory": "Other",
-    "liveWebsite": "unavailable",
+    "liveCategory": "Business & Operations",
+    "liveWebsite": "https://lingmind.cn",
     "editableAppFields": [
       "name",
       "description"
     ],
     "logoClick": "no editor opened",
-    "publication": "not attempted through unsupported presentation update"
+    "publication": "branded complete packages published with preserved App dependencies",
+    "detailLogo": "cropped LingMind PNG visible",
+    "sidebarLogo": "host still renders generic icon"
   },
-  "replacementPlugins": [
+  "logoUpdate": {
+    "state": "published_in_branded_packages",
+    "sourceUnchanged": true,
+    "outputPixels": [
+      256,
+      256
+    ],
+    "contentWidthPixels": 232,
+    "horizontalPaddingPixels": 12,
+    "bytes": 8259,
+    "script": "scripts/export-plugin-icons.py"
+  },
+  "obsoleteWrappers": [
     {
       "pluginId": "plugins_6adf2cd2518481918e10b4a0a745205a",
-      "version": "0.5.1"
+      "version": "0.5.1",
+      "state": "not_installed"
     },
     {
       "pluginId": "Plugin_54b65c47855c819197cf0ffef589aeb1",
-      "version": "0.4.2"
+      "version": "0.4.2",
+      "state": "uninstalled"
+    }
+  ],
+  "oldAppBackedReleases": {
+    "versions": [
+      "1.0.1",
+      "1.0.1"
+    ],
+    "state": "permanent_deletion_failed_in_host_ui",
+    "userConfirmed": true,
+    "uiError": "未成功删除插件。请重试",
+    "targets": [
+      "plugin_asdk_app_6adefee15e388191b0999e2cce22e295",
+      "plugin_asdk_app_6adf007fddb08191ab7d36bfe4463f64"
+    ],
+    "newReleasesPreserved": true
+  },
+  "brandedPlugins": [
+    {
+      "pluginId": "plugins_6adf58bb1b188191ad4ba541a44ec136",
+      "releaseId": "pluginrel_6adf58bd661881919cdceee87d0d778e",
+      "version": "1.1.1"
+    },
+    {
+      "pluginId": "plugins_6adf58f3c6fc8191b19b21522d85c9fa",
+      "releaseId": "pluginrel_6adf58f59b78819186c8fce7f841e269",
+      "version": "1.1.1"
     }
   ]
 }

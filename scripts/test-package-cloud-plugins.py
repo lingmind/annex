@@ -20,6 +20,42 @@ SPEC.loader.exec_module(PACKAGER)
 
 
 class CloudPackageTests(unittest.TestCase):
+    def test_branded_cloud_package_includes_identity_metadata_and_cropped_icon(self):
+        for alias in ("lingmind", "lingmind-operator"):
+            with self.subTest(alias=alias), tempfile.TemporaryDirectory() as temporary:
+                source = ROOT / "plugins" / alias
+                with ZipFile(PACKAGER.package_plugin(source, Path(temporary))) as archive:
+                    manifest = json.loads(archive.read("plugin.json"))
+                    interface = manifest["extensions"]["com.openai"]["interface"]
+                    self.assertEqual(interface["category"], "Business & Operations")
+                    self.assertEqual(interface["websiteURL"], "https://lingmind.cn")
+                    self.assertEqual(interface["logo"], "./assets/lingmind-logo-256.png")
+                    self.assertEqual(archive.read(interface["logo"][2:]), (source / interface["logo"]).read_bytes())
+                    self.assertLess(len(archive.read(interface["logo"][2:])), 10_000)
+                    self.assertEqual(json.loads(archive.read(".app.json")), json.loads((source / ".app.json").read_text()))
+                    self.assertNotIn("mcp.json", archive.namelist())
+
+    def test_account_overlay_preserves_app_identity_and_presentation(self):
+        binding = json.loads((ROOT / "platforms/codex/canonical-cloud-plugins.json").read_text())["lingmind"]
+        with tempfile.TemporaryDirectory() as temporary:
+            with ZipFile(PACKAGER.package_account_plugin("lingmind", binding, Path(temporary))) as archive:
+                manifest = json.loads(archive.read("plugin.json"))
+                self.assertEqual(manifest["name"], binding["manifest"]["name"])
+                self.assertEqual(manifest["extensions"]["com.openai"]["interface"], binding["manifest"]["interface"])
+                self.assertEqual(json.loads(archive.read(".app.json")), binding["apps"])
+                self.assertEqual(len([p for p in archive.namelist() if p.endswith("/SKILL.md")]), 9)
+                self.assertNotIn("mcp.json", archive.namelist())
+                self.assertNotIn(".mcp.json", archive.namelist())
+                logo = "skills/lingmind-daily-report-renderer/assets/logo.png"
+                self.assertEqual(archive.read(logo), (ROOT / "plugins/lingmind" / logo).read_bytes())
+
+    def test_account_overlay_rejects_a_different_app(self):
+        binding = json.loads((ROOT / "platforms/codex/canonical-cloud-plugins.json").read_text())["lingmind"]
+        binding["apps"]["apps"] = {"other": {"id": "asdk_app_other"}}
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(ValueError, "verified canonical App"):
+                PACKAGER.package_account_plugin("lingmind", binding, Path(temporary))
+
     def test_profile_defaults_and_explicit_environment_selection(self):
         with tempfile.TemporaryDirectory() as temporary:
             profile = Path(temporary) / "profile.json"

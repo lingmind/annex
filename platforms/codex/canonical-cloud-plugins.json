@@ -1,0 +1,66 @@
+{
+  "lingmind": {
+    "pluginId": "plugin_asdk_app_6adf48d841188191ac73c1d8711f0a19",
+    "expectedReleaseId": "pluginrel_6adf4b471a148191814802a8832d058a",
+    "version": "1.1.0",
+    "manifest": {
+      "apps": "./.app.json",
+      "interface": {
+        "capabilities": [],
+        "category": "Other",
+        "defaultPrompt": null,
+        "developerName": "App developer",
+        "displayName": "LingMind",
+        "longDescription": "连接 LingMind 工作环境，查询业务数据并处理日常工作。",
+        "shortDescription": "连接 LingMind 工作环境，查询业务数据并处理日常工作。"
+      },
+      "name": "dev-6adf48d841188191ac73c1d8711f0a19",
+      "version": "1.1.0",
+      "description": "连接 LingMind 工作环境，查询业务数据并处理日常工作。",
+      "author": {
+        "name": "App developer"
+      },
+      "keywords": [],
+      "skills": "./skills"
+    },
+    "apps": {
+      "apps": {
+        "dev-6adf48d841188191ac73c1d8711f0a19": {
+          "id": "asdk_app_6adf48d841188191ac73c1d8711f0a19"
+        }
+      }
+    }
+  },
+  "lingmind-operator": {
+    "pluginId": "plugin_asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc",
+    "expectedReleaseId": "pluginrel_6adf506878588191827d4136ef447161",
+    "version": "1.1.0",
+    "manifest": {
+      "apps": "./.app.json",
+      "interface": {
+        "capabilities": [],
+        "category": "Other",
+        "defaultPrompt": null,
+        "developerName": "App developer",
+        "displayName": "LingMind Operator",
+        "longDescription": "查看 LingMind 环境与服务状态，排查异常，处理经过确认的维护、部署及备份操作。",
+        "shortDescription": "查看 LingMind 环境与服务状态，排查异常，处理经过确认的维护、部署及备份操作。"
+      },
+      "name": "dev-6adf4fc282e08191b0cd151c6cf4d8bc",
+      "version": "1.1.0",
+      "description": "查看 LingMind 环境与服务状态，排查异常，处理经过确认的维护、部署及备份操作。",
+      "author": {
+        "name": "App developer"
+      },
+      "keywords": [],
+      "skills": "./skills"
+    },
+    "apps": {
+      "apps": {
+        "dev-6adf4fc282e08191b0cd151c6cf4d8bc": {
+          "id": "asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc"
+        }
+      }
+    }
+  }
+}

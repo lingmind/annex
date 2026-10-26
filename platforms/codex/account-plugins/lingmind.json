@@ -1,15 +1,16 @@
 {
   "plugin": {
-    "plugin_id": "plugin_asdk_app_6adefee15e388191b0999e2cce22e295",
-    "name": "dev-6adefee15e388191b0999e2cce22e295",
-    "description": "LingMind 的云端业务 MCP 连接，由 annex 插件提供操作规则。",
-    "version": "1.0.1",
-    "current_release_id": "pluginrel_6adf094ba71481918541166afe3ce7ab",
+    "plugin_id": "plugin_asdk_app_6adf48d841188191ac73c1d8711f0a19",
+    "name": "dev-6adf48d841188191ac73c1d8711f0a19",
+    "description": "连接 LingMind 工作环境，查询业务数据并处理日常工作。",
+    "version": "1.1.0",
+    "current_release_id": "pluginrel_6adf4b471a148191814802a8832d058a",
     "scope": "USER",
     "discoverability": "PRIVATE"
   },
   "files": {
-    ".codex-plugin/plugin.json": "{\n  \"apps\": \"./.app.json\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"description\": \"LingMind \\u7684\\u4e91\\u7aef\\u4e1a\\u52a1 MCP \\u8fde\\u63a5\\uff0c\\u7531 annex \\u63d2\\u4ef6\\u63d0\\u4f9b\\u64cd\\u4f5c\\u89c4\\u5219\\u3002\",\n  \"interface\": {\n    \"capabilities\": [],\n    \"category\": \"Other\",\n    \"defaultPrompt\": null,\n    \"developerName\": \"App developer\",\n    \"displayName\": \"LingMind\",\n    \"longDescription\": \"LingMind \\u7684\\u4e91\\u7aef\\u4e1a\\u52a1 MCP \\u8fde\\u63a5\\uff0c\\u7531 annex \\u63d2\\u4ef6\\u63d0\\u4f9b\\u64cd\\u4f5c\\u89c4\\u5219\\u3002\",\n    \"shortDescription\": \"LingMind \\u7684\\u4e91\\u7aef\\u4e1a\\u52a1 MCP \\u8fde\\u63a5\\uff0c\\u7531 annex \\u63d2\\u4ef6\\u63d0\\u4f9b\\u64cd\\u4f5c\\u89c4\\u5219\\u3002\"\n  },\n  \"name\": \"dev-6adefee15e388191b0999e2cce22e295\",\n  \"skills\": \"./skills/\",\n  \"version\": \"1.0.1\"\n}",
-    ".app.json": "{\n  \"apps\": {\n    \"dev-6adefee15e388191b0999e2cce22e295\": {\n      \"id\": \"asdk_app_6adefee15e388191b0999e2cce22e295\"\n    }\n  }\n}"
+    ".codex-plugin/plugin.json": "{\n  \"apps\": \"./.app.json\",\n  \"interface\": {\n    \"capabilities\": [],\n    \"category\": \"Other\",\n    \"defaultPrompt\": null,\n    \"developerName\": \"App developer\",\n    \"displayName\": \"LingMind\",\n    \"longDescription\": \"\\u8fde\\u63a5 LingMind \\u5de5\\u4f5c\\u73af\\u5883\\uff0c\\u67e5\\u8be2\\u4e1a\\u52a1\\u6570\\u636e\\u5e76\\u5904\\u7406\\u65e5\\u5e38\\u5de5\\u4f5c\\u3002\",\n    \"shortDescription\": \"\\u8fde\\u63a5 LingMind \\u5de5\\u4f5c\\u73af\\u5883\\uff0c\\u67e5\\u8be2\\u4e1a\\u52a1\\u6570\\u636e\\u5e76\\u5904\\u7406\\u65e5\\u5e38\\u5de5\\u4f5c\\u3002\"\n  },\n  \"name\": \"dev-6adf48d841188191ac73c1d8711f0a19\",\n  \"version\": \"1.1.0\",\n  \"description\": \"\\u8fde\\u63a5 LingMind \\u5de5\\u4f5c\\u73af\\u5883\\uff0c\\u67e5\\u8be2\\u4e1a\\u52a1\\u6570\\u636e\\u5e76\\u5904\\u7406\\u65e5\\u5e38\\u5de5\\u4f5c\\u3002\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"keywords\": [],\n  \"skills\": \"./skills\"\n}\n",
+    ".app.json": "{\n  \"apps\": {\n    \"dev-6adf48d841188191ac73c1d8711f0a19\": {\n      \"id\": \"asdk_app_6adf48d841188191ac73c1d8711f0a19\"\n    }\n  }\n}",
+    "plugin.json": "{\n  \"$schema\": \"https://agent-plugins.org/schemas/1.0.0/plugin.schema.json\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"description\": \"\\u8fde\\u63a5 LingMind \\u5de5\\u4f5c\\u73af\\u5883\\uff0c\\u67e5\\u8be2\\u4e1a\\u52a1\\u6570\\u636e\\u5e76\\u5904\\u7406\\u65e5\\u5e38\\u5de5\\u4f5c\\u3002\",\n  \"extensions\": {\n    \"com.openai\": {\n      \"apps\": \"./.app.json\",\n      \"interface\": {\n        \"capabilities\": [],\n        \"category\": \"Other\",\n        \"defaultPrompt\": null,\n        \"developerName\": \"App developer\",\n        \"displayName\": \"LingMind\",\n        \"longDescription\": \"\\u8fde\\u63a5 LingMind \\u5de5\\u4f5c\\u73af\\u5883\\uff0c\\u67e5\\u8be2\\u4e1a\\u52a1\\u6570\\u636e\\u5e76\\u5904\\u7406\\u65e5\\u5e38\\u5de5\\u4f5c\\u3002\",\n        \"shortDescription\": \"\\u8fde\\u63a5 LingMind \\u5de5\\u4f5c\\u73af\\u5883\\uff0c\\u67e5\\u8be2\\u4e1a\\u52a1\\u6570\\u636e\\u5e76\\u5904\\u7406\\u65e5\\u5e38\\u5de5\\u4f5c\\u3002\"\n      }\n    }\n  },\n  \"name\": \"dev-6adf48d841188191ac73c1d8711f0a19\",\n  \"version\": \"1.1.0\"\n}\n"
   }
 }

@@ -175,7 +175,7 @@ class RenderCodexPluginsTest(unittest.TestCase):
             manifest = json.loads(
                 (output / "plugins/lingmind/.codex-plugin/plugin.json").read_text(encoding="utf-8")
             )
-            self.assertEqual(manifest["interface"]["logo"], "./assets/lingmind-logo.png")
+            self.assertEqual(manifest["interface"]["logo"], "./assets/lingmind-logo-256.png")
             self.assertTrue((output / "plugins/lingmind/assets/lingmind-logo.png").is_file())
             portable = json.loads((output / "plugins/lingmind/mcp.json").read_text(encoding="utf-8"))
             self.assertEqual(set(portable["mcpServers"]), set(standard["mcpServers"]))

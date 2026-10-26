@@ -14,7 +14,7 @@
   "license": "MIT",
   "name": "lingmind",
   "repository": "https://github.com/lingmind/annex",
-  "version": "0.5.1",
+  "version": "1.1.1",
   "interface": {
     "brandColor": "#1677FF",
     "capabilities": [
@@ -23,7 +23,7 @@
       "Write"
     ],
     "category": "Business & Operations",
-    "composerIcon": "./assets/lingmind-logo.png",
+    "composerIcon": "./assets/lingmind-logo-256.png",
     "defaultPrompt": [
       "Summarize the active incidents in my LingMind project",
       "List the users and roles I am authorized to view in my LingMind project",
@@ -31,7 +31,7 @@
     ],
     "developerName": "LingMind",
     "displayName": "LingMind",
-    "logo": "./assets/lingmind-logo.png",
+    "logo": "./assets/lingmind-logo-256.png",
     "longDescription": "连接你的 LingMind 工作环境，查看项目、设备、任务和告警，处理业务数据并生成报告。重要操作会在执行前请求确认。",
     "shortDescription": "连接 LingMind 工作环境",
     "websiteURL": "https://lingmind.cn"

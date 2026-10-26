@@ -1,15 +1,16 @@
 {
   "plugin": {
-    "plugin_id": "plugin_asdk_app_6adf007fddb08191ab7d36bfe4463f64",
-    "name": "dev-6adf007fddb08191ab7d36bfe4463f64",
-    "description": "LingMind 全局 Operator 云端连接，登录经 Phoenix 网关。",
-    "version": "1.0.1",
-    "current_release_id": "pluginrel_6adf0923412c81919e4d99b52655b8b1",
+    "plugin_id": "plugin_asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc",
+    "name": "dev-6adf4fc282e08191b0cd151c6cf4d8bc",
+    "description": "查看 LingMind 环境与服务状态，排查异常，处理经过确认的维护、部署及备份操作。",
+    "version": "1.1.0",
+    "current_release_id": "pluginrel_6adf506878588191827d4136ef447161",
     "scope": "USER",
     "discoverability": "PRIVATE"
   },
   "files": {
-    ".codex-plugin/plugin.json": "{\n  \"apps\": \"./.app.json\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"description\": \"LingMind \\u5168\\u5c40 Operator \\u4e91\\u7aef\\u8fde\\u63a5\\uff0c\\u767b\\u5f55\\u7ecf Phoenix \\u7f51\\u5173\\u3002\",\n  \"interface\": {\n    \"capabilities\": [],\n    \"category\": \"Other\",\n    \"defaultPrompt\": null,\n    \"developerName\": \"App developer\",\n    \"displayName\": \"LingMind Operator\",\n    \"longDescription\": \"LingMind \\u5168\\u5c40 Operator \\u4e91\\u7aef\\u8fde\\u63a5\\uff0c\\u767b\\u5f55\\u7ecf Phoenix \\u7f51\\u5173\\u3002\",\n    \"shortDescription\": \"LingMind \\u5168\\u5c40 Operator \\u4e91\\u7aef\\u8fde\\u63a5\\uff0c\\u767b\\u5f55\\u7ecf Phoenix \\u7f51\\u5173\\u3002\"\n  },\n  \"name\": \"dev-6adf007fddb08191ab7d36bfe4463f64\",\n  \"skills\": \"./skills/\",\n  \"version\": \"1.0.1\"\n}",
-    ".app.json": "{\n  \"apps\": {\n    \"dev-6adf007fddb08191ab7d36bfe4463f64\": {\n      \"id\": \"asdk_app_6adf007fddb08191ab7d36bfe4463f64\"\n    }\n  }\n}"
+    ".codex-plugin/plugin.json": "{\n  \"apps\": \"./.app.json\",\n  \"interface\": {\n    \"capabilities\": [],\n    \"category\": \"Other\",\n    \"defaultPrompt\": null,\n    \"developerName\": \"App developer\",\n    \"displayName\": \"LingMind Operator\",\n    \"longDescription\": \"\\u67e5\\u770b LingMind \\u73af\\u5883\\u4e0e\\u670d\\u52a1\\u72b6\\u6001\\uff0c\\u6392\\u67e5\\u5f02\\u5e38\\uff0c\\u5904\\u7406\\u7ecf\\u8fc7\\u786e\\u8ba4\\u7684\\u7ef4\\u62a4\\u3001\\u90e8\\u7f72\\u53ca\\u5907\\u4efd\\u64cd\\u4f5c\\u3002\",\n    \"shortDescription\": \"\\u67e5\\u770b LingMind \\u73af\\u5883\\u4e0e\\u670d\\u52a1\\u72b6\\u6001\\uff0c\\u6392\\u67e5\\u5f02\\u5e38\\uff0c\\u5904\\u7406\\u7ecf\\u8fc7\\u786e\\u8ba4\\u7684\\u7ef4\\u62a4\\u3001\\u90e8\\u7f72\\u53ca\\u5907\\u4efd\\u64cd\\u4f5c\\u3002\"\n  },\n  \"name\": \"dev-6adf4fc282e08191b0cd151c6cf4d8bc\",\n  \"version\": \"1.1.0\",\n  \"description\": \"\\u67e5\\u770b LingMind \\u73af\\u5883\\u4e0e\\u670d\\u52a1\\u72b6\\u6001\\uff0c\\u6392\\u67e5\\u5f02\\u5e38\\uff0c\\u5904\\u7406\\u7ecf\\u8fc7\\u786e\\u8ba4\\u7684\\u7ef4\\u62a4\\u3001\\u90e8\\u7f72\\u53ca\\u5907\\u4efd\\u64cd\\u4f5c\\u3002\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"keywords\": [],\n  \"skills\": \"./skills\"\n}\n",
+    ".app.json": "{\n  \"apps\": {\n    \"dev-6adf4fc282e08191b0cd151c6cf4d8bc\": {\n      \"id\": \"asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc\"\n    }\n  }\n}",
+    "plugin.json": "{\n  \"$schema\": \"https://agent-plugins.org/schemas/1.0.0/plugin.schema.json\",\n  \"author\": {\n    \"name\": \"App developer\"\n  },\n  \"description\": \"\\u67e5\\u770b LingMind \\u73af\\u5883\\u4e0e\\u670d\\u52a1\\u72b6\\u6001\\uff0c\\u6392\\u67e5\\u5f02\\u5e38\\uff0c\\u5904\\u7406\\u7ecf\\u8fc7\\u786e\\u8ba4\\u7684\\u7ef4\\u62a4\\u3001\\u90e8\\u7f72\\u53ca\\u5907\\u4efd\\u64cd\\u4f5c\\u3002\",\n  \"extensions\": {\n    \"com.openai\": {\n      \"apps\": \"./.app.json\",\n      \"interface\": {\n        \"capabilities\": [],\n        \"category\": \"Other\",\n        \"defaultPrompt\": null,\n        \"developerName\": \"App developer\",\n        \"displayName\": \"LingMind Operator\",\n        \"longDescription\": \"\\u67e5\\u770b LingMind \\u73af\\u5883\\u4e0e\\u670d\\u52a1\\u72b6\\u6001\\uff0c\\u6392\\u67e5\\u5f02\\u5e38\\uff0c\\u5904\\u7406\\u7ecf\\u8fc7\\u786e\\u8ba4\\u7684\\u7ef4\\u62a4\\u3001\\u90e8\\u7f72\\u53ca\\u5907\\u4efd\\u64cd\\u4f5c\\u3002\",\n        \"shortDescription\": \"\\u67e5\\u770b LingMind \\u73af\\u5883\\u4e0e\\u670d\\u52a1\\u72b6\\u6001\\uff0c\\u6392\\u67e5\\u5f02\\u5e38\\uff0c\\u5904\\u7406\\u7ecf\\u8fc7\\u786e\\u8ba4\\u7684\\u7ef4\\u62a4\\u3001\\u90e8\\u7f72\\u53ca\\u5907\\u4efd\\u64cd\\u4f5c\\u3002\"\n      }\n    }\n  },\n  \"name\": \"dev-6adf4fc282e08191b0cd151c6cf4d8bc\",\n  \"version\": \"1.1.0\"\n}\n"
   }
 }

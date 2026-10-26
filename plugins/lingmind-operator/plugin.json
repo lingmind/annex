@@ -16,7 +16,7 @@
           "Write"
         ],
         "category": "Business & Operations",
-        "composerIcon": "./assets/lingmind-logo.png",
+        "composerIcon": "./assets/lingmind-logo-256.png",
         "defaultPrompt": [
           "List the LingMind environments I can operate",
           "Diagnose an unhealthy service through its Apex Agent",
@@ -24,7 +24,7 @@
         ],
         "developerName": "LingMind",
         "displayName": "LingMind Operator",
-        "logo": "./assets/lingmind-logo.png",
+        "logo": "./assets/lingmind-logo-256.png",
         "longDescription": "集中查看环境、服务和运行异常，辅助排查问题；维护、部署及备份等重要操作均需确认后执行。",
         "shortDescription": "管理 LingMind 环境与服务",
         "websiteURL": "https://lingmind.cn"
@@ -41,5 +41,5 @@
   "license": "MIT",
   "name": "lingmind-operator",
   "repository": "https://github.com/lingmind/annex",
-  "version": "0.4.2"
+  "version": "1.1.1"
 }
