@@ -7,6 +7,7 @@
   "description": "Observe and maintain active LingMind environments as an Operator administrator, deploy reviewed services, and run confirmed backup or restore workflows through global Apex Operator MCP.",
   "extensions": {
     "com.openai": {
+      "apps": "./.app.json",
       "interface": {
         "brandColor": "#0F766E",
         "capabilities": [
@@ -39,5 +40,5 @@
   "license": "MIT",
   "name": "lingmind-operator",
   "repository": "https://github.com/lingmind/annex",
-  "version": "0.3.0"
+  "version": "0.3.1"
 }

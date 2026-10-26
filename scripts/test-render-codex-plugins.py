@@ -116,6 +116,10 @@ class RenderCodexPluginsTest(unittest.TestCase):
             for name, connection in portable["mcpServers"].items():
                 self.assertEqual(connection["url"], standard["mcpServers"][name]["url"])
                 self.assertEqual(connection["type"], "streamable-http")
+                auth = connection["extensions"]["com.openai"]["auth"]
+                gateway = connection["url"].removesuffix("/mcp")
+                self.assertEqual(auth["authorizationUrl"], gateway + "/proxy/keycloak/realms/lingmind/protocol/openid-connect/auth")
+                self.assertEqual(auth["tokenUrl"], gateway + "/proxy/keycloak/realms/lingmind/protocol/openid-connect/token")
 
     def test_rejects_wrong_mcp_path(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

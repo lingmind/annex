@@ -23,6 +23,10 @@ def package_plugin(source: Path, output: Path) -> Path:
     mcp = json.loads((source / "mcp.json").read_text(encoding="utf-8"))
     if not mcp["mcpServers"]:
         raise ValueError("Configure a business environment before cloud packaging")
+    apps_path = source / ".app.json"
+    apps = json.loads(apps_path.read_text(encoding="utf-8")) if apps_path.exists() else None
+    if apps is not None and set(apps["apps"]) != set(mcp["mcpServers"]):
+        raise ValueError("Cloud App bindings must match the selected MCP connections exactly")
     output.mkdir(parents=True, exist_ok=True)
     archive_path = output / f"{manifest['name']}-{manifest['version']}.zip"
     with ZipFile(archive_path, "w", compression=ZIP_DEFLATED) as archive:
@@ -34,7 +38,10 @@ def package_plugin(source: Path, output: Path) -> Path:
                 if "__pycache__" not in relative.parts and path.suffix != ".pyc":
                     write_entry(archive, relative.as_posix(), path.read_bytes())
         write_entry(archive, "plugin.json", json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
-        write_entry(archive, "mcp.json", json.dumps(mcp, ensure_ascii=False, indent=2) + "\n")
+        if apps is None:
+            write_entry(archive, "mcp.json", json.dumps(mcp, ensure_ascii=False, indent=2) + "\n")
+        else:
+            write_entry(archive, ".app.json", json.dumps(apps, ensure_ascii=False, indent=2) + "\n")
     return archive_path
 
 

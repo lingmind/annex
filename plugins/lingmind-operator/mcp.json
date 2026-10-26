@@ -32,7 +32,11 @@
             "oidcEnabled": true,
             "oidcScopesSupported": [
               "openid"
-            ]
+            ],
+            "authorizationUrl": "https://phoenix.lingmind.cn/proxy/keycloak/realms/lingmind/protocol/openid-connect/auth",
+            "tokenUrl": "https://phoenix.lingmind.cn/proxy/keycloak/realms/lingmind/protocol/openid-connect/token",
+            "oidcConfigurationUrl": "https://phoenix.lingmind.cn/proxy/keycloak/realms/lingmind/.well-known/openid-configuration",
+            "oidcUserinfoEndpoint": "https://phoenix.lingmind.cn/proxy/keycloak/realms/lingmind/protocol/openid-connect/userinfo"
           }
         }
       }

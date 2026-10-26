@@ -7,6 +7,7 @@
   "description": "Use project-scoped LingMind business, user, role, and permission queries plus authorized operations through Phoenix MCP.",
   "extensions": {
     "com.openai": {
+      "apps": "./.app.json",
       "interface": {
         "brandColor": "#1677FF",
         "capabilities": [
@@ -39,5 +40,5 @@
   "license": "MIT",
   "name": "lingmind",
   "repository": "https://github.com/lingmind/annex",
-  "version": "0.3.0"
+  "version": "0.3.1"
 }

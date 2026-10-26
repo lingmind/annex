@@ -1,5 +1,13 @@
 # Plugin releases
 
+## LingMind 0.3.1 / LingMind Operator 0.3.1 - 2026-10-26
+
+- Route OAuth authorization, token exchange, discovery, and userinfo through Phoenix.
+  Operator uses `phoenix.lingmind.cn`; business gateways come from Apex resolution.
+- Keep Keycloak's canonical issuer and all existing MCP resources, client IDs, and scopes.
+- Require exact cloud callback registration, and deploy the Phoenix login proxy fix so
+  browser forms, resources, redirects, and authentication cookies stay on the gateway.
+
 ## LingMind 0.3.0 / LingMind Operator 0.3.0 - 2026-10-26
 
 - Manage standard Agent Plugins 1.0 manifests, MCP declarations, Skills, brand assets,

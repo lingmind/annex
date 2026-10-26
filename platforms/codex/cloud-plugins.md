@@ -17,7 +17,10 @@ Repeat `--environment-code` to select multiple business environments and pass an
 `--default-environment` in that case. Resolution and the connection map reuse the Codex renderer.
 The source templates and local marketplace remain separate from the generated cloud archives.
 
-Each ZIP contains root `plugin.json`, portable `mcp.json`, Skills, references, and assets.
+Each ZIP contains root `plugin.json`, Skills, references, and assets. Account cloud packages
+use verified `.app.json` bindings to registered remote MCP Apps. They omit raw `mcp.json`
+to avoid provisioning a second local connection alongside the cloud connection. The source
+portable MCP declarations remain in Annex for other hosts and for reconstructing connection settings.
 Remote servers use streamable HTTP and OAuth with the existing public client IDs and scopes.
 No loopback callback ports, credentials, local executors, marketplace wrappers, or dependency
 directories are included. Upload each ZIP separately through Plugin Creator; account creation
@@ -54,8 +57,22 @@ not complete or replace cloud OAuth login.
 ## OAuth connection prerequisite
 
 The existing `lingmind-codex` and `lingmind-operator-codex` Keycloak clients are public PKCE
-clients. Their source configuration currently permits local loopback redirects. Account plugin
-publication does not change Keycloak configuration or authenticate cloud connections.
+clients. Beta and global Operator now permit both their existing local loopback redirects and
+the exact `https://chatgpt.com/connector_platform_oauth_redirect` callback, verified against the
+cloud connection management form. Account archive publication alone does not register a cloud
+MCP App or authenticate it.
+
+Register each remote MCP connection through **Plugins > Add > Add custom MCP server**, using
+the existing provided client and `none` token-endpoint authentication. Override authorization,
+token, OIDC discovery, and userinfo URLs to the target Phoenix gateway's
+`/proxy/keycloak/realms/lingmind/...` paths. Operator's gateway is `phoenix.lingmind.cn`;
+business gateways must come from Apex environment resolution. Keep the upstream canonical
+Keycloak issuer; gateway login HTML/cookie/redirect handling does not rewrite token or discovery JSON.
+
+The cloud connections are **LingMind Beta MCP** and **LingMind Operator MCP**. Their verified
+App IDs live in `plugins/<name>/.app.json`; the standard plugins retain their original account
+IDs and depend on those cloud Apps. The packager requires the bound connection keys to match
+the selected environment map exactly, preventing an archive from silently using another environment.
 
 Copy the exact production redirect URI shown by each MCP connection's management page into
 the corresponding Keycloak client's redirect allowlist, retaining any required local callbacks.

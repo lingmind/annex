@@ -151,6 +151,8 @@ def server(url: str, client_id: str, callback_port: int, scopes: list[str]) -> d
 
 
 def portable_server(connection: dict) -> dict:
+    endpoint = urlparse(connection["url"])
+    oauth_base = f"{endpoint.scheme}://{endpoint.netloc}/proxy/keycloak/realms/lingmind"
     return {
         "type": "streamable-http",
         "url": connection["url"],
@@ -167,6 +169,10 @@ def portable_server(connection: dict) -> dict:
                     "defaultScopes": connection["scopes"],
                     "oidcEnabled": True,
                     "oidcScopesSupported": ["openid"],
+                    "authorizationUrl": oauth_base + "/protocol/openid-connect/auth",
+                    "tokenUrl": oauth_base + "/protocol/openid-connect/token",
+                    "oidcConfigurationUrl": oauth_base + "/.well-known/openid-configuration",
+                    "oidcUserinfoEndpoint": oauth_base + "/protocol/openid-connect/userinfo",
                 }
             }
         },
@@ -190,6 +196,9 @@ def copy_plugin(name: str, destination: Path, timestamp: str | None) -> Path:
     portable_path = target / "plugin.json"
     portable = json.loads(portable_path.read_text(encoding="utf-8"))
     portable["version"] = manifest["version"]
+    if timestamp:
+        portable.get("extensions", {}).get("com.openai", {}).pop("apps", None)
+        (target / ".app.json").unlink(missing_ok=True)
     write_json(portable_path, portable)
     return target
 
@@ -222,6 +231,12 @@ def write_environment_skill_context(plugin: Path, environment_codes: list[str], 
             "This block is generated at installation time and contains no URL, issuer, token, or credential.",
         ]
     )
+    apps_path = plugin / ".app.json"
+    if apps_path.exists():
+        apps = json.loads(apps_path.read_text(encoding="utf-8"))["apps"]
+        generated += "\n\n## Cloud App bindings\n\n"
+        generated += "\n".join(f"- `{name}` is supplied by cloud App `{app['id']}`." for name, app in apps.items())
+        generated += "\n\nTool namespace prefixes are assigned by the host. Select the bound cloud App's tools, then verify the environment with `context_get`; do not require the namespace prefix to equal the connection slot.\n"
     skill_path.write_text(content.replace(ENVIRONMENT_SKILL_MARKER, generated), encoding="utf-8")
 
 

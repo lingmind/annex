@@ -34,7 +34,13 @@ class CloudPackageTests(unittest.TestCase):
                 self.assertNotIn("mcpServers", manifest)
                 self.assertNotIn("skills", manifest)
                 self.assertIn(interface["logo"].removeprefix("./"), archive.namelist())
-                server = json.loads(archive.read("mcp.json"))["mcpServers"]["lingmind-operator"]
+                if (source / ".app.json").exists():
+                    self.assertNotIn("mcp.json", archive.namelist())
+                    self.assertEqual(json.loads(archive.read(".app.json")), json.loads((source / ".app.json").read_text()))
+                    mcp = json.loads((source / "mcp.json").read_text())
+                else:
+                    mcp = json.loads(archive.read("mcp.json"))
+                server = mcp["mcpServers"]["lingmind-operator"]
                 self.assertEqual(server["type"], "streamable-http")
                 self.assertEqual(server["url"], "https://apex.lingmind.cn/mcp/operator")
                 auth = server["extensions"]["com.openai"]["auth"]
@@ -79,6 +85,14 @@ class CloudPackageTests(unittest.TestCase):
             manifest["version"] = "0.3.0+codex.20261026"
             path.write_text(json.dumps(manifest))
             with self.assertRaisesRegex(ValueError, "explicit stable SemVer"):
+                PACKAGER.package_plugin(source, Path(temporary) / "output")
+
+    def test_cloud_apps_cannot_bind_an_unselected_environment(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "source"
+            shutil.copytree(ROOT / "plugins/lingmind-operator", source)
+            (source / ".app.json").write_text(json.dumps({"apps": {"wrong-environment": {"id": "asdk_app_test"}}}))
+            with self.assertRaisesRegex(ValueError, "match the selected MCP connections exactly"):
                 PACKAGER.package_plugin(source, Path(temporary) / "output")
 
 
