@@ -1,5 +1,5 @@
 {
-  "state": "branded_1.1.1_published_sidebar_icon_pending",
+  "state": "host_icon_catalog_failure_reproduced",
   "desiredCloudPluginVersion": "1.1.1",
   "portableSourceVersion": "1.1.1",
   "interface": {
@@ -31,7 +31,7 @@
     "sourceReader": "available",
     "managementPages": "available",
     "liveCloudVersions": [
-      "1.1.1",
+      "1.1.2",
       "1.1.1"
     ],
     "liveDeveloperDisplay": "shoppon shoppon",
@@ -44,7 +44,9 @@
     "logoClick": "no editor opened",
     "publication": "branded complete packages published with preserved App dependencies",
     "detailLogo": "cropped LingMind PNG visible",
-    "sidebarLogo": "host still renders generic icon"
+    "sidebarLogo": "host still renders generic icon",
+    "iconSummaryFields": "composerIcon, composerIconUrl, logo, logoDark, logoUrl, logoUrlDark all null after forceRefetch",
+    "upstreamIssue": "https://github.com/openai/codex/issues/55762"
   },
   "logoUpdate": {
     "state": "published_in_branded_packages",
@@ -87,8 +89,8 @@
   "brandedPlugins": [
     {
       "pluginId": "plugins_6adf58bb1b188191ad4ba541a44ec136",
-      "releaseId": "pluginrel_6adf58bd661881919cdceee87d0d778e",
-      "version": "1.1.1"
+      "releaseId": "pluginrel_6adf5c1bef988191ba6624f68db00e93",
+      "version": "1.1.2"
     },
     {
       "pluginId": "plugins_6adf58f3c6fc8191b19b21522d85c9fa",
