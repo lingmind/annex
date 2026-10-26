@@ -1,5 +1,5 @@
 {
-  "state": "awaiting_supported_app_metadata_update",
+  "state": "blocked_app_owned_presentation_editing",
   "desiredCloudPluginVersion": "1.0.2",
   "portableSourceVersion": "0.3.3",
   "interface": {
@@ -25,5 +25,23 @@
       "pluginId": "plugin_asdk_app_6adf007fddb08191ab7d36bfe4463f64",
       "appId": "asdk_app_6adf007fddb08191ab7d36bfe4463f64"
     }
-  ]
+  ],
+  "lastInspection": {
+    "date": "2026-10-26",
+    "sourceReader": "available",
+    "managementPages": "available",
+    "liveCloudVersions": [
+      "1.0.1",
+      "1.0.1"
+    ],
+    "liveDeveloperDisplay": "shoppon shoppon",
+    "liveCategory": "Other",
+    "liveWebsite": "unavailable",
+    "editableAppFields": [
+      "name",
+      "description"
+    ],
+    "logoClick": "no editor opened",
+    "publication": "not attempted through unsupported presentation update"
+  }
 }

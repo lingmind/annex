@@ -115,3 +115,17 @@ failed with a connection error during this follow-up, so no guarded cloud update
 Both `0.3.3` archives were built offline with the unchanged, previously verified beta resource
 and cloud App bindings after live Apex resolution failed during TLS negotiation. Package
 metadata, exact logo checksum, unchanged starter prompts and all nine/six Skills were verified.
+
+## Retry after access recovery
+
+Both source-reader calls and both App management pages recovered on the next user-requested
+retry. The live cloud plugins remain `1.0.1`, with the same release IDs. The detail page still
+shows developer `shoppon shoppon`, category `Other`, and an unavailable website. The management
+UI exposes edits for App name and description only (plus tool refresh on connected Apps);
+no logo, publisher, website or category editor was present. Clicking the displayed icon did
+not open an editor. The current publication tool's App-backed update contract preserves
+App-owned presentation, so no unsupported metadata update or version-only publication was made.
+
+The pending listing update now records `blocked_app_owned_presentation_editing`, rather than
+attributing the remaining metadata work to a network failure. Current App source snapshots
+were refreshed without changing App identity, OAuth configuration, prompts or Skills.
