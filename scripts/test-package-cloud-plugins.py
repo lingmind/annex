@@ -2,12 +2,15 @@
 """Check portable archives without network access or account publication."""
 
 import importlib.util
+import io
 import json
 import shutil
 import tempfile
 import unittest
 from argparse import Namespace
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 from zipfile import ZipFile
 
 import yaml
@@ -20,6 +23,21 @@ SPEC.loader.exec_module(PACKAGER)
 
 
 class CloudPackageTests(unittest.TestCase):
+    def test_default_cli_preserves_both_existing_cloud_app_identities(self):
+        bindings = json.loads((ROOT / "platforms/codex/canonical-cloud-plugins.json").read_text())
+        with tempfile.TemporaryDirectory() as temporary:
+            with patch("sys.argv", ["package-cloud-plugins.py", "--output", temporary]), redirect_stdout(io.StringIO()):
+                PACKAGER.main()
+            archives = sorted(Path(temporary).glob("*.zip"))
+            self.assertEqual(len(archives), 2)
+            for alias in ("lingmind", "lingmind-operator"):
+                binding = bindings[alias]
+                path = Path(temporary) / f"{alias}-account-{binding['version']}.zip"
+                with ZipFile(path) as archive:
+                    manifest = json.loads(archive.read("plugin.json"))
+                    self.assertEqual(manifest["name"], binding["manifest"]["name"])
+                    self.assertEqual(json.loads(archive.read(".app.json")), binding["apps"])
+
     def test_branded_cloud_package_includes_identity_metadata_and_cropped_icon(self):
         for alias in ("lingmind", "lingmind-operator"):
             with self.subTest(alias=alias), tempfile.TemporaryDirectory() as temporary:

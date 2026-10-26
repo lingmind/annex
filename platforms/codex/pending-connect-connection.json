@@ -1,11 +1,11 @@
 {
-  "state": "branded_private_plugin_published_final_identity_acceptance_pending",
+  "state": "two_entry_reinstall_cloud_queries_verified_listing_unresolved",
   "resourceUrl": "https://connect.lingmind.cn/mcp",
-  "appId": "asdk_app_6adf48d841188191ac73c1d8711f0a19",
-  "providerPluginId": "plugin_asdk_app_6adf48d841188191ac73c1d8711f0a19",
-  "pluginId": "plugins_6adf58bb1b188191ad4ba541a44ec136",
-  "pluginVersion": "1.1.5",
-  "releaseId": "pluginrel_6adf633a3fc08191b2f0b22059362009",
+  "appId": "asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
+  "providerPluginId": "plugin_asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
+  "pluginId": "plugin_asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
+  "pluginVersion": "1.1.6",
+  "releaseId": "pluginrel_6adf78e8287c81919e10497263403f81",
   "cloudRedirectUri": "https://chatgpt.com/connector/oauth/2bQgY5ZM2Wm2",
   "upstreamRedirectUri": "https://connect.lingmind.cn/oauth/callback",
   "oauthClientId": "lingmind-cloud",
@@ -22,9 +22,10 @@
   "connectImage": "2.2-b113",
   "gatewayImage": "2.2-b112",
   "gatewayRollout": "verified_before_plugin_reinstall",
-  "grantsBeforeReinstall": [
+  "grantsBeforeReinstall": [],
+  "finalIdentityCloudInvocation": "sandbox task query passed 2026-10-27 00:15 Asia/Shanghai; Operator retry passed 00:24:34-00:24:48, 25 namespaces / 48 Pods, no current abnormal Pods. Earlier Unknown tool did not recur; cause unconfirmed.",
+  "connectedAccountsVerifiedInHost": [
     "beta",
     "sandbox"
-  ],
-  "finalIdentityCloudInvocation": "not_yet_verified"
+  ]
 }

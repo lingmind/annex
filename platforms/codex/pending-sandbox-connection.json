@@ -1,41 +1,14 @@
 {
-  "state": "awaiting_cloud_registration_and_oauth",
+  "state": "connected_via_dynamic_connect_not_separate_app",
   "environmentCode": "sandbox",
-  "mcpServerName": "lingmind-sandbox",
-  "mcpServer": {
-    "type": "streamable-http",
-    "url": "https://phoenix.sandbox.lingmind.cn/mcp",
-    "extensions": {
-      "com.openai": {
-        "auth": {
-          "type": "oauth",
-          "client": {
-            "mode": "provided",
-            "clientId": "lingmind-codex",
-            "tokenEndpointAuthMethod": "none"
-          },
-          "baseScopes": [
-            "openid",
-            "lingmind.read",
-            "lingmind.write",
-            "lingmind.execute"
-          ],
-          "defaultScopes": [
-            "openid",
-            "lingmind.read",
-            "lingmind.write",
-            "lingmind.execute"
-          ],
-          "oidcEnabled": true,
-          "oidcScopesSupported": [
-            "openid"
-          ],
-          "authorizationUrl": "https://phoenix.sandbox.lingmind.cn/proxy/keycloak/realms/lingmind/protocol/openid-connect/auth",
-          "tokenUrl": "https://phoenix.sandbox.lingmind.cn/proxy/keycloak/realms/lingmind/protocol/openid-connect/token",
-          "oidcConfigurationUrl": "https://phoenix.sandbox.lingmind.cn/proxy/keycloak/realms/lingmind/.well-known/openid-configuration",
-          "oidcUserinfoEndpoint": "https://phoenix.sandbox.lingmind.cn/proxy/keycloak/realms/lingmind/protocol/openid-connect/userinfo"
-        }
-      }
-    }
-  }
+  "pluginId": "plugin_asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
+  "resourceUrl": "https://connect.lingmind.cn/mcp",
+  "upstreamResourceUrl": "https://phoenix.sandbox.lingmind.cn/mcp",
+  "oauthClientId": "lingmind-cloud",
+  "upstreamOAuthClientId": "lingmind-cloud-connect",
+  "upstreamRedirectUri": "https://connect.lingmind.cn/oauth/callback",
+  "connectedAccountVerifiedInHost": true,
+  "queryVerifiedAt": "2026-10-27T00:15:00+08:00",
+  "newUserDefaultEnvironment": null,
+  "note": "Sandbox is one independently authorized account of the existing LingMind App. Do not register a separate sandbox App or pin sandbox as the default for new users."
 }

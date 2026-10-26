@@ -5,9 +5,10 @@ description: Discover active LingMind environments and select one explicit envir
 
 # LingMind Operator environment context
 
-For cloud execution, use the registered **LingMind Operator MCP** App bound in this plugin's
-`.app.json` (`asdk_app_6adf007fddb08191ab7d36bfe4463f64`). Tool namespace prefixes are assigned
-by the host; identify the bound App rather than requiring a literal namespace prefix.
+For cloud execution, read this plugin's `.app.json` and use its registered **LingMind Operator**
+App. The binding in the installed package is authoritative; never reuse an App ID from an earlier
+release or conversation. Tool namespace prefixes are assigned by the host; identify the bound App
+rather than requiring a literal namespace prefix.
 
 Read [environment selection](../../references/environment-access.md) and
 [Operator Agent binding](../../references/agent-binding.md). The global Operator MCP is a single control-plane

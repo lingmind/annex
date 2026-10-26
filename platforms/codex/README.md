@@ -14,18 +14,25 @@ Pass `envCode` on named-environment business calls; it must match that connectio
 is the default; with multiple environments, ask for the code when omitted. See the complete
 [connection contract and acceptance matrix](user-environment-connections.md).
 
-The two installed cloud entries are the branded complete plugins **LingMind** and **LingMind Operator**.
-Each entry contains an existing App dependency and all of its skills (nine business skills, six Operator skills).
-The App identities remain the OAuth/tool providers; do not separately install their canonical plugins,
-Connect, or Operator Cloud companion entries. Uninstalling a provider entry is distinct from deleting its App.
+The two cloud plugins are the canonical App entries **LingMind 1.1.6** and **LingMind Operator 1.1.3**.
+Each entry contains its MCP connection and all of its skills (nine business skills, six Operator skills).
+Do not create a standalone wrapper around these Apps: connecting a wrapper also installs its App's
+canonical entry, which produced four installed entries instead of two. The two trial wrappers are retired;
+their App bindings and functional skills have been removed, leaving only the platform-required retirement notice.
+Four prior App records are deprecated, uninstalled, and contain no skills or references; their exact identities
+are recorded in `deprecated-plugins.json` and must not be reused.
 
-`make package-cloud-plugins` exports the branded complete packages without resolving or preconfiguring any
-environment. Their metadata and cropped icons are owned by the `plugins/` manifests. To prepare an App-owned
-skills-only overlay instead, explicitly select `--connection-mode account`. `canonical-cloud-plugins.json`
+`make package-cloud-plugins` exports updates for the two existing App plugins by default, without resolving
+or preconfiguring any environment. `canonical-cloud-plugins.json`
 records the last verified provider manifests, bindings, versions, and release guards; refresh it from the
-source reader before preparing such an update. App-owned presentation cannot be changed through a skills
-overlay. `pending-listing-update.json` tracks actual cloud presentation results and the failed deletion of
-the two uninstalled 1.0.1 records.
+source reader before preparing an update. App-owned presentation cannot be changed through a skills overlay.
+The standalone branded export remains explicit (`--connection-mode branded`), but must not be installed as
+another cloud entry. `pending-listing-update.json` tracks actual cloud presentation limits and retired identities.
+
+This installation is not a completed listing release: the current canonical pages show `Other`, no website,
+and the account's developer name. The required category remains `Business & Operations`, the website
+`https://lingmind.cn`, and the publisher `LingMind`. Do not treat two installed entries or successful MCP
+queries as acceptance of these fields, and do not introduce duplicate wrappers to make them appear correct.
 
 Run `scripts/export-plugin-icons.py` to regenerate the 256 px PNGs from the unchanged original brand asset.
 The exporter removes source transparency and leaves a 12 px horizontal margin; its output fits the App's

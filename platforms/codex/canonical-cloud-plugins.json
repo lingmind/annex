@@ -1,8 +1,8 @@
 {
   "lingmind": {
-    "pluginId": "plugin_asdk_app_6adf48d841188191ac73c1d8711f0a19",
-    "expectedReleaseId": "pluginrel_6adf4b471a148191814802a8832d058a",
-    "version": "1.1.0",
+    "pluginId": "plugin_asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
+    "expectedReleaseId": "pluginrel_6adf78e8287c81919e10497263403f81",
+    "version": "1.1.6",
     "manifest": {
       "apps": "./.app.json",
       "interface": {
@@ -14,8 +14,8 @@
         "longDescription": "连接 LingMind 工作环境，查询业务数据并处理日常工作。",
         "shortDescription": "连接 LingMind 工作环境，查询业务数据并处理日常工作。"
       },
-      "name": "dev-6adf48d841188191ac73c1d8711f0a19",
-      "version": "1.1.0",
+      "name": "dev-6adf7442f5948191b7387c5ac01d3ba4",
+      "version": "1.1.6",
       "description": "连接 LingMind 工作环境，查询业务数据并处理日常工作。",
       "author": {
         "name": "App developer"
@@ -25,16 +25,16 @@
     },
     "apps": {
       "apps": {
-        "dev-6adf48d841188191ac73c1d8711f0a19": {
-          "id": "asdk_app_6adf48d841188191ac73c1d8711f0a19"
+        "dev-6adf7442f5948191b7387c5ac01d3ba4": {
+          "id": "asdk_app_6adf7442f5948191b7387c5ac01d3ba4"
         }
       }
     }
   },
   "lingmind-operator": {
-    "pluginId": "plugin_asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc",
-    "expectedReleaseId": "pluginrel_6adf506878588191827d4136ef447161",
-    "version": "1.1.0",
+    "pluginId": "plugin_asdk_app_6adf7571f2ec81919d0c9ac79c2ab0b2",
+    "expectedReleaseId": "pluginrel_6adf78f8498481918a81ba0c9627f905",
+    "version": "1.1.3",
     "manifest": {
       "apps": "./.app.json",
       "interface": {
@@ -46,8 +46,8 @@
         "longDescription": "查看 LingMind 环境与服务状态，排查异常，处理经过确认的维护、部署及备份操作。",
         "shortDescription": "查看 LingMind 环境与服务状态，排查异常，处理经过确认的维护、部署及备份操作。"
       },
-      "name": "dev-6adf4fc282e08191b0cd151c6cf4d8bc",
-      "version": "1.1.0",
+      "name": "dev-6adf7571f2ec81919d0c9ac79c2ab0b2",
+      "version": "1.1.3",
       "description": "查看 LingMind 环境与服务状态，排查异常，处理经过确认的维护、部署及备份操作。",
       "author": {
         "name": "App developer"
@@ -57,8 +57,8 @@
     },
     "apps": {
       "apps": {
-        "dev-6adf4fc282e08191b0cd151c6cf4d8bc": {
-          "id": "asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc"
+        "dev-6adf7571f2ec81919d0c9ac79c2ab0b2": {
+          "id": "asdk_app_6adf7571f2ec81919d0c9ac79c2ab0b2"
         }
       }
     }

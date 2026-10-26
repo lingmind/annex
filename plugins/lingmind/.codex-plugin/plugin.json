@@ -14,7 +14,7 @@
   "license": "MIT",
   "name": "lingmind",
   "repository": "https://github.com/lingmind/annex",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "interface": {
     "brandColor": "#1677FF",
     "capabilities": [

@@ -1,7 +1,5 @@
 {
-  "state": "host_icon_catalog_failure_reproduced",
-  "desiredCloudPluginVersion": "1.1.1",
-  "portableSourceVersion": "1.1.1",
+  "state": "two_entries_installed_listing_metadata_unresolved",
   "interface": {
     "developerName": "LingMind",
     "websiteURL": "https://lingmind.cn",
@@ -18,40 +16,34 @@
   "publisherIdentityVerification": "backend_normalizes_to_account_name",
   "plugins": [
     {
-      "pluginId": "plugin_asdk_app_6adf48d841188191ac73c1d8711f0a19",
-      "appId": "asdk_app_6adf48d841188191ac73c1d8711f0a19"
+      "pluginId": "plugin_asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
+      "appId": "asdk_app_6adf7442f5948191b7387c5ac01d3ba4"
     },
     {
-      "pluginId": "plugin_asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc",
-      "appId": "asdk_app_6adf4fc282e08191b0cd151c6cf4d8bc"
+      "pluginId": "plugin_asdk_app_6adf7571f2ec81919d0c9ac79c2ab0b2",
+      "appId": "asdk_app_6adf7571f2ec81919d0c9ac79c2ab0b2"
     }
   ],
   "lastInspection": {
-    "date": "2026-10-26",
-    "sourceReader": "available",
-    "managementPages": "available",
+    "date": "2026-10-27",
     "liveCloudVersions": [
-      "1.1.5",
-      "1.1.1"
+      "1.1.6",
+      "1.1.3"
     ],
     "liveDeveloperDisplay": "shoppon shoppon",
-    "liveCategory": "Business & Operations",
-    "liveWebsite": "https://lingmind.cn",
+    "liveCategory": "Other",
+    "liveWebsite": null,
+    "installedLingMindEntries": 2,
     "editableAppFields": [
       "name",
       "description"
     ],
-    "logoClick": "no editor opened",
-    "publication": "branded complete packages published with preserved App dependencies",
-    "detailLogo": "cropped LingMind PNG visible",
-    "sidebarLogo": "host still renders generic icon",
-    "iconSummaryFields": "composerIcon, composerIconUrl, logo, logoDark, logoUrl, logoUrlDark all null after forceRefetch",
-    "upstreamIssue": "https://github.com/openai/codex/issues/55762",
-    "paddingRollback": "1.1.3 restored original 8444 byte PNG; sidebar did not recover",
-    "urlDiagnostic": "1.1.4 preserved HTTPS aliases in bundle but fresh catalog image fields stayed null; aliases removed in 1.1.5"
+    "publication": "private App-backed plugins with complete skills",
+    "deprecatedRecords": "deprecated-plugins.json",
+    "metadataStatus": "unresolved; App-owned presentation cannot be changed by skill overlays"
   },
   "logoUpdate": {
-    "state": "published_in_branded_packages",
+    "state": "canonical_app_logo_uploaded; portable_package_logo_preserved",
     "sourceUnchanged": true,
     "outputPixels": [
       256,
@@ -88,7 +80,8 @@
     ],
     "newReleasesPreserved": true
   },
-  "brandedPlugins": [
+  "userDecision": "Require exactly two installed plugins AND LingMind logo, Business & Operations category and https://lingmind.cn website. Current single-entry installation does not meet listing metadata requirements; do not restore duplicate wrappers.",
+  "previousBrandedPlugins": [
     {
       "pluginId": "plugins_6adf58bb1b188191ad4ba541a44ec136",
       "releaseId": "pluginrel_6adf633a3fc08191b2f0b22059362009",
@@ -100,5 +93,46 @@
       "version": "1.1.1"
     }
   ],
-  "userDecision": "Keep branded complete packages with correct category and website; do not replace them with canonical App entries"
+  "desiredVersions": {
+    "lingmind": "1.1.6",
+    "lingmind-operator": "1.1.3"
+  },
+  "previousInspection": {
+    "date": "2026-10-26",
+    "sourceReader": "available",
+    "managementPages": "available",
+    "liveCloudVersions": [
+      "1.1.5",
+      "1.1.1"
+    ],
+    "liveDeveloperDisplay": "shoppon shoppon",
+    "liveCategory": "Business & Operations",
+    "liveWebsite": "https://lingmind.cn",
+    "editableAppFields": [
+      "name",
+      "description"
+    ],
+    "logoClick": "no editor opened",
+    "publication": "branded complete packages published with preserved App dependencies",
+    "detailLogo": "cropped LingMind PNG visible",
+    "sidebarLogo": "host still renders generic icon",
+    "iconSummaryFields": "composerIcon, composerIconUrl, logo, logoDark, logoUrl, logoUrlDark all null after forceRefetch",
+    "upstreamIssue": "https://github.com/openai/codex/issues/55762",
+    "paddingRollback": "1.1.3 restored original 8444 byte PNG; sidebar did not recover",
+    "urlDiagnostic": "1.1.4 preserved HTTPS aliases in bundle but fresh catalog image fields stayed null; aliases removed in 1.1.5"
+  },
+  "retiredBrandedPlugins": [
+    {
+      "pluginId": "plugins_6adf75a94d3c819189ee1f87530cd4b8",
+      "releaseId": "pluginrel_6adf7a6f5f108191a38c31243d7b383b",
+      "version": "1.1.7",
+      "state": "uninstalled_retirement_notice_only_no_app_binding"
+    },
+    {
+      "pluginId": "plugins_6adf75b271e481918cc6f25591799573",
+      "releaseId": "pluginrel_6adf7a7c81948191bde84a7d85ddb3c8",
+      "version": "1.1.4",
+      "state": "uninstalled_retirement_notice_only_no_app_binding"
+    }
+  ]
 }

@@ -100,8 +100,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--environment-code", action="append")
     parser.add_argument("--profile", type=Path, default=ROOT / "platforms/codex/cloud-environments.json")
-    parser.add_argument("--connection-mode", choices=("branded", "account", "mcp"), default="branded",
-                        help="Package branded cloud plugins (default), preserve App presentation in account overlays, or export desktop MCP declarations")
+    parser.add_argument("--connection-mode", choices=("branded", "account", "mcp"), default="account",
+                        help="Update existing cloud App plugins (default), export standalone branded packages, or export desktop MCP declarations")
     parser.add_argument("--default-environment")
     parser.add_argument("--apex-url", default="https://apex.lingmind.cn")
     parser.add_argument("--output", required=True, type=Path)
