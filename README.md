@@ -1,5 +1,9 @@
 # LingMind Annex
 
+> 当前推荐：使用新建的 LingMind、LingMind Operator 两个 App 插件，优先保证 Codex 与云端 dots 调用及正确 Logo。
+> GitHub/ZIP 原生包作为实验分发保留，不要与 App 版同时安装。类别、网站和开发者展示限制已按用户要求接受。
+> 方式对比和当前安装原则见 [分发与连接指南](platforms/codex/distribution-guide.md)。
+
 LingMind Annex 是 LingMind 的开放集成中心。它对外提供 SDK、CLI 和 Webhook/进程模式，统一经 Phoenix 网关访问 LingMind 能力，并在客户端侧屏蔽 Phoenix 认证、Radix 代理路径和数据模型差异。
 
 ## 仓库结构
@@ -28,7 +32,7 @@ platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
 https://github.com/lingmind/annex
 ```
 
-当前发行版 **1.4.0** 仅通过 GitHub 安装：在 Codex 添加 `https://github.com/lingmind/annex`，
+实验性原生发行版 **1.4.0** 可通过 GitHub 安装：在 Codex 添加 `https://github.com/lingmind/annex`，
 安装 **LingMind** 和 **LingMind Operator**。两个原生 MCP 插件不依赖平台 App，
 使用企业应用类别、官网 `https://lingmind.cn` 和带 32px 留白的 LingMind Logo。
 详情中的“MCP 服务器”是预期显示。
