@@ -92,7 +92,7 @@
     "webTwoInstalledEntries": true,
     "webLogo": true,
     "codexCalls": false,
-    "dotsCalls": false,
+    "dotsCalls": true,
     "businessAccounts": [
       "beta",
       "sandbox"
@@ -112,9 +112,14 @@
       "noFlight": true
     },
     "dotsOperatorPodQuery": {
-      "passed": false,
-      "error": "Unknown tool: lingmind_operator.k8s_namespaces_list",
-      "environmentDiscoveryPassed": true
+      "passed": true,
+      "retried": true,
+      "namespaces": 25,
+      "pods": 48,
+      "runningReady": 45,
+      "succeeded": 3,
+      "abnormal": 0,
+      "paginationComplete": true
     }
   }
 }
