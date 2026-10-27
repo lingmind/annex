@@ -69,6 +69,7 @@ render-repository-plugins:
 validate-repository-plugins:
 	$(PYTHON) scripts/render-repository-plugins.py --check
 	$(PYTHON) scripts/test-repository-plugins.py
+	$(PYTHON) scripts/test-package-repository-plugins.py
 
 package-cloud-plugins:
 	$(PYTHON) scripts/package-cloud-plugins.py \
