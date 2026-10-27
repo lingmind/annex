@@ -28,31 +28,26 @@ platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
 https://github.com/lingmind/annex
 ```
 
-**个人账号已安装云端插件时，不要再安装仓库副本：两套身份同时启用会出现四个入口。**
-当前保留两个云端插件供 Codex 和 dots 使用；GitHub 继续管理源码及版本。
-工作区保留身份的 GitHub 迁移与个人仓库安装是不同流程，见
-[`身份与验收限制`](platforms/codex/repository/app-identity-limitations.md)。
+当前发行版 **1.4.0** 仅通过 GitHub 安装：在 Codex 添加 `https://github.com/lingmind/annex`，
+安装 **LingMind** 和 **LingMind Operator**。两个原生 MCP 插件不依赖平台 App，
+使用企业应用类别、官网 `https://lingmind.cn` 和带 32px 留白的 LingMind Logo。
+详情中的“MCP 服务器”是预期显示。
 
-需要单独测试仓库包时，可打开 **LingMind** 市场，选择 **LingMind** 和 **LingMind Operator**。
-开发者为 LingMind，类别为企业应用（`Business & Operations`），网站为 `https://lingmind.cn`；
-两者均使用带 32px 留白的 LingMind Logo。
-
-两个包通过已注册 App 连接服务，详情显示“应用”，不再配置本机 MCP 服务器。
-业务插件安装后运行“设置”或关联账号，提供环境编码并在对应 Phoenix 登录授权。
-添加其他环境时分别授权；新用户没有默认环境。Operator 使用其独立的运维 App 登录。
+业务插件运行“设置”，提供环境编码后通过 Apex 发现对应 Phoenix 并独立 OAuth 登录。
+新用户没有默认环境；多环境按编码指定。Operator 使用独立原生 MCP 登录，并明确目标环境。
 
 ```bash
 codex plugin marketplace add https://github.com/lingmind/annex
+codex plugin marketplace upgrade lingmind-annex
 codex plugin add lingmind@lingmind-annex
 codex plugin add lingmind-operator@lingmind-annex
 ```
 
-仓库包引用与云端相同的 App，但不是同一个插件安装身份；不创建同名云端包装。
-个人仓库安装不会自动向云端导入目录，也不会授予其他用户私人 App 的访问权限。
-已有旧 MCP 版时先更新来源并核对重复连接，只保留两个插件入口。
+迁移前卸载两个同名云端插件与其他旧来源副本，只保留两个仓库安装。
+本方案适用于 Codex 桌面端和 CLI，**不提供云端 dots 接入**；正式发布流程已按用户选择停止。
 安装、更新与源码维护说明见 [`platforms/codex/repository/README.md`](platforms/codex/repository/README.md)。
 
-### 云端连接与高级开发配置
+### 历史云端连接与其他宿主配置
 
 云端 dots 的标准 Agent Plugins 1.0 打包、账户发布与 OAuth 连接步骤见
 [`platforms/codex/cloud-plugins.md`](platforms/codex/cloud-plugins.md)。

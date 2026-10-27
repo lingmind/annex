@@ -1,63 +1,61 @@
-# 从 Annex 仓库安装 LingMind 应用插件
+# 从 GitHub 安装 LingMind 插件
 
-> **当前个人账号的限制：** 仓库插件与已有云端插件是两个不同安装身份。
-> `.app.json` 只复用 App 连接，不合并插件。两边同时安装会在 Codex 显示四个入口。
-> 要同时保留云端调用和两个已安装入口，当前应只安装原有两个云端插件；不要再执行下面的仓库安装命令。
-> 仓库目录仍可浏览、克隆和版本管理，不能据此声称个人账号已经实现跨端单一安装身份。
+当前发行版为 **1.4.0，GitHub-only**。在 Codex「插件 → 添加插件市场」输入：
 
-在 Codex 插件页选择“添加插件市场”，输入 `https://github.com/lingmind/annex`。
-市场 `lingmind-annex` 只提供 **LingMind** 和 **LingMind Operator** 两个插件。
+```
+https://github.com/lingmind/annex
+```
 
-两个 `1.3.0` 包通过 `.app.json` 分别引用已有的 LingMind、LingMind Operator App，
-标记为必需应用，包含完整技能、参考资料和品牌资源。它们不再声明本机 MCP 服务器，
-也不通过本地脚本修改 Codex 配置。插件详情应显示“应用”；这是与 Notion 相同的依赖形式。
-保留企业应用类别、`https://lingmind.cn` 和带 32px 留白的 LingMind Logo。
+进入 LingMind 市场，只安装 **LingMind** 和 **LingMind Operator**。
+两个包使用原生 MCP，不包含 `.app.json`，不引用平台 App，不需要 OpenAI 发布后台或公开审核。
+详情显示“MCP 服务器”属于预期行为；这是用户选择的本地连接方式。
+开发者 LingMind、类别 Business & Operations、官网 https://lingmind.cn 和 32px 留白 Logo 均随仓库包分发。
 
 ```bash
 codex plugin marketplace add https://github.com/lingmind/annex
+codex plugin marketplace upgrade lingmind-annex
 codex plugin add lingmind@lingmind-annex
 codex plugin add lingmind-operator@lingmind-annex
 ```
 
-## 连接环境
+## 连接业务环境
 
-安装后在 LingMind 应用中关联账号，或运行“设置”并提供环境编码。
-Connect 按编码发现环境，引导用户在对应 Phoenix 登录；每个环境独立授权。
-没有预置账号或默认环境。只连接一个环境时可作为默认；连接多个环境时按编码选择，
-请求未指定编码则先澄清。切换后先验证 `context_get`，再查询业务数据。
-Operator 使用同一个已注册运维 App，独立登录，操作前明确目标环境。
+运行 LingMind 的“设置”或说“连接 beta 环境”。设置助手使用插件内的
+`scripts/setup-mcp.py`，通过 Apex 按用户提供的环境编码发现确切 Phoenix，
+为当前用户保存 `lingmind-<code>` 原生 MCP 连接，并启动该环境独立的 OAuth 登录。
+需要 Python 3.11+ 和 Codex CLI；助手必须使用实际安装路径，不能猜路径。
 
-## Codex 与云端 dots：连接相同，安装身份仍不同
+没有预置业务环境，没有默认账号。新用户先提供环境编码；新增 sandbox 等环境需重复独立登录。
+只连接一个环境时可默认使用它；多个环境且请求未指定编码时先询问。
+每次切换均先调用该连接的 `context_get`，核验 code/resourceUrl，再使用该环境的项目和能力。
+密码与令牌不写入插件或仓库。助手保留其他配置，拒绝静默修改已有不同端点或 OAuth 回调。
 
-GitHub 是源码及安装目录，App 是平台托管的连接。两者不能相互代替：
+Operator 通过 `https://apex.lingmind.cn/mcp/operator` 独立授权，
+使用已注册的 `lingmind-operator-codex` OAuth 客户端和本机 1456 回调端口。
+它不提供构建代码能力；查询或操作前明确目标环境，敏感操作仍需服务端计划与确认。
 
-- 本地 Codex 可以从 GitHub 安装这两个包并使用现有 App 的账号连接，但它们是额外的插件安装，
-  不会替代账号中的 canonical 云端插件。不要同时启用两套同名插件。
-- 云端 dots 使用同两个 App 对应的现有云端插件；更新其技能，不新建同名包装插件。
-- 支持工作区 GitHub 同步时，管理员可通过目录条目的 `pluginId` 把现有工作区插件迁移到 GitHub 管理，保留原 ID；
-  不能把私人插件 ID 直接用于另一工作区，也不能通过个人 Codex 市场注册自动完成云端导入。
-- 当前绑定的是私人 App。仓库公开不代表 App 已向其他用户开放；其他账号必须具有 App 访问权限。
-  本次不改变分享范围，也不申请公共目录审核。
+## 安装身份与使用范围
 
-这条工作区迁移能力不等于私人 USER App 可以迁移；当前两个 App 均为私人开发模式，尚未验证有对应迁移入口。
-详情参见 [身份与验收限制](app-identity-limitations.md)。
-
-不要同时安装 App 的旧同名包装、仓库副本或本机 MCP 版。升级前确认来源，只保留两个已启用入口。
-旧版设置助手生成的 `lingmind-<code>` MCP 连接不会因插件升级自动删除；核对后通过宿主
-连接管理移除重复连接，保留用户其他服务和已有 App 授权。
+- GitHub 市场中只有两个插件。业务的 beta、sandbox MCP 连接不是额外插件。
+- 迁移前先卸载账号中的两个同名云端插件和其他旧来源的副本，再安装仓库版，避免侧栏四个入口。
+- 卸载可使用宿主支持的插件管理；不需要删除平台创建记录，也不要触碰其他插件或用户的环境授权。
+- 当前版本仅支持运行原生 MCP 的 Codex 桌面端及 CLI。它不在云端 dots 注册服务，
+  不会同步本机 OAuth 或保证 dots 可调用。用户已明确选择此范围，正式公开发布已取消。
+- 先前 App-backed 1.3.0 与云端插件同装会重复；
+  [当时的身份调查](app-identity-limitations.md) 保留为历史，不能作为当前发行版安装步骤。
 
 ## 更新与维护
 
+刷新 `lingmind-annex` 市场后更新两个已安装插件，按宿主提示重新加载或新开聊天。
+不要通过新建同名市场、平台 App 或包装插件来更新。
+
 ```bash
-codex plugin marketplace upgrade lingmind-annex
 make render-repository-plugins PYTHON=/path/to/python3.11
 make validate-repository-plugins PYTHON=/path/to/python3.11
 ```
 
-刷新市场后更新两个插件，按宿主提示重新加载。源码 `plugins/` 拥有版本及技能；
-`distributions/codex/plugins/` 是检查入库的派生包。App ID 不随版本更换。
-云端 canonical 插件使用 `platforms/codex/canonical-cloud-plugins.json` 保留已有身份，
-通过 `scripts/package-cloud-plugins.py --connection-mode account` 更新。
-App 自有展示信息与仓库包展示信息由不同入口管理，不能用包字段宣称云端元数据已更新。
+`plugins/` 的 canonical 私人 App 源码保留为历史与其他分发的实现来源，本次不发布或更新它。
+`scripts/render-repository-plugins.py` 生成原生 MCP 包并使用独立版本号；
+`distributions/codex/plugins/` 纳入版本管理。修改技能、资源或连接配置后重新生成并检查漂移。
 
-官方说明：[App 映射与 GitHub 管理](https://learn.chatgpt.com/docs/enterprise/plugin-management)。
+官方格式说明：[Package your plugin](https://developers.openai.com/plugins/build/plugins)。
