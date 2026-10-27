@@ -1,5 +1,12 @@
 # Plugin releases
 
+## App-backed repository and cloud skills 1.3.0 - 2026-10-27
+
+- Reuse the two existing registered Apps in GitHub packages; require each App and omit native MCP declarations.
+- Replace local MCP setup with account-based environment onboarding shared by Codex and cloud dots.
+- Preserve independent environment grants, cloud identities, padded LingMind logos, and repository metadata.
+- Do not create cloud wrapper plugins or broaden private App visibility; runtime acceptance is recorded separately.
+
 ## Portable source 0.3.3 - 2026-10-26 (cloud publication pending)
 
 - Declare `LingMind` as author and developer name for both packages.

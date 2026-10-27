@@ -1,0 +1,23 @@
+{
+  "version": "1.3.0",
+  "date": "2026-10-27",
+  "distribution": "registered App references, no native MCP declarations",
+  "plugins": {
+    "lingmind": {
+      "pluginId": "plugin_asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
+      "releaseId": "pluginrel_6adfff16be68819190c3b65db3c82d51",
+      "sha256": "6bb34591569bd9c5be99879eae650237e36e746699d25130e44c017f5273300b",
+      "scope": "USER",
+      "visibility": "PRIVATE",
+      "newAppCreated": false
+    },
+    "lingmind-operator": {
+      "pluginId": "plugin_asdk_app_6adf7571f2ec81919d0c9ac79c2ab0b2",
+      "releaseId": "pluginrel_6adfff3e8fec8191a53cc894c900ab56",
+      "sha256": "acbccd13b7a43af2b11ed65ec22777a4656759bfb910328bb82f0c4607900558",
+      "scope": "USER",
+      "visibility": "PRIVATE",
+      "newAppCreated": false
+    }
+  }
+}

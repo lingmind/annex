@@ -1,8 +1,8 @@
 {
   "lingmind": {
     "pluginId": "plugin_asdk_app_6adf7442f5948191b7387c5ac01d3ba4",
-    "expectedReleaseId": "pluginrel_6adf78e8287c81919e10497263403f81",
-    "version": "1.1.6",
+    "expectedReleaseId": "pluginrel_6adfff16be68819190c3b65db3c82d51",
+    "version": "1.3.0",
     "manifest": {
       "apps": "./.app.json",
       "interface": {
@@ -15,13 +15,18 @@
         "shortDescription": "连接 LingMind 工作环境，查询业务数据并处理日常工作。"
       },
       "name": "dev-6adf7442f5948191b7387c5ac01d3ba4",
-      "version": "1.1.6",
+      "version": "1.3.0",
       "description": "连接 LingMind 工作环境，查询业务数据并处理日常工作。",
       "author": {
         "name": "App developer"
       },
       "keywords": [],
-      "skills": "./skills"
+      "skills": "./skills",
+      "extensions": {
+        "com.openai": {
+          "onboardingSkill": "./skills/lingmind-setup/SKILL.md"
+        }
+      }
     },
     "apps": {
       "apps": {
@@ -33,8 +38,8 @@
   },
   "lingmind-operator": {
     "pluginId": "plugin_asdk_app_6adf7571f2ec81919d0c9ac79c2ab0b2",
-    "expectedReleaseId": "pluginrel_6adf78f8498481918a81ba0c9627f905",
-    "version": "1.1.3",
+    "expectedReleaseId": "pluginrel_6adfff3e8fec8191a53cc894c900ab56",
+    "version": "1.3.0",
     "manifest": {
       "apps": "./.app.json",
       "interface": {
@@ -47,7 +52,7 @@
         "shortDescription": "查看 LingMind 环境与服务状态，排查异常，处理经过确认的维护、部署及备份操作。"
       },
       "name": "dev-6adf7571f2ec81919d0c9ac79c2ab0b2",
-      "version": "1.1.3",
+      "version": "1.3.0",
       "description": "查看 LingMind 环境与服务状态，排查异常，处理经过确认的维护、部署及备份操作。",
       "author": {
         "name": "App developer"

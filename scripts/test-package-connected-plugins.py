@@ -16,7 +16,7 @@ SPEC.loader.exec_module(MODULE)
 
 class ConnectedPluginTests(unittest.TestCase):
     def test_preserves_app_identity_and_all_workflows(self):
-        for name, skill_count in (("lingmind", 9), ("lingmind-operator", 6)):
+        for name, skill_count in (("lingmind", 10), ("lingmind-operator", 6)):
             with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
                 snapshot = json.loads((ROOT / "platforms/codex/account-plugins" / f"{name}.json").read_text())
                 original = json.loads(snapshot["files"][".codex-plugin/plugin.json"])

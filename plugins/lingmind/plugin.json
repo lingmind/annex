@@ -28,7 +28,8 @@
         "longDescription": "连接你的 LingMind 工作环境，查看项目、设备、任务和告警，处理业务数据并生成报告。重要操作会在执行前请求确认。",
         "shortDescription": "连接 LingMind 工作环境",
         "websiteURL": "https://lingmind.cn"
-      }
+      },
+      "onboardingSkill": "./skills/lingmind-setup/SKILL.md"
     }
   },
   "homepage": "https://lingmind.cn",
@@ -41,5 +42,5 @@
   "license": "MIT",
   "name": "lingmind",
   "repository": "https://github.com/lingmind/annex",
-  "version": "1.1.6"
+  "version": "1.3.0"
 }
