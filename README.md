@@ -28,7 +28,12 @@ platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
 https://github.com/lingmind/annex
 ```
 
-打开 **LingMind** 市场，安装 **LingMind** 和 **LingMind Operator** 两个插件。
+**个人账号已安装云端插件时，不要再安装仓库副本：两套身份同时启用会出现四个入口。**
+当前保留两个云端插件供 Codex 和 dots 使用；GitHub 继续管理源码及版本。
+工作区保留身份的 GitHub 迁移与个人仓库安装是不同流程，见
+[`身份与验收限制`](platforms/codex/repository/app-identity-limitations.md)。
+
+需要单独测试仓库包时，可打开 **LingMind** 市场，选择 **LingMind** 和 **LingMind Operator**。
 开发者为 LingMind，类别为企业应用（`Business & Operations`），网站为 `https://lingmind.cn`；
 两者均使用带 32px 留白的 LingMind Logo。
 
@@ -42,7 +47,7 @@ codex plugin add lingmind@lingmind-annex
 codex plugin add lingmind-operator@lingmind-annex
 ```
 
-Codex 使用仓库包，云端 dots 使用同两个 App 的现有云端插件；不创建同名云端包装。
+仓库包引用与云端相同的 App，但不是同一个插件安装身份；不创建同名云端包装。
 个人仓库安装不会自动向云端导入目录，也不会授予其他用户私人 App 的访问权限。
 已有旧 MCP 版时先更新来源并核对重复连接，只保留两个插件入口。
 安装、更新与源码维护说明见 [`platforms/codex/repository/README.md`](platforms/codex/repository/README.md)。
