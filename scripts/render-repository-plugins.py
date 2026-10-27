@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build App-backed Git marketplace plugins from Annex's canonical sources."""
+"""Build native MCP Git marketplace plugins without platform App dependencies."""
 
 import argparse
 import filecmp
@@ -21,16 +21,19 @@ def render(output):
         for folder in ("skills", "references", "assets"):
             shutil.copytree(source / folder, target / folder, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         manifest = json.loads((source / ".codex-plugin/plugin.json").read_text())
-        manifest.pop("mcpServers", None)
-        manifest["apps"] = "./.app.json"
-        apps = json.loads((source / ".app.json").read_text())
-        if len(apps["apps"]) != 1:
-            raise ValueError(f"{name} must reference exactly one registered App")
-        for app in apps["apps"].values():
-            app["required"] = True
-        (target / ".app.json").write_text(json.dumps(apps, ensure_ascii=False, indent=2) + "\n")
+        manifest.pop("apps", None)
+        manifest["version"] = "1.4.0"
+        if name == "lingmind":
+            manifest["extensions"] = {"com.openai": {"onboardingSkill": "./skills/lingmind-setup/SKILL.md"}}
+            shutil.copyfile(ROOT / "platforms/codex/repository/SKILL.md", target / "skills/lingmind-setup/SKILL.md")
+            (target / "scripts").mkdir()
+            shutil.copyfile(ROOT / "platforms/codex/repository/setup-mcp.py", target / "scripts/setup-mcp.py")
         (target / ".codex-plugin").mkdir()
         (target / ".codex-plugin/plugin.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+        mcp = json.loads((source / ".mcp.json").read_text())
+        if name == "lingmind-operator":
+            mcp["mcpServers"][name]["oauth"]["callback_url"] = "http://127.0.0.1:1456/callback/"
+        (target / ".mcp.json").write_text(json.dumps(mcp, ensure_ascii=False, indent=2) + "\n")
     return output
 
 

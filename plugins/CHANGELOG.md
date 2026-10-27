@@ -1,5 +1,13 @@
 # Plugin releases
 
+## GitHub-only distribution 1.4.0 - 2026-10-27
+
+- User selected repository-only installation without platform Apps; public submission was cancelled.
+- Remove registered App dependencies from generated packages; restore native Operator MCP and per-environment business OAuth setup.
+- Retain padded LingMind icons, enterprise category, website and exactly two repository plugins.
+- Preserve unrelated native connections; reject changed endpoints or callback URLs instead of rebinding.
+- This release is for Codex desktop/CLI and does not provide cloud dots access.
+
 ## App-backed repository and cloud skills 1.3.0 - 2026-10-27
 
 - Reuse the two existing registered Apps in GitHub packages; require each App and omit native MCP declarations.
