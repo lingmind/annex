@@ -61,7 +61,9 @@ class CloudPackageTests(unittest.TestCase):
                 self.assertEqual(manifest["name"], binding["manifest"]["name"])
                 self.assertEqual(manifest["extensions"]["com.openai"]["interface"], binding["manifest"]["interface"])
                 self.assertEqual(json.loads(archive.read(".app.json")), binding["apps"])
-                self.assertEqual(len([p for p in archive.namelist() if p.endswith("/SKILL.md")]), 9)
+                self.assertEqual(len([p for p in archive.namelist() if p.endswith("/SKILL.md")]), 10)
+                self.assertEqual(manifest["extensions"]["com.openai"]["onboardingSkill"],
+                                 "./skills/lingmind-setup/SKILL.md")
                 self.assertNotIn("mcp.json", archive.namelist())
                 self.assertNotIn(".mcp.json", archive.namelist())
                 logo = "skills/lingmind-daily-report-renderer/assets/logo.png"

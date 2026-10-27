@@ -81,6 +81,9 @@ def package_account_plugin(alias: str, binding: dict, output: Path) -> Path:
     portable = {key: legacy[key] for key in ("name", "version", "description", "author")}
     portable["$schema"] = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
     portable["extensions"] = {"com.openai": {"apps": legacy["apps"], "interface": legacy["interface"]}}
+    onboarding = legacy.get("extensions", {}).get("com.openai", {}).get("onboardingSkill")
+    if onboarding:
+        portable["extensions"]["com.openai"]["onboardingSkill"] = onboarding
     output.mkdir(parents=True, exist_ok=True)
     target = output / f"{alias}-account-{legacy['version']}.zip"
     source = ROOT / "plugins" / alias

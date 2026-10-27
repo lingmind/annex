@@ -32,12 +32,9 @@ https://github.com/lingmind/annex
 开发者为 LingMind，类别为企业应用（`Business & Operations`），网站为 `https://lingmind.cn`；
 两者均使用带 32px 留白的 LingMind Logo。
 
-业务插件安装后运行“设置”，或说“连接 beta 环境”。首次设置需要本机 Python 3.11+；
-助手会通过 Apex 解析你提供的环境编码，配置原生 Codex MCP，再由你在对应 Phoenix 登录页面授权。
-添加其他环境时提供它的编码并独立登录；新用户没有默认环境，也不会继承其他人的连接。
-Operator 安装后使用运维账号完成其独立 OAuth 登录。配置完成后新开聊天加载并验证工具。
-
-也可用 CLI 注册同一个仓库：
+两个包通过已注册 App 连接服务，详情显示“应用”，不再配置本机 MCP 服务器。
+业务插件安装后运行“设置”或关联账号，提供环境编码并在对应 Phoenix 登录授权。
+添加其他环境时分别授权；新用户没有默认环境。Operator 使用其独立的运维 App 登录。
 
 ```bash
 codex plugin marketplace add https://github.com/lingmind/annex
@@ -45,8 +42,9 @@ codex plugin add lingmind@lingmind-annex
 codex plugin add lingmind-operator@lingmind-annex
 ```
 
-这是 Codex 桌面/CLI 的仓库分发，不需要全局目录公开审核，也不会自动创建云端 dots 连接。
-已经启用同名插件时应先选定要保留的来源；源码版与私有云端版使用不同安装身份，同时启用会产生重复。
+Codex 使用仓库包，云端 dots 使用同两个 App 的现有云端插件；不创建同名云端包装。
+个人仓库安装不会自动向云端导入目录，也不会授予其他用户私人 App 的访问权限。
+已有旧 MCP 版时先更新来源并核对重复连接，只保留两个插件入口。
 安装、更新与源码维护说明见 [`platforms/codex/repository/README.md`](platforms/codex/repository/README.md)。
 
 ### 云端连接与高级开发配置
