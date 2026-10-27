@@ -4,9 +4,6 @@ import {
   RuleHitsApi,
 } from '@lingmind/annex';
 
-const detectionsPopulate =
-  'populate[evidences][populate][observation][populate][0]';
-
 function required(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -21,7 +18,8 @@ async function main(): Promise<void> {
     accessToken: required('LM_ACCESS_TOKEN'),
   })).withPreMiddleware(async ({ url, init }) => {
     const requestUrl = new URL(url);
-    requestUrl.searchParams.set(detectionsPopulate, 'detections');
+    requestUrl.searchParams.set('populate[evidences][populate][0]', 'device');
+    requestUrl.searchParams.set('populate[evidences][populate][1]', 'rawDatum');
     return { url: requestUrl.toString(), init };
   });
 
@@ -31,13 +29,16 @@ async function main(): Promise<void> {
   });
 
   for (const evidence of response.data.evidences ?? []) {
-    const observation = evidence.observation;
-    if (!observation) continue;
-
     console.log({
       evidenceCode: evidence.code,
-      observationDocumentId: observation.documentId,
-      detections: observation.detections ?? [],
+      sourceKind: evidence.sourceKind,
+      sourceId: evidence.sourceId,
+      occurredAt: evidence.occurredAt,
+      mediaRef: evidence.mediaRef,
+      overlaySvg: evidence.overlaySvg,
+      summary: evidence.summary,
+      device: evidence.device,
+      rawDatum: evidence.rawDatum,
     });
   }
 }

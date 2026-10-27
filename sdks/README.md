@@ -78,19 +78,28 @@ const result = await api.listDevices({
 npx tsx sdks/examples/typescript/devices.ts
 ```
 
-查询 RuleHit 的 `evidences[].observation.detections[]`：
+查询 RuleHit 的展示证据 `evidences[]`：
 
 ```bash
 export LM_RULE_HIT_ID=rule_hit_document_id
-npx tsx sdks/examples/typescript/rule-hit-detections.ts
+npx tsx sdks/examples/typescript/rule-hit-evidences.ts
 ```
 
-完整样例见 [examples/typescript/rule-hit-detections.ts](examples/typescript/rule-hit-detections.ts)。
-生成版 SDK 的 `populate` 字符串参数只适用于单个根字段；该样例通过 SDK 的
-`withPreMiddleware` 将 `populate[evidences][populate][observation][populate][0]=detections`
-作为独立查询参数添加到 `getRuleHit` 请求。返回值沿
-`response.data.evidences[].observation.detections[]` 读取。若还要展开 Observation
-中的其他组件，可在同一 middleware 里用 `[1]`、`[2]` 追加字段。
+完整样例见 [examples/typescript/rule-hit-evidences.ts](examples/typescript/rule-hit-evidences.ts)。
+只读取证据展示字段时，传 `populate: 'evidences'` 即可。证据直接提供 `sourceKind`、
+`sourceId`、`occurredAt`、`frameUtcAt`、`timeRange`、`location`、`frameRef`、`mediaRef`、
+`overlaySvg` 和 `summary`；JSON 负载的具体结构由生产者定义。
+
+证据不再包含 `observation`、`targetRefs`、`decisionTrace`、`trackerContext`、
+`selectedFacts`、`ruleSnapshot` 或证据级 `rule` 关系。
+来源关系为 `stream`、`rawDatum`、`device`、`mission`、`wayline`、`spatialZone` 和
+`detectionProfile`，需要深层 populate。生成版 SDK 的 `populate` 字符串参数只适用于
+单个根字段；样例通过 `withPreMiddleware` 添加独立查询参数
+`populate[evidences][populate][0]=device` 和 `populate[evidences][populate][1]=rawDatum`，
+从 `response.data.evidences[]` 读取证据及其关联对象。其他来源关系可用 `[2]` 等索引追加。
+
+规则命中分组接口的 `dimension` 支持 `spatialZone`、`occurredAt` 和 `rule`；
+区域分组取首条证据直接关联的 `spatialZone`，最近命中统计中的 `stream` 同样取自首条证据。
 
 ## Python
 
