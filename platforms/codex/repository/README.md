@@ -59,3 +59,17 @@ make validate-repository-plugins PYTHON=/path/to/python3.11
 `distributions/codex/plugins/` 纳入版本管理。修改技能、资源或连接配置后重新生成并检查漂移。
 
 官方格式说明：[Package your plugin](https://developers.openai.com/plugins/build/plugins)。
+
+## ZIP 下载与实测
+
+两个完整 ZIP 与校验文件已发布到
+[GitHub Releases](https://github.com/lingmind/annex/releases/tag/codex-plugins-v1.4.0)。
+
+```bash
+python3 scripts/package-repository-plugins.py --output dist/repository-plugins
+```
+
+[1.4.0 ZIP 实测报告](zip-acceptance-1.4.0.md)：Codex 原生调用成功，类别和官网正确；
+上传后的 Logo 字段缺失，云端 dots 实际调用失败。因此该 Release 为预发布验收包，
+不能视为完整跨端可用版本。当前机器保留的是两个已上传 ZIP 身份，而非 Git 市场副本；
+不要再叠加安装仓库版本。
