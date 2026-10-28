@@ -9,6 +9,9 @@ Read [CapabilityRegistry usage](../../references/capability-registry.md) and
 [business-domain routing](../../references/business-domains.md). Select tools from runtime discovery rather than
 memorizing a complete tool list.
 
+When an ordinary request exposes a discovery or contract gap, use
+[capability feedback](../../references/capability-feedback.md) to preserve a reproducible case and verify recovery.
+
 ## Workflow
 
 1. Call `context_get` through `lingmind-environment-context`, then apply `lingmind-project-context`: query a supplied
