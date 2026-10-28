@@ -1,4 +1,4 @@
 {
-  "defaultEnvironmentCode": "beta",
-  "environmentCodes": ["beta", "sandbox"]
+  "defaultEnvironmentCode": "demo-a",
+  "environmentCodes": ["demo-a", "demo-b"]
 }

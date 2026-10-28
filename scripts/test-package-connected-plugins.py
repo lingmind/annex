@@ -18,9 +18,15 @@ class ConnectedPluginTests(unittest.TestCase):
     def test_preserves_app_identity_and_all_workflows(self):
         for name, skill_count in (("lingmind", 10), ("lingmind-operator", 6)):
             with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
-                snapshot = json.loads((ROOT / "platforms/codex/account-plugins" / f"{name}.json").read_text())
+                manifest = json.loads((ROOT / "plugins" / name / ".codex-plugin/plugin.json").read_text())
+                manifest["name"] = "example-" + name
+                snapshot = {"files": {".codex-plugin/plugin.json": json.dumps(manifest),
+                                      ".app.json": json.dumps({"apps": {name: {"id": "asdk_app_example"}}})}}
+                snapshots_dir = Path(temporary) / "snapshots"
+                snapshots_dir.mkdir()
+                (snapshots_dir / f"{name}.json").write_text(json.dumps(snapshot))
                 original = json.loads(snapshot["files"][".codex-plugin/plugin.json"])
-                archive_path = MODULE.package_connected_plugin(name, ROOT / "plugins" / name, Path(temporary), "1.0.1")
+                archive_path = MODULE.package_connected_plugin(name, ROOT / "plugins" / name, Path(temporary), "1.0.1", snapshots_dir)
                 before = archive_path.read_bytes()
                 with ZipFile(archive_path) as archive:
                     manifest = json.loads(archive.read(".codex-plugin/plugin.json"))
@@ -29,7 +35,7 @@ class ConnectedPluginTests(unittest.TestCase):
                     self.assertEqual(sum(path.endswith("/SKILL.md") for path in archive.namelist()), skill_count)
                     self.assertNotIn("mcp.json", archive.namelist())
                     self.assertNotIn(".mcp.json", archive.namelist())
-                MODULE.package_connected_plugin(name, ROOT / "plugins" / name, Path(temporary), "1.0.1")
+                MODULE.package_connected_plugin(name, ROOT / "plugins" / name, Path(temporary), "1.0.1", snapshots_dir)
                 self.assertEqual(before, archive_path.read_bytes())
 
 

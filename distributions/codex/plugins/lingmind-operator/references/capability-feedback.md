@@ -19,3 +19,6 @@ Keep the requested operational outcome as the acceptance case, using the selecte
    work only when the required checks pass; retain unresolved gaps with their reproducible evidence.
 
 Do not schedule a monitor, publish a plugin or send reports to another person/chat solely because a gap was found.
+
+Keep environment identities, customer data, live query results and incident timelines in a private workspace.
+Public plugin repositories may contain only reusable guidance and fictional regression fixtures.

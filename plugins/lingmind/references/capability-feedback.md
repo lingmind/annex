@@ -33,3 +33,6 @@ Resume the interrupted business task after verification. Report source changes, 
 acceptance separately; unresolved data cleanup remains an open defect even when diagnostics improve.
 
 Do not publish plugin changes, deploy services, schedule recurring runs or send incident messages unless authorized.
+
+Keep environment identities, customer data, live query results and incident timelines in a private workspace.
+Public plugin repositories may contain only reusable guidance and fictional regression fixtures.
