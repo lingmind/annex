@@ -77,35 +77,35 @@ profile 见 [`platforms/`](platforms/README.md)。标准业务插件模板不包
 为 Codex 生成包含一个或多个业务环境的本地 marketplace：
 
 ```bash
-/Users/shoppon/code/lingmind/.codex-venv/bin/python scripts/render-codex-plugins.py \
+python3 scripts/render-codex-plugins.py \
   --output .local/codex-marketplace \
   --apex-url https://apex.lingmind.cn \
-  --environment-code wf3b \
-  --environment-code yf16 \
-  --default-environment wf3b
+  --environment-code demo-a \
+  --environment-code demo-b \
+  --default-environment demo-a
 ```
 
 本机快速配置并重装标准 LingMind 插件：
 
 ```bash
 make configure-codex-lingmind \
-  PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
+  PYTHON=python3 LINGMIND_ENVIRONMENTS=demo-a
 ```
 
-快速命令默认配置并启用 `beta` 环境。配置其他单一环境时只需设置 `LINGMIND_ENVIRONMENTS=wf3b`，该环境
+快速命令要求显式指定环境代码，例如 `LINGMIND_ENVIRONMENTS=demo-a`。配置其他单一环境时只需设置 `LINGMIND_ENVIRONMENTS=demo-a`，该环境
 会自动成为默认环境；配置多个环境时使用空格分隔环境编码，并显式指定 `LINGMIND_DEFAULT_ENVIRONMENT`。若
 `codex` 不在当前 shell 的 `PATH` 中，Makefile 会自动使用 Codex 桌面应用内置的 CLI，也可通过
 `CODEX=/absolute/path/to/codex` 显式指定。该命令把生成结果写入
 `.local/codex-marketplace`，注册 `lingmind-configured` 本地 marketplace（尚未注册时），并从该来源
 重装 `lingmind` 插件。完成后需新建 Codex 任务，新的 MCP 连接才会进入 Host 工具目录。
 
-例如同时配置三个可切换环境，并以 `beta` 作为未指定环境时的默认值：
+例如同时配置两个可切换环境，并以 `demo-a` 作为未指定环境时的默认值：
 
 ```bash
 make configure-codex-lingmind \
-  PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python \
-  LINGMIND_ENVIRONMENTS="beta sandbox wf3b" \
-  LINGMIND_DEFAULT_ENVIRONMENT=beta
+  PYTHON=python3 \
+  LINGMIND_ENVIRONMENTS="demo-a demo-b" \
+  LINGMIND_DEFAULT_ENVIRONMENT=demo-a
 ```
 
 只配置一个环境时会自动成为默认环境；配置多个环境时必须显式传
@@ -121,7 +121,7 @@ Phoenix MCP 地址；也可用 `--environment` 显式注入连接供发布自动
 验证 manifest、marketplace 和全部聚合 Skills：
 
 ```bash
-make validate-plugins PYTHON=/Users/shoppon/code/lingmind/.codex-venv/bin/python
+make validate-plugins PYTHON=python3
 ```
 
 为 WorkBuddy 首次安装 LingMind 业务 Skills 和 MCP 连接：

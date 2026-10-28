@@ -56,6 +56,14 @@ class CameraReportRendererTest(unittest.TestCase):
         self.assertEqual(renderer.past_day_offline_camera_title(1), "过去一天离线过的摄像头（1台）")
         self.assertEqual(renderer.past_day_offline_camera_date_label("2026-06-05"), "6月4日")
 
+    def test_past_day_preserves_caller_department_order(self):
+        cameras = [
+            {"department": "二分部", "name": "示例点位甲", "offline_duration_seconds": 1200},
+            {"department": "一分部", "name": "示例点位乙", "offline_duration_seconds": 1200},
+        ]
+        lines = renderer.format_past_day_offline_camera_lines(cameras)
+        self.assertEqual([lines[0], lines[2]], ["二分部", "一分部"])
+
     def test_camera_report_renders(self):
         report = {
             "report_type": "camera",

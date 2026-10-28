@@ -11,8 +11,9 @@ CODEX_MARKETPLACE_NAME ?= lingmind-configured
 LINGMIND_APEX_URL ?= https://apex.lingmind.cn
 LINGMIND_OAUTH_CLIENT_ID ?= lingmind-codex
 LINGMIND_CALLBACK_PORT ?= 1455
-LINGMIND_ENVIRONMENTS ?= beta
+LINGMIND_ENVIRONMENTS ?=
 LINGMIND_DEFAULT_ENVIRONMENT ?=
+CLOUD_ACCOUNT_BINDINGS ?= $(CURDIR)/.local/cloud-bindings.json
 CLOUD_ENVIRONMENT_PROFILE ?= $(CURDIR)/platforms/codex/cloud-environments.json
 CODEX_ENVIRONMENT_ARGS = $(foreach environment,$(LINGMIND_ENVIRONMENTS),--environment-code "$(environment)")
 CODEX_DEFAULT_ENVIRONMENT_ARG = $(if $(strip $(LINGMIND_DEFAULT_ENVIRONMENT)),--default-environment "$(LINGMIND_DEFAULT_ENVIRONMENT)")
@@ -45,6 +46,7 @@ test-generated-sdks:
 	cd generated/java && bash ./gradlew compileJava
 
 validate-plugins:
+	$(PYTHON) scripts/test-public-content.py
 	$(PYTHON) scripts/render-repository-plugins.py --check
 	$(PYTHON) scripts/test-repository-plugins.py
 	$(PYTHON) scripts/test-package-cloud-plugins.py
@@ -75,7 +77,8 @@ package-cloud-plugins:
 	$(PYTHON) scripts/package-cloud-plugins.py \
 		--output "$(CURDIR)/dist/cloud-plugins" \
 		--apex-url "$(LINGMIND_APEX_URL)" \
-		--profile "$(CLOUD_ENVIRONMENT_PROFILE)"
+		--profile "$(CLOUD_ENVIRONMENT_PROFILE)" \
+		--account-bindings "$(CLOUD_ACCOUNT_BINDINGS)"
 
 configure-codex-lingmind:
 	@if [ -z "$(CODEX)" ] || ! command -v "$(CODEX)" >/dev/null 2>&1; then \
@@ -83,7 +86,7 @@ configure-codex-lingmind:
 		exit 127; \
 	fi
 	@if [ -z "$(strip $(LINGMIND_ENVIRONMENTS))" ]; then \
-		echo 'LINGMIND_ENVIRONMENTS is required, for example: make configure-codex-lingmind LINGMIND_ENVIRONMENTS="wf3b"'; \
+		echo 'LINGMIND_ENVIRONMENTS is required, for example: make configure-codex-lingmind LINGMIND_ENVIRONMENTS="demo-a"'; \
 		exit 2; \
 	fi
 	$(PYTHON) scripts/render-codex-plugins.py \

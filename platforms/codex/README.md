@@ -1,84 +1,12 @@
-# Codex adapter
+# Codex integration
 
-## Cloud connections
+LingMind provides two plugins: LingMind for business operations and LingMind Operator for environment operations.
 
-The cloud LingMind plugin binds the verified LingMind Connect App at `https://connect.lingmind.cn/mcp`.
-New users have no environments. Add a host account connection, enter an environment code, resolve it through
-Apex, and independently authorize that environment through its own Phoenix gateway. Add another host account
-for another environment. Host account inventory and authorization are user-specific; package-time profiles do
-not grant or select environments. The connection service runs only on the control platform and uses no control
-account to authorize business requests.
+Choose a distribution matching the host:
 
-Use `connection_profile_get` to identify a candidate connection and `context_get` to verify its environment.
-Pass `envCode` on named-environment business calls; it must match that connection. A sole connected environment
-is the default; with multiple environments, ask for the code when omitted. See the complete
-[connection contract and acceptance matrix](user-environment-connections.md).
+- [Repository plugins](repository/README.md) use native MCP and independent OAuth connections on desktop or CLI.
+- [Cloud packages](cloud-plugins.md) use registered App dependencies and host-managed authorization.
 
-The two cloud plugins are the canonical App entries **LingMind 1.1.6** and **LingMind Operator 1.1.3**.
-Each entry contains its MCP connection and all of its skills (nine business skills, six Operator skills).
-Do not create a standalone wrapper around these Apps: connecting a wrapper also installs its App's
-canonical entry, which produced four installed entries instead of two. The two trial wrappers are retired;
-their App bindings and functional skills have been removed, leaving only the platform-required retirement notice.
-Four prior App records are deprecated, uninstalled, and contain no skills or references; their exact identities
-are recorded in `deprecated-plugins.json` and must not be reused.
-
-`make package-cloud-plugins` exports updates for the two existing App plugins by default, without resolving
-or preconfiguring any environment. `canonical-cloud-plugins.json`
-records the last verified provider manifests, bindings, versions, and release guards; refresh it from the
-source reader before preparing an update. App-owned presentation cannot be changed through a skills overlay.
-The standalone branded export remains explicit (`--connection-mode branded`), but must not be installed as
-another cloud entry. `pending-listing-update.json` tracks actual cloud presentation limits and retired identities.
-
-This installation is not a completed listing release: the current canonical pages show `Other`, no website,
-and the account's developer name. The required category remains `Business & Operations`, the website
-`https://lingmind.cn`, and the publisher `LingMind`. Do not treat two installed entries or successful MCP
-queries as acceptance of these fields, and do not introduce duplicate wrappers to make them appear correct.
-
-Run `scripts/export-plugin-icons.py` to regenerate the 256 px PNGs from the unchanged original brand asset.
-The exporter crops the source's transparent canvas and leaves a 32 px horizontal margin; its output fits the App's
-10 KB upload limit. The branded packages include this icon; preparing it does not update the provider App icon.
-
-Portable `mcp.json` declarations alone are desktop-only until converted by the supported cloud publication flow.
-The adapter below remains the direct-connection workflow for local Codex.
-
-## Local direct connections
-
-Codex connects directly to the remote HTTP MCP endpoint and owns OAuth 2.1 Authorization Code + PKCE S256. Use
-[`standard-business-environment.mcp.json`](standard-business-environment.mcp.json) as the shape for each direct
-business-environment connection, and [`global-operator.mcp.json`](global-operator.mcp.json) for the single global
-Operator. [`render-codex-plugins.py`](../../scripts/render-codex-plugins.py) combines any number of standard
-connections into one installed LingMind plugin package.
-
-For each standard environment, choose a Phoenix URL, public Keycloak client, callback port, issuer configuration, and
-exact redirect allowlist. Never place two business-environment URLs behind one standard connection. The checked-in
-plugin `.mcp.json` files are empty templates and contain no environment URL.
-
-During connection setup, accept an environment code and resolve it through the global Apex endpoint used by Helix.
-The resolver response is limited to the normalized code and Phoenix endpoint. This happens before OAuth because the
-result selects the environment-specific MCP resource and Keycloak issuer. Codex has no dynamic fields inside a static
-`.mcp.json`, so its adapter renders or updates the installed connection after this setup step; do not put environment
-selection inside the Keycloak credential form.
-
-Every environment uses the stable connection name `lingmind-<environment-code>`. These package-time entries are
-configuration hints, not authenticated per-user connection inventory. A single configured environment
-becomes the default automatically, while a multi-environment package requires an explicit default. The renderer
-stores that preference separately in `references/configured-environments.json`; changing the default cannot rebind a
-cached OAuth session to another environment. The renderer enables every configured stable connection. The agent
-selects the exact connection for the requested environment, calls its `context_get`, and verifies the
-returned code before any project or business tool. Switching environments selects and verifies the target stable
-connection, then clears project, plan, idempotency, and operation context; each connection retains only its own OAuth
-session and never passes a URL to a business tool.
-
-Use Codex MCP 2026 discovery for the full runtime capability catalog. When a supported Codex release is restricted to
-legacy MCP, configure a Host-native `enabled_tools` allowlist for the intended workflow; do not copy business schemas,
-rename tools, or silently disable configured environments to work around catalog limits.
-
-Codex must request only the scopes declared in the templates. The remote resource server remains responsible for
-audience, subject, client, super-administrator role, ownership, target, and state checks.
-
-The standard profile requests `lingmind.read`, `lingmind.write`, and `lingmind.execute`. The global Operator profile
-requests distinct environment, observe, maintain, service-deploy, and backup-operate scopes; the token
-for one profile is never reused by the other. Phoenix and Apex publish protected-resource metadata for their exact MCP
-resource, while each Keycloak public client allows only the generated loopback redirect URI.
-
-The global Operator resource accepts the authenticated lm control-plane administrator through the allowlisted OAuth client. Tool access remains limited by the OAuth scopes granted during login; no additional Keycloak realm role is required.
+See the [distribution guide](distribution-guide.md) and [environment connection contract](user-environment-connections.md).
+Source packages describe capabilities; installation, authorization and successful runtime calls must be verified separately.
+Keep account-specific bindings and verification receipts outside public source according to the [public content policy](../../docs/public-content-policy.md).

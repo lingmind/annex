@@ -22,11 +22,21 @@ PACKAGER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(PACKAGER)
 
 
+def example_binding(alias):
+    manifest = json.loads((ROOT / "plugins" / alias / ".codex-plugin/plugin.json").read_text())
+    app_id = "asdk_app_example_" + alias.replace("-", "_")
+    manifest["name"] = "example-" + alias
+    return {"manifest": manifest, "version": "1.0.0", "pluginId": "plugin_" + app_id,
+            "apps": {"apps": {alias: {"id": app_id, "required": True}}}}
+
+
 class CloudPackageTests(unittest.TestCase):
     def test_default_cli_preserves_both_existing_cloud_app_identities(self):
-        bindings = json.loads((ROOT / "platforms/codex/canonical-cloud-plugins.json").read_text())
+        bindings = {alias: example_binding(alias) for alias in ("lingmind", "lingmind-operator")}
         with tempfile.TemporaryDirectory() as temporary:
-            with patch("sys.argv", ["package-cloud-plugins.py", "--output", temporary]), redirect_stdout(io.StringIO()):
+            bindings_path = Path(temporary) / "bindings.json"
+            bindings_path.write_text(json.dumps(bindings))
+            with patch("sys.argv", ["package-cloud-plugins.py", "--output", temporary, "--account-bindings", str(bindings_path)]), redirect_stdout(io.StringIO()):
                 PACKAGER.main()
             archives = sorted(Path(temporary).glob("*.zip"))
             self.assertEqual(len(archives), 2)
@@ -37,6 +47,16 @@ class CloudPackageTests(unittest.TestCase):
                     manifest = json.loads(archive.read("plugin.json"))
                     self.assertEqual(manifest["name"], binding["manifest"]["name"])
                     self.assertEqual(json.loads(archive.read(".app.json")), binding["apps"])
+
+    def test_account_cli_requires_private_bindings(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            missing = str(Path(temporary) / "missing.json")
+            with patch("sys.argv", ["package-cloud-plugins.py", "--output", temporary, "--account-bindings", missing]):
+                with patch("sys.stderr", new=io.StringIO()) as errors, self.assertRaises(SystemExit) as raised:
+                    PACKAGER.main()
+                self.assertEqual(raised.exception.code, 2)
+                self.assertIn("requires private --account-bindings", errors.getvalue())
+            self.assertEqual(list(Path(temporary).glob("*.zip")), [])
 
     def test_branded_cloud_package_includes_identity_metadata_and_cropped_icon(self):
         for alias in ("lingmind", "lingmind-operator"):
@@ -54,7 +74,7 @@ class CloudPackageTests(unittest.TestCase):
                     self.assertNotIn("mcp.json", archive.namelist())
 
     def test_account_overlay_preserves_app_identity_and_presentation(self):
-        binding = json.loads((ROOT / "platforms/codex/canonical-cloud-plugins.json").read_text())["lingmind"]
+        binding = example_binding("lingmind")
         with tempfile.TemporaryDirectory() as temporary:
             with ZipFile(PACKAGER.package_account_plugin("lingmind", binding, Path(temporary))) as archive:
                 manifest = json.loads(archive.read("plugin.json"))
@@ -70,7 +90,7 @@ class CloudPackageTests(unittest.TestCase):
                 self.assertEqual(archive.read(logo), (ROOT / "plugins/lingmind" / logo).read_bytes())
 
     def test_account_overlay_rejects_a_different_app(self):
-        binding = json.loads((ROOT / "platforms/codex/canonical-cloud-plugins.json").read_text())["lingmind"]
+        binding = example_binding("lingmind")
         binding["apps"]["apps"] = {"other": {"id": "asdk_app_other"}}
         with tempfile.TemporaryDirectory() as temporary:
             with self.assertRaisesRegex(ValueError, "verified canonical App"):

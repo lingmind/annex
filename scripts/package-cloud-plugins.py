@@ -102,6 +102,8 @@ def package_account_plugin(alias: str, binding: dict, output: Path) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--environment-code", action="append")
+    parser.add_argument("--account-bindings", type=Path, default=ROOT / ".local/cloud-bindings.json",
+                        help="Private account bindings JSON (never commit this file)")
     parser.add_argument("--profile", type=Path, default=ROOT / "platforms/codex/cloud-environments.json")
     parser.add_argument("--connection-mode", choices=("branded", "account", "mcp"), default="account",
                         help="Update existing cloud App plugins (default), export standalone branded packages, or export desktop MCP declarations")
@@ -118,7 +120,9 @@ def main() -> None:
     if args.connection_mode == "account":
         if args.environment_code or args.default_environment:
             parser.error("User environments must not be embedded in account packages")
-        bindings = json.loads((ROOT / "platforms/codex/canonical-cloud-plugins.json").read_text())
+        if not args.account_bindings.is_file():
+            parser.error("Account mode requires private --account-bindings; use --connection-mode branded for public packages")
+        bindings = json.loads(args.account_bindings.read_text())
         for name in ("lingmind", "lingmind-operator"):
             print(package_account_plugin(name, bindings[name], args.output.resolve()))
         return

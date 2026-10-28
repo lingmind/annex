@@ -14,8 +14,8 @@ PACKAGER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(PACKAGER)
 
 
-def package_connected_plugin(name: str, rendered: Path, output: Path, version: str) -> Path:
-    snapshot = json.loads((ROOT / "platforms/codex/account-plugins" / f"{name}.json").read_text())
+def package_connected_plugin(name: str, rendered: Path, output: Path, version: str, snapshots_dir: Path) -> Path:
+    snapshot = json.loads((snapshots_dir / f"{name}.json").read_text())
     manifest = json.loads(snapshot["files"][".codex-plugin/plugin.json"])
     manifest["version"] = version
     manifest["skills"] = "./skills/"
@@ -39,6 +39,7 @@ if __name__ == "__main__":
     parser.add_argument("--rendered-marketplace", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--version", required=True)
+    parser.add_argument("--snapshots-dir", required=True, type=Path, help="Private account snapshots directory")
     args = parser.parse_args()
     for name in ("lingmind", "lingmind-operator"):
-        print(package_connected_plugin(name, args.rendered_marketplace / "plugins" / name, args.output, args.version))
+        print(package_connected_plugin(name, args.rendered_marketplace / "plugins" / name, args.output, args.version, args.snapshots_dir))

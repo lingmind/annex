@@ -8,6 +8,9 @@ description: Diagnose a LingMind environment incident using the current Operator
 Resolve the environment first and read [Operator Agent binding](../../references/agent-binding.md) plus
 [incident evidence](../../references/incident-evidence.md) before drawing a root-cause conclusion.
 
+When diagnosis exposes a capability gap, follow [capability feedback](../../references/capability-feedback.md) to retain
+the minimal failure, route an authorized repair to its owner and verify the original operational request after release.
+
 ## Workflow
 
 1. Define the affected service, symptom, time window, and expected behavior.

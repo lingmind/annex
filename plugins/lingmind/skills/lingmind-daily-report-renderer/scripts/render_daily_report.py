@@ -23,14 +23,11 @@ PADDING = 44
 CARD_GAP = 24
 DEFAULT_OUTPUT_DIR = Path.home() / "Desktop"
 DEFAULT_META_DIR = Path("/tmp/ops-daily-report-renderer/meta")
-DEFAULT_CUSTOMER_LOGO_PATH = ASSETS_DIR / "customer-logo.png"
-DEFAULT_CAMERA_CUSTOMER_LOGO_PATH = ASSETS_DIR / "camera-customer-logo.png"
 DEFAULT_REPORT_TITLE = "无人机每日运维报告"
 DEFAULT_CAMERA_REPORT_TITLE = "摄像头每日运维报告"
 FINAL_REPORT_FILENAME = "uav-daily-report.png"
 CAMERA_REPORT_FILENAME = "camera-daily-report.png"
 CHINA_TZ = ZoneInfo("Asia/Shanghai")
-DEFAULT_CAMERA_DEPARTMENT_ORDER = ["一分部", "二分部", "三分部", "临近营业线"]
 DEFAULT_CAMERA_OFFLINE_REASON = "待补充"
 MIN_PAST_DAY_OFFLINE_SECONDS = 10 * 60
 
@@ -111,7 +108,7 @@ CAMERA_DATETIME_FORMATS = [
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Render Chengdu S11 UAV daily report images.")
+    parser = argparse.ArgumentParser(description="Render LingMind daily report images.")
     parser.add_argument("input_json", help="Path to the input JSON file.")
     parser.add_argument(
         "--out-dir",
@@ -340,9 +337,7 @@ def format_past_day_offline_camera_lines(records: List[Dict]) -> List[str]:
             groups[department].append({"name": name, "offline_duration_seconds": record.get("offline_duration_seconds")})
 
     lines: List[str] = []
-    ordered_departments = [department for department in DEFAULT_CAMERA_DEPARTMENT_ORDER if department in groups]
-    ordered_departments.extend(department for department in order if department not in DEFAULT_CAMERA_DEPARTMENT_ORDER)
-    for department in ordered_departments:
+    for department in order:
         lines.append(department)
         for index, item in enumerate(groups[department], start=1):
             duration = format_offline_duration_seconds(item.get("offline_duration_seconds"))
@@ -726,29 +721,6 @@ def create_canvas(height: int) -> Image.Image:
     return image
 
 
-def resize_logo(logo_path: Path, max_width: int, max_height: int) -> Optional[Image.Image]:
-    if not logo_path.exists():
-        return None
-
-    logo = Image.open(logo_path).convert("RGBA")
-    scale = min(1.0, max_width / logo.width, max_height / logo.height)
-    resized = logo.resize((int(logo.width * scale), int(logo.height * scale)), Image.LANCZOS)
-    return resized
-
-
-def add_top_customer_logo(
-    image: Image.Image,
-    customer_logo_path: Path = DEFAULT_CUSTOMER_LOGO_PATH,
-    align_center_y: int = 80,
-) -> None:
-    customer_logo = resize_logo(customer_logo_path, max_width=220, max_height=88)
-    if customer_logo is None:
-        return
-
-    logo_y = round(align_center_y - customer_logo.height / 2)
-    image.paste(customer_logo, (PADDING, logo_y), customer_logo)
-
-
 def extract_logo_wordmark(logo_path: Path) -> Optional[Image.Image]:
     if not logo_path.exists():
         return None
@@ -784,56 +756,6 @@ def draw_header_title(draw: ImageDraw.ImageDraw, report_title: str, title_font, 
     draw_text(draw, (CANVAS_WIDTH / 2, 64), report_title, title_font, "#0F172A", anchor="ma")
     if page_subtitle:
         draw_text(draw, (CANVAS_WIDTH / 2, 130), page_subtitle, subtitle_font, "#475569", anchor="ma")
-
-
-def draw_header_with_token(draw: ImageDraw.ImageDraw, report_title: str, token: str, title_font, subtitle_font, page_subtitle: str) -> None:
-    if token not in report_title:
-        draw_header_title(draw, report_title, title_font, subtitle_font, page_subtitle)
-        return
-
-    prefix, suffix = report_title.split(token, 1)
-    prefix_width = draw.textlength(prefix, font=title_font)
-    token_width = draw.textlength(token, font=title_font)
-    suffix_width = draw.textlength(suffix, font=title_font)
-    total_width = prefix_width + token_width + suffix_width
-    start_x = (CANVAS_WIDTH - total_width) / 2
-
-    draw_text(draw, (start_x, 64), prefix, title_font, "#0F172A", anchor="la")
-    draw_text(draw, (start_x + prefix_width, 67), token, title_font, "#0F172A", anchor="la")
-    draw_text(draw, (start_x + prefix_width + token_width, 64), suffix, title_font, "#0F172A", anchor="la")
-
-    if page_subtitle:
-        draw_text(draw, (CANVAS_WIDTH / 2, 130), page_subtitle, subtitle_font, "#475569", anchor="ma")
-
-
-def get_title_center_y(draw: ImageDraw.ImageDraw, report_title: str, title_font, token: Optional[str] = None) -> int:
-    if not token or token not in report_title:
-        left, top, right, bottom = draw.textbbox((CANVAS_WIDTH / 2, 64), report_title, font=title_font, anchor="ma")
-        return round((top + bottom) / 2)
-
-    prefix, suffix = report_title.split(token, 1)
-    prefix_width = draw.textlength(prefix, font=title_font)
-    token_width = draw.textlength(token, font=title_font)
-    suffix_width = draw.textlength(suffix, font=title_font)
-    total_width = prefix_width + token_width + suffix_width
-    start_x = (CANVAS_WIDTH - total_width) / 2
-
-    boxes = [
-        draw.textbbox((start_x, 64), prefix, font=title_font, anchor="la"),
-        draw.textbbox((start_x + prefix_width, 67), token, font=title_font, anchor="la"),
-        draw.textbbox((start_x + prefix_width + token_width, 64), suffix, font=title_font, anchor="la"),
-    ]
-    top = min(box[1] for box in boxes)
-    bottom = max(box[3] for box in boxes)
-    return round((top + bottom) / 2)
-
-
-def draw_uav_header(draw: ImageDraw.ImageDraw, report_title: str, title_font, subtitle_font, page_subtitle: str) -> None:
-    draw_header_with_token(draw, report_title, "S11", title_font, subtitle_font, page_subtitle)
-
-
-def draw_camera_header(draw: ImageDraw.ImageDraw, report_title: str, title_font, subtitle_font, page_subtitle: str) -> None:
-    draw_header_with_token(draw, report_title, "16", title_font, subtitle_font, page_subtitle)
 
 
 def clear_previous_images(out_dir: Path, final_filename: str) -> None:
@@ -884,7 +806,6 @@ def render_uav_report(report: Dict) -> Image.Image:
     chip_font = detect_font(30, bold=True)
     small_font = detect_font(28)
     detail_font = detect_font(26)
-    add_top_customer_logo(image, DEFAULT_CUSTOMER_LOGO_PATH, align_center_y=get_title_center_y(draw, report["report_title"], title_font, token="S11"))
 
     header_datetime = str(report.get("generated_at") or "").strip()
     window_start = str(report.get("window_start") or "").strip()
@@ -895,7 +816,7 @@ def render_uav_report(report: Dict) -> Image.Image:
         page_subtitle = f"统计窗口：{start_text} 至 {end_text}"
     else:
         page_subtitle = f"日期：{display_report_datetime(header_datetime)}"
-    draw_uav_header(draw, report["report_title"], title_font, subtitle_font, page_subtitle)
+    draw_header_title(draw, report["report_title"], title_font, subtitle_font, page_subtitle)
 
     rounded_box(draw, (PADDING, 214, CANVAS_WIDTH - PADDING, 410), fill="#FFFFFF", radius=28)
     draw_text(draw, (PADDING + 30, 246), "当日概览", body_font, "#0F172A")
@@ -1023,7 +944,6 @@ def render_camera_report(report: Dict) -> Image.Image:
 
     image = create_canvas(canvas_height)
     draw = ImageDraw.Draw(image)
-    add_top_customer_logo(image, DEFAULT_CAMERA_CUSTOMER_LOGO_PATH, align_center_y=get_title_center_y(draw, report["report_title"], title_font, token="16"))
 
     header_datetime = str(report.get("generated_at") or "").strip()
     window_start = str(report.get("window_start") or "").strip()
@@ -1034,7 +954,7 @@ def render_camera_report(report: Dict) -> Image.Image:
         page_subtitle = f"统计窗口：{start_text} 至 {end_text}"
     else:
         page_subtitle = f"日期：{display_report_datetime(header_datetime)}"
-    draw_camera_header(draw, report["report_title"], title_font, subtitle_font, page_subtitle)
+    draw_header_title(draw, report["report_title"], title_font, subtitle_font, page_subtitle)
 
     rounded_box(draw, (PADDING, 214, CANVAS_WIDTH - PADDING, 410), fill="#FFFFFF", radius=28)
     draw_text(draw, (PADDING + 30, 246), "当日概览", body_font, "#0F172A")
