@@ -22,3 +22,7 @@ Cancel an unneeded prepared plan with `business_action_plan_cancel`. Stop on dri
 denial, or outcome-unknown state. Never transfer a plan across users, OAuth clients, projects, environments, targets,
 or changed parameters, and never replace the plan protocol with a direct action. Tool inputs must never include a
 token, credential, URL, path, manifest, environment variable, or command.
+
+For collection cleanup, read [batch deletion](../../references/batch-deletion.md). Resolve the incident category from
+the user's scope and pass it through the declared `type` argument; inventory all pages and bind explicit versions
+before preparing bounded batches. Preserve the exact presented batch set through confirmation and execution.

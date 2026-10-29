@@ -36,3 +36,10 @@ Do not publish plugin changes, deploy services, schedule recurring runs or send 
 
 Keep environment identities, customer data, live query results and incident timelines in a private workspace.
 Public plugin repositories may contain only reusable guidance and fictional regression fixtures.
+
+## Regression acceptance for collection cleanup
+
+Cover discovery using the user's resource spelling and language, category selection, complete pagination, explicit
+project scope, bounded batches, duplicate IDs, stale versions, wrong categories, read-only identities and unauthorized
+records. Require rollback when one record fails and safe reconciliation after interruption. New arrivals must not be
+silently added to a confirmed list. Verify retained observations and raw data when validating the deployed cleanup.
