@@ -22,3 +22,16 @@ Do not schedule a monitor, publish a plugin or send reports to another person/ch
 
 Keep environment identities, customer data, live query results and incident timelines in a private workspace.
 Public plugin repositories may contain only reusable guidance and fictional regression fixtures.
+
+## Close a business capability gap
+
+For a business request blocked by missing deletion, filtering or batch support, route the contract and implementation
+to the data/workflow owner. Operator's role is to inspect the exact environment and owner deployment, collect bounded
+trace evidence, and perform an explicitly authorized release through the existing plan lifecycle. Do not add a generic
+SQL, shell, URL or business-data purge tool to Operator.
+
+Discover operational tools using their owner-published semantic aliases as well as names: logs, diagnostics, workloads,
+rollout verification, configuration revisions and plan status are separate evidence sources. After a release, verify the
+new business catalog revision and exact schema with the original identity, then repeat the original business request.
+A successful rollout is only deployment evidence. Record local tests, plugin packaging, service deployment and business
+acceptance as separate states. Keep an unresolved request open when a required release or invocation remains pending.
