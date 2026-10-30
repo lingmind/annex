@@ -11,27 +11,10 @@ from typing import Any
 
 import yaml
 
+from agent_release import release
+
 
 ROOT = Path(__file__).resolve().parents[1]
-STANDARD_SCOPES = ["openid", "lingmind.read", "lingmind.write", "lingmind.execute"]
-OPERATOR_SCOPES = [
-    "openid",
-    "apex.backups.operate",
-    "apex.environments.read",
-    "apex.operator.maintain",
-    "apex.operator.observe",
-    "apex.services.deploy",
-]
-OPERATOR_URL = "https://apex.lingmind.cn/mcp/operator"
-OPERATOR_OAUTH = {"client_id": "lingmind-operator-codex", "callback_port": 1456}
-GENERIC_TOOLS = {
-    "http_request",
-    "http_get",
-    "fetch_url",
-    "proxy_request",
-    "execute_shell",
-    "run_command",
-}
 SENSITIVE_KEYS = {"password", "accesstoken", "refreshtoken", "clientsecret", "bearertoken"}
 STALE_PHRASES = (
     "Business" + "CapabilityRegistry",
@@ -74,176 +57,28 @@ def inspect_json_secrets(value: Any, path: Path, trail: tuple[str, ...] = ()) ->
 
 def validate_manifest(plugin_name: str) -> None:
     plugin = ROOT / "plugins" / plugin_name
-    manifest = load_json(plugin / ".codex-plugin" / "plugin.json")
+    manifest = load_json(plugin / "plugin.json")
     if manifest.get("name") != plugin_name:
         fail(f"manifest name mismatch for {plugin_name}")
-    version = manifest.get("version", "")
-    if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", version):
-        fail(f"expected an explicit stable release version for {plugin_name}: {version}")
-    portable = load_json(plugin / "plugin.json")
-    if portable.get("version") != version or portable.get("name") != plugin_name:
-        fail(f"portable and local manifest identity/version differ for {plugin_name}")
-    if portable.get("extensions", {}).get("com.openai", {}).get("interface") != manifest.get("interface"):
-        fail(f"portable and local presentation differ for {plugin_name}")
-    if manifest.get("mcpServers") != "./.mcp.json" or manifest.get("skills") != "./skills/":
-        fail(f"plugin paths drifted for {plugin_name}")
-    interface = manifest.get("interface", {})
-    if interface.get("composerIcon") != "./assets/lingmind-logo-256.png" or interface.get("logo") != "./assets/lingmind-logo-256.png":
-        fail(f"plugin icon paths drifted for {plugin_name}")
-    if not all((plugin / "assets" / name).is_file() for name in ("lingmind-logo.png", "lingmind-logo-256.png")):
-        fail(f"plugin logo is missing for {plugin_name}")
-    prompts = manifest.get("interface", {}).get("defaultPrompt", [])
-    if not isinstance(prompts, list) or not prompts or len(prompts) > 3 or not all(isinstance(item, str) and item.strip() for item in prompts):
+    if manifest.get("version") != release()["version"]:
+        fail(f"manifest version differs from the release for {plugin_name}")
+    openai = manifest.get("extensions", {}).get("com.openai", {})
+    if openai.get("apps") != "./.app.json":
+        fail(f"registered App declaration is missing for {plugin_name}")
+    apps = load_json(plugin / ".app.json").get("apps", {})
+    if set(apps) != {plugin_name} or not apps[plugin_name].get("id", "").startswith("asdk_app_") or apps[plugin_name].get("required") is not True:
+        fail(f"a single registered App is required for {plugin_name}")
+    interface = openai.get("interface", {})
+    for key in ("composerIcon", "logo"):
+        if interface.get(key) != "./assets/lingmind-logo-256.png" or not (plugin / interface[key]).is_file():
+            fail(f"plugin icon is missing for {plugin_name}")
+    prompts = interface.get("defaultPrompt", [])
+    if not isinstance(prompts, list) or not 1 <= len(prompts) <= 3 or not all(isinstance(item, str) and item.strip() for item in prompts):
         fail(f"manifest defaultPrompt must contain one to three non-empty prompts for {plugin_name}")
-    mcp_servers = load_json(plugin / ".mcp.json").get("mcpServers")
-    if plugin_name == "lingmind":
-        if mcp_servers != {}:
-            fail("repo-local lingmind template must not bind a business environment URL")
-        return
-    if not isinstance(mcp_servers, dict) or list(mcp_servers) != ["lingmind-operator"]:
-        fail("LingMind Operator must expose exactly one global MCP connection")
-    operator = mcp_servers["lingmind-operator"]
-    if operator.get("url") != OPERATOR_URL:
-        fail("LingMind Operator must bind the canonical global Apex MCP URL")
-    if operator.get("oauth") != OPERATOR_OAUTH or operator.get("scopes") != OPERATOR_SCOPES:
-        fail("LingMind Operator OAuth configuration or scopes drifted")
-
-
-def validate_marketplace() -> None:
-    marketplace = load_json(ROOT / ".agents" / "plugins" / "marketplace.json")
-    if marketplace.get("name") != "lingmind-annex":
-        fail("marketplace name drifted")
-    entries = marketplace.get("plugins", [])
-    if [entry.get("name") for entry in entries] != ["lingmind", "lingmind-operator"]:
-        fail("marketplace plugin order or membership drifted")
-    for entry in entries:
-        name = entry["name"]
-        if entry.get("source") != {"source": "local", "path": f"./distributions/codex/plugins/{name}"}:
-            fail(f"invalid marketplace source for {name}")
-        if entry.get("policy") != {"installation": "AVAILABLE", "authentication": "ON_INSTALL"}:
-            fail(f"invalid marketplace policy for {name}")
-        if entry.get("category") != "Business & Operations":
-            fail(f"invalid marketplace category for {name}")
-
-
-def require_connection_profile(path: Path, cardinality: str) -> dict[str, Any]:
-    profile = load_json(path)
-    if profile.get("profileVersion") != 1 or profile.get("developmentTemplate") is not True:
-        fail(f"profile is not versioned development configuration: {path.relative_to(ROOT)}")
-    if profile.get("connectionCardinality") != cardinality:
-        fail(f"connection cardinality drifted: {path.relative_to(ROOT)}")
-    return profile
-
-
-def validate_platforms() -> None:
-    standard_cardinality = "one-per-business-environment"
-    operator_cardinality = "single-global-control-plane"
-    codex_standard = require_connection_profile(
-        ROOT / "platforms" / "codex" / "standard-business-environment.mcp.json", standard_cardinality
-    )
-    codex_operator = require_connection_profile(
-        ROOT / "platforms" / "codex" / "global-operator.mcp.json", operator_cardinality
-    )
-    codex_standard_server = next(iter(codex_standard["mcpServers"].values()))
-    codex_operator_server = next(iter(codex_operator["mcpServers"].values()))
-    if codex_standard_server["scopes"] != STANDARD_SCOPES or codex_operator_server["scopes"] != OPERATOR_SCOPES:
-        fail("Codex profile scopes drifted")
-    if codex_operator_server["url"] != OPERATOR_URL:
-        fail("Codex Operator profile must use the canonical global Apex MCP URL")
-    for filename, server in (
-        ("standard-business-environment.mcp.json", codex_standard_server),
-        ("global-operator.mcp.json", codex_operator_server),
-    ):
-        oauth = server["oauth"]
-        if not (
-            oauth.get("protocol") == "oauth-2.1"
-            and oauth.get("mode") == "authorization-code-pkce"
-            and oauth.get("protectedResourceMetadataDiscovery") is True
-            and oauth.get("pkceMethod") == "S256"
-        ):
-            fail(f"Codex OAuth 2.1/PKCE contract drifted: {filename}")
-
-    for filename, cardinality, scopes in (
-        ("standard-business-environment.json", standard_cardinality, STANDARD_SCOPES),
-        ("global-operator.json", operator_cardinality, OPERATOR_SCOPES),
-    ):
-        profile = require_connection_profile(ROOT / "platforms" / "workbuddy" / filename, cardinality)
-        oauth = profile["connection"]["oauth"]
-        required = (
-            oauth.get("protocol") == "oauth-2.1"
-            and oauth.get("protectedResourceMetadataDiscovery") is True
-            and oauth.get("dynamicClientRegistration") is True
-            and oauth.get("authorizationCodePkce") is True
-            and oauth.get("pkceMethod") == "S256"
-            and oauth.get("tokenEndpointAuthMethod") == "none"
-            and oauth.get("resourceIndicatorRequired") is True
-            and oauth.get("clientSecretRequired") is False
-        )
-        if not required or oauth.get("scopes") != scopes:
-            fail(f"WorkBuddy OAuth/DCR contract drifted: {filename}")
-
-    for filename, cardinality, scopes in (
-        ("standard-business-environment.bridge.json", standard_cardinality, STANDARD_SCOPES),
-        ("global-operator.bridge.json", operator_cardinality, OPERATOR_SCOPES),
-    ):
-        profile = require_connection_profile(ROOT / "platforms" / "deepseek-harness" / filename, cardinality)
-        bridge = profile["bridge"]
-        oauth = bridge["oauth"]
-        if not bridge.get("listen", "").startswith("127.0.0.1:"):
-            fail(f"DeepSeek bridge must bind loopback: {filename}")
-        secure_storage = (
-            bridge.get("mode") == "annex-local-oauth-bridge"
-            and bridge.get("localClientAuthentication") == "ephemeral-session-secret"
-            and bridge.get("rejectNonLoopbackClients") is True
-            and bridge.get("credentialStore") == "system-keychain"
-            and bridge.get("persistTokensInRepository") is False
-            and bridge.get("longLivedBearerAllowed") is False
-            and bridge.get("redactAuthorizationLogs") is True
-        )
-        oauth21 = (
-            oauth.get("protocol") == "oauth-2.1"
-            and oauth.get("protectedResourceMetadataDiscovery") is True
-            and oauth.get("authorizationCodePkce") is True
-            and oauth.get("pkceMethod") == "S256"
-            and oauth.get("resourceIndicatorRequired") is True
-        )
-        if not secure_storage or not oauth21 or oauth.get("scopes") != scopes:
-            fail(f"DeepSeek bridge security contract drifted: {filename}")
-
-    doubao = require_connection_profile(
-        ROOT / "platforms" / "doubao" / "standard-business-environment.http.json",
-        standard_cardinality,
-    )
-    host = doubao["host"]
-    connection = doubao["connection"]
-    partner = load_json(ROOT / "platforms" / "doubao" / "partner.json")
-    if not (
-        host.get("name") == "doubao-desktop"
-        and host.get("transport") == "http"
-        and host.get("connectorRegistration") == "local-custom-connector-ui"
-        and host.get("oauth") == "host-managed"
-        and connection.get("transport") == "streamable-http"
-        and connection.get("urlSource") == "apex-environment-resolver"
-        and connection.get("persistTokensInRepository") is False
-        and connection.get("longLivedBearerInConnector") is False
-        and connection.get("customHeaders") == {}
-    ):
-        fail("Doubao HTTP connector security contract drifted")
-    if not (
-        partner.get("profileVersion") == 1
-        and partner.get("developmentTemplate") is True
-        and partner.get("nickname") == "凌析"
-        and partner.get("profession") == "LingMind运营专家"
-        and partner.get("description")
-        == "面向 LingMind 铁路物联网，安全查询项目、设备、任务与告警，编排航线、媒体、日报等业务操作。"
-        and partner.get("marketplaceStatus") == "not-published"
-        and partner.get("localRepresentation") == "lingmind-operations-expert"
-    ):
-        fail("Doubao LingMind expert metadata drifted")
 
 
 def validate_repository_hygiene() -> None:
-    roots = [ROOT / "plugins", ROOT / "platforms", ROOT / "metadata"]
+    roots = [ROOT / "plugins", ROOT / "docs"]
     for root in roots:
         for path in root.rglob("*"):
             if not path.is_file():
@@ -266,7 +101,7 @@ def validate_repository_hygiene() -> None:
 
 def validate_markdown_and_skill_yaml() -> None:
     markdown_paths = [ROOT / "README.md"]
-    for directory in (ROOT / "plugins", ROOT / "platforms", ROOT / "metadata"):
+    for directory in (ROOT / "plugins", ROOT / "docs"):
         markdown_paths.extend(directory.rglob("*.md"))
     for path in markdown_paths:
         text = path.read_text(encoding="utf-8")
@@ -288,6 +123,12 @@ def validate_markdown_and_skill_yaml() -> None:
         metadata = yaml.safe_load(match.group(1))
         if not isinstance(metadata, dict) or not metadata.get("name") or not metadata.get("description"):
             fail(f"invalid Skill YAML frontmatter: {path.relative_to(ROOT)}")
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", str(metadata["name"])) or len(metadata["name"]) > 64:
+            fail(f"invalid Skill name: {path.relative_to(ROOT)}")
+        if not isinstance(metadata["description"], str) or len(metadata["description"]) > 1024:
+            fail(f"invalid Skill description: {path.relative_to(ROOT)}")
+        if "skills" in path.parts and metadata["name"] != path.parent.name:
+            fail(f"Skill name differs from its directory: {path.relative_to(ROOT)}")
 
 
 def validate_operator_agent_routing() -> None:
@@ -316,8 +157,6 @@ def main() -> int:
     try:
         validate_manifest("lingmind")
         validate_manifest("lingmind-operator")
-        validate_marketplace()
-        validate_platforms()
         validate_repository_hygiene()
         validate_markdown_and_skill_yaml()
         validate_operator_agent_routing()

@@ -1,15 +1,12 @@
 # LingMind plugin
 
-面向 LingMind 业务用户的标准 Agent 插件。插件源码不绑定 sandbox 或任何其他业务环境；安装或发布时使用
-[`render-codex-plugins.py`](../../scripts/render-codex-plugins.py) 注入用户获准访问的 Phoenix MCP 连接。
+面向 LingMind 业务用户的标准 Agent 插件。`skills/`、`references/` 和 `assets/` 是所有宿主的共同来源。
+Codex / ChatGPT 通过已注册的 LingMind App 安装，其他 Agent 使用同一发布流程生成的宿主适配包。
+接入说明见 [Agent 分发与接入](../../docs/agent-distribution.md)。
 
-每个连接只绑定一个业务环境和该环境独立的 Keycloak，并始终使用稳定名称
-`lingmind-<environment-code>`。默认环境是安装侧偏好，记录在生成的
-`references/configured-environments.json` 中，不通过重命名连接表达。安装时启用所有已配置环境连接；未指定
-环境时使用默认连接，指定或切换环境时按稳定连接名选择并通过 `context_get` 重新核验。切换环境就是切换
-MCP resource；不同
-环境的 token、issuer、audience、项目和确认计划不能混用。只有一个环境时可自动设为默认，多个环境时由
-用户选择默认环境。
+插件不预置业务环境。每个连接只绑定一个环境并完成独立授权；调用前核验准确环境编码与 `context_get`。
+不同环境的 token、issuer、audience、项目和确认计划不能混用。只有一个已授权连接时可自动选择，
+存在多个连接时必须明确环境。
 
 插件负责：
 
@@ -26,10 +23,13 @@ Onyx、Vertex 等业务所有者发布工具及公开 DTO；Phoenix 负责认证
 所有查询继承插件当前登录用户的 token、可访问项目和实时 Access Policy。Phoenix 使用的服务账号只负责
 服务间传输，不会赋予登录用户额外权限。
 
-repo-local `.mcp.json` 是空的环境无关模板，不能直接访问业务数据。OAuth 使用 Authorization Code + PKCE
-S256 和目标 MCP resource discovery；插件包不包含 client secret 或用户 token。
+Codex 的 `.app.json` 声明唯一已注册 App；宿主管理连接与 OAuth。
+其他 Agent 的安装器只处理必需的本地适配。插件包不保存 client secret 或用户 token。
 
 ## Skills
+
+- `lingmind-setup`：通过当前宿主支持的流程连接并授权业务环境。
+- `lingmind-operations-expert`：“凌析”运营入口，将请求路由到对应业务 Skill。
 
 - `lingmind-environment-context`：选择、核验和切换业务环境。
 - `lingmind-project-context`：选择和核验当前项目。

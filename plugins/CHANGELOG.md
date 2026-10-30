@@ -1,6 +1,18 @@
 # Plugin source changes
 
-## Unreleased
+## Unreleased — unified Agent release 1.5.0
+
+- Use one release version for App, WorkBuddy, Doubao and DSH packages.
+- Add a common installation entry and deterministic archives with release checksums.
+- Generate a real DSH Cordis overlay and provide a stdio OAuth helper backed by the OS keychain.
+- Use only the registered Codex App; remove native marketplace packages, duplicate manifests and obsolete release scripts.
+- Keep publication and host qualification separate from successful packaging.
+
+- Add a GitHub-installable npm package and native DSH bundle without install-time build scripts.
+- Automatically prepare OAuth dependencies and reuse existing DSH grants.
+- Replace host ZIP downloads with GitHub installation and add tag-triggered Release drafts plus commit-pinned DSH indexes.
+
+## Earlier unreleased changes
 
 - Add reusable capability-feedback guidance for business and Operator workflows.
 - Keep account snapshots, operational receipts and customer assets outside public source and packages.

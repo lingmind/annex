@@ -1,30 +1,39 @@
 ---
 name: lingmind-setup
-description: Connect a LingMind business environment through the registered App in Codex or ChatGPT. Ask for its environment code; never collect passwords or tokens in chat.
+description: Connect a LingMind business environment in the current Agent through its supported App or MCP OAuth setup. Never collect passwords or tokens in chat.
 ---
 
 # Connect LingMind
 
-Use the host's LingMind App connection manager. Installing the GitHub package does not connect any environment.
+Installation and environment authorization are separate. Ask for the exact environment code if missing;
+never assume beta or sandbox. Use the installed host adapter's connection flow:
 
-1. Ask for the environment code if it was not supplied. Do not assume beta or sandbox.
-2. Inspect the current user's App accounts through the host's supported connection interface. Reuse a matching
-   authorized connection only after verifying its profile and `context_get` identity. With several accounts for the
-   same code, ask which one to use. Never infer an account from another user's session or packaged examples.
-3. For a missing environment, open LingMind's Connect/Add account flow. Enter the supplied code at
-   `https://connect.lingmind.cn`; it resolves the environment through Apex and sends the user to that environment's
-   Phoenix login. Complete an independent authorization for every environment. Never request passwords, tokens,
-   or callback codes in chat; let the user finish authentication in the browser.
-4. Reload or start a new chat as required by the host. Verify the selected account with `context_get`; require its
-   exact code and resource URL before any business query. Successful installation or OAuth alone is not invocation.
-5. Use the sole connected environment when the user has not supplied a code. With several, ask for the code.
-   Switch by selecting that environment's authorized account and verifying it again. Pass `envCode` only where the
-   published App tool schema exposes it; never reuse a different environment's token.
+- Codex / ChatGPT App: use the existing LingMind App Connect/Add account interface. Enter the code at
+  `https://connect.lingmind.cn`, then complete that environment's independent browser login and consent.
+  Do not create native MCP servers or a same-name wrapper to bypass an unavailable App.
+- WorkBuddy: use the installed `lingmind-<code>` remote MCP connection and the host OAuth interface.
+  A missing connection requires the documented Annex installation command with the code.
+- Doubao: register the installer-provided HTTP connector fields through the supported custom-connector UI,
+  leave custom headers empty, and complete host-managed OAuth. Local Skills do not publish a cloud partner.
+- DSH: use the installed native LingMind bundle. Enabling it prepares its OAuth runtime and opens
+  initial browser consent when no grant exists. Credentials stay in the OS keychain. Verify
+  `connection_profile_get` and `context_get` on the installed `lingmind` MCP connection. Each bundle
+  instance activates one connection. To reconnect or replace the environment, use the documented
+  LingMind GitHub CLI with `--agent dsh --login`, then reload the plugin. Use `--logout` to revoke.
+- Other hosts: follow their installed Annex adapter's setup instructions. Do not infer an authentication
+  mechanism from generic MCP support or invent a connection URL.
 
-Do not create native MCP servers, write `config.toml`, run a local OAuth helper, or install another plugin to connect
-an environment. If the App or connection manager is unavailable, report that specific host limitation and provide
-the App management step; do not fall back to shell, REST, local credentials, or another environment.
+Inspect only the current user's host connections. Configured server names are candidates, not proof of access.
+For Connect use `connection_profile_get`, then `context_get`; for direct Phoenix use `context_get`.
+Require the exact environment code and resource URL before project selection or business work.
+Use the sole verified connection when no code was supplied; with multiple connections ask for the code.
+Never infer permission from packaged examples, a prior chat, matching usernames or a different environment.
 
-Repository installation does not grant access to a private App or make a repository marketplace visible in cloud
-dots. The App must be available to the current account/workspace; use its existing canonical cloud plugin, or the
-workspace's supported GitHub import into that same plugin identity. Never create a same-name cloud wrapper.
+Each environment requires independent authorization. Let the user finish login in the browser; do not request
+passwords, tokens or callback codes in chat. Reload or start a fresh chat as required by the host and verify a
+real authorized request. If the connection is absent, expired or unavailable, stop and report the host setup
+step. Do not perform business work through shell, REST, copied credentials or a different environment.
+
+Switch by selecting and verifying the target connection, then discard prior project IDs, plan IDs and
+idempotency keys. `envCode` checks the selected connection where its published schema provides the field;
+it does not retarget credentials. Disconnect through the host's supported connection lifecycle.
