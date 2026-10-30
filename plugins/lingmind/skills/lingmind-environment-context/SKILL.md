@@ -12,6 +12,9 @@ Read [environment context](../../references/environment-context.md) before any p
 ## Workflow
 
 1. Obtain the current authenticated user's connections from the host's supported connection manager.
+   For local adapters without an account manager, installed MCP server names identify candidates only:
+   verify Connect candidates with `connection_profile_get`, then `context_get`; verify direct Phoenix
+   candidates with `context_get`. A DSH overlay supplies one candidate connection, not a global inventory.
    For the dynamic cloud App, each host account connection authorizes exactly one environment. Use its
    authenticated `connection_profile_get` profile label to select a candidate, then verify the exact code with
    `context_get`. The connection service does not expose a global inventory of other users or accounts.

@@ -1,0 +1,23 @@
+{
+  "name": "lingmind-annex",
+  "version": "1.5.0",
+  "description": "LingMind Agent installer and DeepSeek Harness bundle",
+  "type": "module",
+  "main": "scripts/dsh-plugin.mjs",
+  "bin": { "lingmind-agent": "scripts/agent-cli.mjs" },
+  "files": ["scripts/agent-cli.mjs", "scripts/dsh-plugin.mjs", "scripts/agent_runtime.py", "scripts/agent-oauth.py", "scripts/agent_release.py", "scripts/setup-agent.py", "scripts/configure-workbuddy-lingmind.py", "scripts/configure-doubao-lingmind.py", "scripts/requirements-agent-oauth.txt", "plugins/release.json", "plugins/lingmind/skills", "plugins/lingmind/references", "plugins/lingmind/assets", "docs/agent-distribution.md", "docs/agent-connections.md", "cordis.patch.yml"],
+  "repository": { "type": "git", "url": "git+https://github.com/lingmind/annex.git" },
+  "homepage": "https://lingmind.cn",
+  "author": "LingMind",
+  "license": "MIT",
+  "engines": { "node": ">=22", "dsh": ">=0.2.2-alpha.2 <0.3.0" },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-mcp-client": ">=0.2.2-alpha.2 <0.3.0",
+    "@deepseek-ai/dsh-skill-filesystem": ">=0.2.2-alpha.2 <0.3.0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-mcp-client": { "optional": true },
+    "@deepseek-ai/dsh-skill-filesystem": { "optional": true }
+  }
+}

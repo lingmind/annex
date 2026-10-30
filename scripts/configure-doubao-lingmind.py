@@ -263,8 +263,6 @@ def install(
     if managed_root.is_symlink():
         raise ValueError(f"refusing to use a symlinked LingMind managed directory: {managed_root}")
     source_skills = [path for path in (source / "skills").iterdir() if path.is_dir()]
-    doubao_skills = ROOT / "platforms" / "doubao" / "skills"
-    source_skills.extend(path for path in doubao_skills.iterdir() if path.is_dir())
     source_names = {path.name for path in source_skills}
     if any(not SKILL_NAME.fullmatch(name) for name in source_names):
         raise ValueError("LingMind source contains an invalid Skill directory name")

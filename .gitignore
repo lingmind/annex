@@ -7,3 +7,5 @@ tmp/
 .local/
 __pycache__/
 *.pyc
+/.codex-venv/
+node_modules/

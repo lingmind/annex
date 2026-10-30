@@ -1,169 +1,56 @@
 # LingMind Annex
 
-> 当前推荐：使用新建的 LingMind、LingMind Operator 两个 App 插件，优先保证 Codex 与云端 dots 调用及正确 Logo。
-> GitHub/ZIP 原生包作为实验分发保留，不要与 App 版同时安装。类别、网站和开发者展示限制已按用户要求接受。
-> 方式对比和当前安装原则见 [分发与连接指南](platforms/codex/distribution-guide.md)。
+LingMind Annex 是 LingMind 的开放集成中心，维护 SDK、CLI 与 Agent 插件。
 
-LingMind Annex 是 LingMind 的开放集成中心。它对外提供 SDK、CLI 和 Webhook/进程模式，统一经 Phoenix 网关访问 LingMind 能力，并在客户端侧屏蔽 Phoenix 认证、Radix 代理路径和数据模型差异。
+## 在 Agent 中连接 LingMind
+
+统一入口：选择 Agent → 安装 LingMind → 输入环境编码 → 浏览器授权 → 验证环境 → 开始使用。
+
+- **Codex / ChatGPT 本地与云端**：在插件页安装已有的 **LingMind** App 插件；运维人员另行安装 **LingMind Operator**。
+- **WorkBuddy**：安装同源 Skills 和远程 MCP 配置，由宿主管理 OAuth。
+- **豆包桌面端**：安装同源 Skills，按指引注册 HTTP 连接器并完成 OAuth。
+- **DeepSeek Harness（DSH）**：安装同源 Skills 和 Cordis 配置，通过 Annex stdio 连接助手完成 OAuth；凭据仅存于系统钥匙串。
+
+DSH alpha `0.2.2-alpha.2` 或兼容版本使用原生 GitHub bundle 安装（DSH 宿主待验收）：
+
+```bash
+dsh plugin --profile web add github:lingmind/annex#v1.5.0
+```
+
+WorkBuddy 使用同源 GitHub 安装命令，自动配置共享 Skills 与 MCP：
+
+```bash
+npx --yes --package=github:lingmind/annex#v1.5.0 lingmind-agent --agent workbuddy --environment-code <code>
+```
+
+上述命令按固定 GitHub 版本安装。豆包的 Skills 安装也可自动化，
+但首次连接器 UI 注册仍待平台市场接入解决，不能宣称完整一键安装。
+渠道状态、更新与授权说明见 [Agent 分发与接入](docs/agent-distribution.md)。
+
+## 维护与发布
+
+`plugins/` 是共享内容唯一来源，`plugins/release.json` 是所有 manifest 的版本来源。
+根 npm 包同时提供 GitHub 安装命令和 DSH 原生 bundle，复用相同 Skills 和 OAuth 助手。
+
+```bash
+make render-agent-plugins
+make validate-plugins
+make release-agent-plugins
+```
+
+发布流程输出两个 App 更新包和一个共享 npm 归档，不再向用户分发各宿主 ZIP。
+推送版本标签后，GitHub Actions 创建带校验和及 DSH 索引的 Release 草稿；市场上架与真实宿主验收另行完成。
 
 ## 仓库结构
 
 ```text
-api/openapi.yaml        Annex 公开 API 合约
-cmd/lm/                 CLI 入口
-docs/                   对外使用文档
-examples/               对外集成示例
-pkg/annex/              Go SDK 核心客户端
-pkg/webhook/            Go Webhook / 进程模式运行时
-sdks/                   OpenAPI SDK 生成配置
-scripts/generate-sdks.sh
-plugins/                LingMind 与 LingMind Operator 插件源码
-platforms/              Codex、WorkBuddy、DeepSeek Harness 连接 profile
-.agents/plugins/        Annex 仓库内的 Codex marketplace
+api/openapi.yaml   公开 API 合约
+cmd/lm/           CLI
+pkg/              Go SDK 与 Webhook
+sdks/             SDK 生成配置
+plugins/          Agent 插件唯一源码及发布版本
+scripts/          统一安装、渲染、打包与验证
 ```
-
-## Agent 插件
-
-### 在 Codex 中从 GitHub 添加
-
-在插件页面选择“添加插件市场”，粘贴：
-
-```text
-https://github.com/lingmind/annex
-```
-
-实验性原生发行版 **1.4.0** 可通过 GitHub 安装：在 Codex 添加 `https://github.com/lingmind/annex`，
-安装 **LingMind** 和 **LingMind Operator**。两个原生 MCP 插件不依赖平台 App，
-使用企业应用类别、官网 `https://lingmind.cn` 和带 32px 留白的 LingMind Logo。
-详情中的“MCP 服务器”是预期显示。
-
-业务插件运行“设置”，提供环境编码后通过 Apex 发现对应 Phoenix 并独立 OAuth 登录。
-新用户没有默认环境；多环境按编码指定。Operator 使用独立原生 MCP 登录，并明确目标环境。
-
-```bash
-codex plugin marketplace add https://github.com/lingmind/annex
-codex plugin marketplace upgrade lingmind-annex
-codex plugin add lingmind@lingmind-annex
-codex plugin add lingmind-operator@lingmind-annex
-```
-
-迁移前卸载两个同名云端插件与其他旧来源副本，只保留两个仓库安装。
-本方案适用于 Codex 桌面端和 CLI，**不提供云端 dots 接入**；正式发布流程已按用户选择停止。
-安装、更新与源码维护说明见 [`platforms/codex/repository/README.md`](platforms/codex/repository/README.md)。
-
-### 历史云端连接与其他宿主配置
-
-云端 dots 的标准 Agent Plugins 1.0 打包、账户发布与 OAuth 连接步骤见
-[`platforms/codex/cloud-plugins.md`](platforms/codex/cloud-plugins.md)。
-
-Annex 维护两个 Agent 插件：
-
-- `plugins/lingmind` 是标准业务插件。每个独立业务环境使用一个 Phoenix MCP 连接和该环境自己的
-  Keycloak；一个插件包可包含多个同时启用的具名连接，并按请求指定的环境选择和显式核验。
-- `plugins/lingmind-operator` 是全局运维插件。它只连接一套 Apex Operator MCP，并在每次目标调用中
-  显式选择有效的 `environmentId`；不在每个业务环境部署 Operator MCP。
-
-插件模板声明 Skills、参考资料和空 MCP 清单，具体环境连接由发布工具注入。标准插件覆盖 Phoenix 当前发布的环境/项目上下文、
-完整业务查询、直接写入、异步任务、任务/航线、媒体/流和设备控制；Operator 覆盖 Agent-backed 观察、
-维护、服务部署和备份/恢复编排。工具、schema、权限、风险和生命周期始终以运行时 MCP
-`tools/list` 为准，Annex 不保存第二份工具目录或业务字段契约。
-
-身份认证使用 Authorization Code、PKCE S256 和目标服务的 OAuth discovery。Codex 使用原生 HTTP
-OAuth，WorkBuddy 使用 MCP OAuth discovery/DCR，DeepSeek Harness 通过 Annex 本地 OAuth bridge；bridge
-只把 token 存入操作系统 keychain，插件包和平台 profile 中不保存 token，也禁止长效 bearer 配置。平台
-profile 见 [`platforms/`](platforms/README.md)。标准业务插件模板不包含具体环境 URL；全局唯一的 Operator
-插件直接声明 `https://apex.lingmind.cn/mcp/operator`，安装时无需注入连接。
-
-为 Codex 生成包含一个或多个业务环境的本地 marketplace：
-
-```bash
-python3 scripts/render-codex-plugins.py \
-  --output .local/codex-marketplace \
-  --apex-url https://apex.lingmind.cn \
-  --environment-code demo-a \
-  --environment-code demo-b \
-  --default-environment demo-a
-```
-
-本机快速配置并重装标准 LingMind 插件：
-
-```bash
-make configure-codex-lingmind \
-  PYTHON=python3 LINGMIND_ENVIRONMENTS=demo-a
-```
-
-快速命令要求显式指定环境代码，例如 `LINGMIND_ENVIRONMENTS=demo-a`。配置其他单一环境时只需设置 `LINGMIND_ENVIRONMENTS=demo-a`，该环境
-会自动成为默认环境；配置多个环境时使用空格分隔环境编码，并显式指定 `LINGMIND_DEFAULT_ENVIRONMENT`。若
-`codex` 不在当前 shell 的 `PATH` 中，Makefile 会自动使用 Codex 桌面应用内置的 CLI，也可通过
-`CODEX=/absolute/path/to/codex` 显式指定。该命令把生成结果写入
-`.local/codex-marketplace`，注册 `lingmind-configured` 本地 marketplace（尚未注册时），并从该来源
-重装 `lingmind` 插件。完成后需新建 Codex 任务，新的 MCP 连接才会进入 Host 工具目录。
-
-例如同时配置两个可切换环境，并以 `demo-a` 作为未指定环境时的默认值：
-
-```bash
-make configure-codex-lingmind \
-  PYTHON=python3 \
-  LINGMIND_ENVIRONMENTS="demo-a demo-b" \
-  LINGMIND_DEFAULT_ENVIRONMENT=demo-a
-```
-
-只配置一个环境时会自动成为默认环境；配置多个环境时必须显式传
-`--default-environment`。所有连接始终命名为 `lingmind-<environment-code>`，默认环境以独立指针写入生成
-插件的 `references/configured-environments.json`，不会因修改默认值而重绑已有 OAuth token。未提供任何
-环境参数且终端可交互时，脚本会提示输入一个环境编码。连接器通过全局 Apex 解析环境编码，只保存返回的
-Phoenix MCP 地址；也可用 `--environment` 显式注入连接供发布自动化使用。生成目录包含独立 marketplace
-和插件副本；默认连接摘要同时注入生成后的环境选择 Skill，确保 Host 无需读取外部 JSON 也能选择默认
-连接。生成的 MCP 配置启用所有稳定连接；未指定环境时选择默认连接，指定或切换环境时按稳定连接名选择并
-通过 `context_get` 核验。摘要不包含 URL、issuer 或凭据，环境 URL 也不写回源码。Codex
-加载完整动态目录时启用 MCP 2026；旧协议模式应使用 Host 原生 tool allowlist 控制单轮目录规模。
-
-验证 manifest、marketplace 和全部聚合 Skills：
-
-```bash
-make validate-plugins PYTHON=python3
-```
-
-为 WorkBuddy 首次安装 LingMind 业务 Skills 和 MCP 连接：
-
-```bash
-make configure-workbuddy-lingmind ENV="sandbox"
-```
-
-该命令把 `plugins/lingmind` 的 Skills 和参考资料同步到 `~/.workbuddy`，通过 Apex 将每个环境编码解析为
-直接 Phoenix MCP 连接，并合并写入 WorkBuddy 的 `mcp.json`。它只替换上次由 LingMind 配置管理的业务环境
-连接，保留其他 MCP 连接和 `lingmind-operator`；OAuth token 不写入或复制到这些文件。
-
-已经安装后，直接执行同一命令即可沿用现有环境和 MCP URL 更新 Skills，无需重新解析环境或改变 OAuth
-状态：
-
-```bash
-make configure-workbuddy-lingmind
-```
-
-安装或更新后需重启 WorkBuddy 或新建任务，使新的 Skills 和 MCP 连接进入 Host 工具目录。
-
-为豆包桌面端首次安装“凌析”、LingMind 业务 Skills 和 HTTP MCP 连接信息：
-
-```bash
-make configure-doubao-lingmind ENV="sandbox"
-```
-
-命令会打印每个连接器的名称和 Phoenix MCP URL；在豆包的“技能 · 连接器 · 伙伴 > 新建 > 新建自定义
-连接器”中选择 `HTTP`，填入打印值，自定义 Headers 留空并完成 OAuth 授权。豆包没有公开可写的本地
-连接器配置文件，所以首次 UI 注册不会被脚本绕过。
-
-已经安装后，可沿用环境和 OAuth 状态更新 Skills 与启动器：
-
-```bash
-make configure-doubao-lingmind
-```
-
-安装或更新后需重启豆包或新建工作任务。平台契约和资格验证边界见 `platforms/doubao/README.md`。
-“凌析”是本地自定义 Skill；豆包“工作伙伴”是独立的云端上架市场，本地安装不会使它出现在伙伴页。
-
-仓库根目录的 marketplace 提供可直接从 GitHub 安装的完整插件；高级配置命令生成的
-`lingmind-configured` 是独立的开发来源，安装时同样应避免启用多个同名来源。
 
 ## Go SDK
 
