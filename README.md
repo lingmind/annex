@@ -2,6 +2,8 @@
 
 LingMind Annex 是 LingMind 的开放集成中心，维护 SDK、CLI 与 Agent 插件。
 
+**DSH 用户从这里开始：[快速安装 LingMind 与 LingMind Operator](docs/dsh-quick-start.md)**。指南包含界面安装、浏览器授权、首次验证与多环境配置。
+
 ## 在 Agent 中连接 LingMind
 
 统一入口：选择 Agent → 安装 LingMind → 输入环境编码 → 浏览器授权 → 验证环境 → 开始使用。
@@ -9,15 +11,23 @@ LingMind Annex 是 LingMind 的开放集成中心，维护 SDK、CLI 与 Agent �
 - **Codex / ChatGPT 本地与云端**：在插件页安装已有的 **LingMind** App 插件；运维人员另行安装 **LingMind Operator**。
 - **WorkBuddy**：安装同源 Skills 和远程 MCP 配置，由宿主管理 OAuth。
 - **豆包桌面端**：安装同源 Skills，按指引注册 HTTP 连接器并完成 OAuth。
-- **DeepSeek Harness（DSH）**：安装同源 Skills 和 Cordis 配置，通过 Annex stdio 连接助手完成 OAuth；凭据仅存于系统钥匙串。
+- **DeepSeek Harness（DSH）**：在“插件 → 添加插件”中粘贴下方 GitHub 包标识，一次安装 LingMind 与 LingMind Operator；[查看完整安装指南](docs/dsh-quick-start.md)。
 
 版本 `1.5.2` 支持 DSH 0.2.1，安装命令固定到不可变版本标签。
 
-DSH `0.2.1-rc.5`、`0.2.1` 及兼容版本使用原生 GitHub bundle 安装（同一 bundle 加载 LingMind 与 LingMind Operator）：
+桌面版推荐直接在“添加插件”的包名或来源输入框粘贴：
+
+```text
+github:lingmind/annex#v1.5.2
+```
+
+已有 `dsh` 命令时，也可在终端安装到桌面版 profile：
 
 ```bash
 dsh plugin --profile desktop add github:lingmind/annex#v1.5.2
 ```
+
+安装后分别完成业务环境和运维账号的浏览器授权，在插件详情确认所需组件显示“运行中”，再用只读请求验证连接。只使用业务功能时可关闭 Operator。前置条件、首次查询示例及常见问题见[快速安装指南](docs/dsh-quick-start.md)。
 
 WorkBuddy 使用同源 GitHub 安装命令，自动配置共享 Skills 与 MCP：
 

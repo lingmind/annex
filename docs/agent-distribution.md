@@ -1,5 +1,7 @@
 # Agent 分发与接入
 
+DSH 普通用户请先阅读 [快速安装 LingMind 与 LingMind Operator](dsh-quick-start.md)。本文保留跨宿主分发机制、发布与管理员部署说明。
+
 Annex 维护一份共享插件内容、一个版本来源和一个发布入口。普通用户通过 App、GitHub 安装命令或宿主市场安装，
 不再下载 ZIP、手工拷贝 Skills 或编辑 MCP 配置文件。首次账户授权仍由用户在浏览器完成。
 
@@ -123,8 +125,9 @@ macOS 桌面版的依赖位于 ASAR 内时，使用该应用的 Electron Node �
 
 LingMind 组件的 `connections` 是本机账户名称列表，默认 `["lingmind"]`。每个账户分别完成浏览器环境授权，
 钥匙串凭据、刷新锁和 MCP 命名空间均相互隔离；本机账户名只是标签，不是环境授权或身份依据。
-在 DSH 的 LingMind 组件配置中，可按需设置 `connections: [beta, sandbox]`，两个账户分别授权到对应环境。
-只配置已经需要连接的账户；首次授权顺序执行，同一业务回调端口不并发占用。
+`1.5.2` 没有提供该字段的图形化配置页，需要在目标 profile 的 `cordis.patch.yml` 中合并 `id: lingmind` 配置条目。
+保留已有账户，再为新环境添加账户名；首次授权顺序执行，同一业务回调端口不并发占用。
+具体路径和可复制示例见[快速安装指南：多环境连接](dsh-quick-start.md#多环境连接按需配置)。
 
 默认账户保留 `lingmind` 工具命名空间；其他账户使用 `lingmind-<账户名>`。
 每次选择连接后先调用 `connection_profile_get` 和 `context_get`，以返回的实际环境代码为准。
