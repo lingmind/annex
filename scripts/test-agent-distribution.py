@@ -23,6 +23,7 @@ from agent_release import ROOT, release
 def module(name):
     spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / f"{name}.py")
     result = importlib.util.module_from_spec(spec)
+    sys.modules[name] = result
     spec.loader.exec_module(result)
     return result
 
@@ -72,6 +73,10 @@ class AgentDistributionTests(unittest.TestCase):
                         self.assertNotIn("package/plugins/lingmind/.app.json", names)
                         self.assertIn("package/cordis.patch.yml", names)
                         self.assertIn("package/scripts/agent-cli.mjs", names)
+                        self.assertIn("package/scripts/dsh-operator-plugin.mjs", names)
+                        self.assertIn("package/locale/en.json", names)
+                        self.assertIn("package/operator-locale/en.json", names)
+                        self.assertTrue(any(name.startswith("package/plugins/lingmind-operator/skills/") for name in names))
                         unpacked = root / "github"
                         archive.extractall(unpacked, filter="data")
                     subprocess.run(["node", str(unpacked / "package/scripts/agent-cli.mjs"), "--help"], check=True, capture_output=True)
@@ -90,7 +95,7 @@ class AgentDistributionTests(unittest.TestCase):
         from contextlib import nullcontext
         with patch("sys.argv", ["agent-oauth.py", "--connect"]), patch.object(OAUTH, "keychain", return_value=backend), patch.object(OAUTH, "grant_lock", return_value=nullcontext()), patch.object(OAUTH, "refresh_grant") as refresh, patch.object(OAUTH, "login") as login:
             self.assertEqual(OAUTH.main(), 0)
-        refresh.assert_called_once_with(backend, "lingmind")
+        refresh.assert_called_once_with(backend, "lingmind", OAUTH.BUSINESS)
         login.assert_not_called()
 
     def test_native_dsh_connect_requests_browser_consent_only_when_unconnected(self):
@@ -99,14 +104,63 @@ class AgentDistributionTests(unittest.TestCase):
         from contextlib import nullcontext
         with patch("sys.argv", ["agent-oauth.py", "--connect"]), patch.object(OAUTH, "keychain", return_value=backend), patch.object(OAUTH, "grant_lock", return_value=nullcontext()), patch.object(OAUTH, "refresh_grant") as refresh, patch.object(OAUTH, "login") as login:
             self.assertEqual(OAUTH.main(), 0)
-        login.assert_called_once_with(backend, "lingmind")
+        login.assert_called_once_with(backend, "lingmind", OAUTH.BUSINESS)
         refresh.assert_not_called()
+
+    def test_operator_grants_callbacks_and_discovery_are_separate(self):
+        backend = Mock()
+        grant = OAUTH.save_grant(backend, "lingmind", {"access_token": "access", "refresh_token": "refresh", "token_type": "Bearer", "expires_in": 300}, connection=OAUTH.OPERATOR)
+        self.assertEqual(backend.set_password.call_args.args[0], OAUTH.OPERATOR.service)
+        self.assertNotEqual(OAUTH.OPERATOR.service, OAUTH.BUSINESS.service)
+        self.assertEqual(OAUTH.BUSINESS.service, "cn.lingmind.agent.dsh")
+        backend.get_password.return_value = json.dumps(grant)
+        self.assertEqual(OAUTH.load_grant(backend, "lingmind", OAUTH.OPERATOR)["resource"], OAUTH.OPERATOR.resource)
+        with self.assertRaisesRegex(ValueError, "resource or client mismatch"):
+            OAUTH.load_grant(backend, "lingmind", OAUTH.BUSINESS)
+        path = "/callback?" + urlencode({"state": "state", "iss": OAUTH.OPERATOR.issuer, "code": "code"})
+        self.assertEqual(OAUTH.callback_code(path, "127.0.0.1:17642", "state", OAUTH.OPERATOR), "code")
+        self.assertIsNone(OAUTH.callback_code(path, "127.0.0.1:17641", "state", OAUTH.OPERATOR))
+        metadata = {"issuer": OAUTH.OPERATOR.issuer, "code_challenge_methods_supported": ["S256"]}
+        metadata.update({name: OAUTH.OPERATOR.issuer + "/protocol/openid-connect/" + name for name in ("authorization_endpoint", "token_endpoint", "revocation_endpoint")})
+        resource = {"resource": OAUTH.OPERATOR.resource, "authorization_servers": [OAUTH.OPERATOR.issuer]}
+        with patch.object(OAUTH, "request_json", side_effect=[resource, metadata]) as request:
+            self.assertEqual(OAUTH.discovery(OAUTH.OPERATOR), metadata)
+        self.assertEqual(request.call_args_list[0].args[0], "https://apex.lingmind.cn/.well-known/oauth-protected-resource/mcp/operator")
+        self.assertEqual(request.call_args_list[1].args[0], OAUTH.OPERATOR.issuer + "/.well-known/openid-configuration")
+
+    def test_operator_connect_and_refresh_use_operator_identity(self):
+        backend = Mock()
+        backend.get_password.return_value = json.dumps({"resource": OAUTH.OPERATOR.resource, "client": OAUTH.OPERATOR.client, "expires_at": time.time() - 1, "refresh_token": "old"})
+        with patch.object(OAUTH, "discovery", return_value={"token_endpoint": OAUTH.OPERATOR.issuer + "/token"}), patch.object(OAUTH, "request_json", return_value={"access_token": "new", "refresh_token": "rotated", "token_type": "Bearer", "expires_in": 300}) as request:
+            OAUTH.refresh_grant(backend, "lingmind", OAUTH.OPERATOR)
+        self.assertEqual(request.call_args.args[1]["client_id"], "lingmind-operator-dsh")
+        self.assertEqual(request.call_args.args[1]["resource"], OAUTH.OPERATOR.resource)
+        from contextlib import nullcontext
+        with patch("sys.argv", ["agent-oauth.py", "--connect", "--product", "lingmind-operator"]), patch.object(OAUTH, "keychain", return_value=backend), patch.object(OAUTH, "grant_lock", return_value=nullcontext()), patch.object(OAUTH, "refresh_grant") as refresh:
+            self.assertEqual(OAUTH.main(), 0)
+        refresh.assert_called_once_with(backend, "lingmind", OAUTH.OPERATOR)
+
+    def test_operator_logout_accepts_empty_success_and_retains_grant_on_failure(self):
+        backend = Mock()
+        backend.get_password.return_value = json.dumps({"resource": OAUTH.OPERATOR.resource, "client": OAUTH.OPERATOR.client, "refresh_token": "refresh"})
+        response = Mock()
+        response.read.return_value = b""
+        response.__enter__ = Mock(return_value=response)
+        response.__exit__ = Mock(return_value=False)
+        with patch.object(OAUTH, "discovery", return_value={"revocation_endpoint": OAUTH.OPERATOR.issuer + "/revoke"}), patch.object(OAUTH, "open_request", return_value=response):
+            OAUTH.logout(backend, "operator", OAUTH.OPERATOR)
+        backend.delete_password.assert_called_once_with(OAUTH.OPERATOR.service, "operator")
+        backend.delete_password.reset_mock()
+        with patch.object(OAUTH, "discovery", return_value={"revocation_endpoint": OAUTH.OPERATOR.issuer + "/revoke"}), patch.object(OAUTH, "open_request", side_effect=OSError("unavailable")):
+            with self.assertRaises(OSError):
+                OAUTH.logout(backend, "operator", OAUTH.OPERATOR)
+        backend.delete_password.assert_not_called()
 
     def test_tokens_are_keychain_only_and_bound_to_resource(self):
         backend = Mock()
         grant = OAUTH.save_grant(backend, "account-a", {"access_token": "access", "refresh_token": "refresh", "token_type": "Bearer", "expires_in": 300})
         backend.get_password.return_value = json.dumps(grant)
-        self.assertEqual(OAUTH.load_grant(backend, "account-a")["resource"], OAUTH.RESOURCE)
+        self.assertEqual(OAUTH.load_grant(backend, "account-a")["resource"], OAUTH.BUSINESS.resource)
         grant["resource"] = "https://other.example/mcp"
         backend.get_password.return_value = json.dumps(grant)
         with self.assertRaisesRegex(ValueError, "resource or client mismatch"):
@@ -114,15 +168,15 @@ class AgentDistributionTests(unittest.TestCase):
 
     def test_refresh_remains_bound_to_original_resource_and_client(self):
         backend = Mock()
-        backend.get_password.return_value = json.dumps({"resource": OAUTH.RESOURCE, "client": OAUTH.CLIENT, "expires_at": time.time() - 1, "refresh_token": "old"})
-        with patch.object(OAUTH, "discovery", return_value={"token_endpoint": OAUTH.ISSUER + "/oauth/token"}), patch.object(OAUTH, "request_json", return_value={"access_token": "new", "refresh_token": "rotated", "token_type": "Bearer", "expires_in": 300}) as request:
+        backend.get_password.return_value = json.dumps({"resource": OAUTH.BUSINESS.resource, "client": OAUTH.BUSINESS.client, "expires_at": time.time() - 1, "refresh_token": "old"})
+        with patch.object(OAUTH, "discovery", return_value={"token_endpoint": OAUTH.BUSINESS.issuer + "/oauth/token"}), patch.object(OAUTH, "request_json", return_value={"access_token": "new", "refresh_token": "rotated", "token_type": "Bearer", "expires_in": 300}) as request:
             OAUTH.refresh_grant(backend, "account-a")
-        self.assertEqual(request.call_args.args[1]["client_id"], OAUTH.CLIENT)
-        self.assertEqual(request.call_args.args[1]["resource"], OAUTH.RESOURCE)
+        self.assertEqual(request.call_args.args[1]["client_id"], OAUTH.BUSINESS.client)
+        self.assertEqual(request.call_args.args[1]["resource"], OAUTH.BUSINESS.resource)
         self.assertIn("rotated", backend.set_password.call_args.args[2])
 
     def test_callback_requires_state_issuer_code_and_exact_loopback_host(self):
-        query = {"state": "expected", "iss": OAUTH.ISSUER, "code": "authorization-code"}
+        query = {"state": "expected", "iss": OAUTH.BUSINESS.issuer, "code": "authorization-code"}
         path = "/callback?" + urlencode(query)
         self.assertEqual(OAUTH.callback_code(path, "127.0.0.1:17641", "expected"), "authorization-code")
         self.assertIsNone(OAUTH.callback_code(path, "attacker.example", "expected"))
@@ -139,10 +193,10 @@ class AgentDistributionTests(unittest.TestCase):
                 OAUTH.keychain()
 
     def test_issuer_endpoint_cannot_redirect_credentials(self):
-        resource = {"resource": OAUTH.RESOURCE, "authorization_servers": [OAUTH.ISSUER]}
-        metadata = {"issuer": OAUTH.ISSUER, "code_challenge_methods_supported": ["S256"], "token_endpoint": "https://attacker.example/token", "authorization_endpoint": OAUTH.ISSUER + "/oauth/authorize", "revocation_endpoint": OAUTH.ISSUER + "/oauth/revoke"}
+        resource = {"resource": OAUTH.BUSINESS.resource, "authorization_servers": [OAUTH.BUSINESS.issuer]}
+        metadata = {"issuer": OAUTH.BUSINESS.issuer, "code_challenge_methods_supported": ["S256"], "token_endpoint": "https://attacker.example/token", "authorization_endpoint": OAUTH.BUSINESS.issuer + "/oauth/authorize", "revocation_endpoint": OAUTH.BUSINESS.issuer + "/oauth/revoke"}
         with patch.object(OAUTH, "request_json", side_effect=[resource, metadata]):
-            with self.assertRaisesRegex(ValueError, "belong to LingMind"):
+            with self.assertRaisesRegex(ValueError, "belong to the configured LingMind"):
                 OAUTH.discovery()
         self.assertIsNone(OAUTH.NoRedirect().redirect_request(None, None, 302, "", {}, "https://attacker.example"))
 

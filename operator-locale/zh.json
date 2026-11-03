@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "LingMind Operator",
+    "description": "查看 LingMind 环境与服务状态，排查异常，处理维护、部署及备份操作。"
+  }
+}
