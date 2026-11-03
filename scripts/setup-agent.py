@@ -17,6 +17,7 @@ def main():
     parser.add_argument("--default-environment")
     parser.add_argument("--login", action="store_true", help="Start DSH browser OAuth after configuration")
     parser.add_argument("--logout", action="store_true", help="Revoke the DSH grant")
+    parser.add_argument("--product", choices=("lingmind", "lingmind-operator"), default="lingmind")
     parser.add_argument("--connection", default="lingmind", help="Independent DSH keychain account name")
     args, remaining = parser.parse_known_args()
     if (args.login or args.logout) and args.agent != "dsh":
@@ -37,7 +38,7 @@ def main():
         if not args.connection or len(args.connection) > 64 or not all(c in "abcdefghijklmnopqrstuvwxyz0123456789-_" for c in args.connection):
             parser.error("invalid DSH connection name")
         mode = "--logout" if args.logout else "--login" if args.login else "--connect"
-        return subprocess.run([sys.executable, str(ROOT / "scripts/agent-oauth.py"), mode, "--connection", args.connection], check=False).returncode
+        return subprocess.run([sys.executable, str(ROOT / "scripts/agent-oauth.py"), mode, "--product", args.product, "--connection", args.connection], check=False).returncode
     command = [sys.executable, str(ROOT / f"scripts/configure-{args.agent}-lingmind.py")]
     for code in args.environment_code or []:
         command.extend(["--environment-code", code])

@@ -15,11 +15,14 @@ never assume beta or sandbox. Use the installed host adapter's connection flow:
   A missing connection requires the documented Annex installation command with the code.
 - Doubao: register the installer-provided HTTP connector fields through the supported custom-connector UI,
   leave custom headers empty, and complete host-managed OAuth. Local Skills do not publish a cloud partner.
-- DSH: use the installed native LingMind bundle. Enabling it prepares its OAuth runtime and opens
-  initial browser consent when no grant exists. Credentials stay in the OS keychain. Verify
-  `connection_profile_get` and `context_get` on the installed `lingmind` MCP connection. Each bundle
-  instance activates one connection. To reconnect or replace the environment, use the documented
-  LingMind GitHub CLI with `--agent dsh --login`, then reload the plugin. Use `--logout` to revoke.
+- DSH: use the installed native **LingMind** component's `connections` setting. Retain existing accounts
+  and add a distinct local account name for every independent environment grant. Enabling or reloading
+  the component prepares its OAuth runtime and opens browser consent for accounts without a grant.
+  Credentials stay in the OS keychain. The default account uses `lingmind`; named accounts use
+  `lingmind-<account>` MCP namespaces. Verify each with `connection_profile_get` and `context_get`;
+  an account label is not proof of its environment. To reauthorize or revoke one account, use the
+  documented LingMind GitHub CLI with `--agent dsh --product lingmind --connection <account>` and
+  `--login` or `--logout`, then reload the component. Never replace another account's grant.
 - Other hosts: follow their installed Annex adapter's setup instructions. Do not infer an authentication
   mechanism from generic MCP support or invent a connection URL.
 

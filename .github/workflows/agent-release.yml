@@ -19,6 +19,7 @@ jobs:
         run: |
           python3 -m venv .codex-venv
           .codex-venv/bin/pip install PyYAML
+          npm ci --ignore-scripts
       - name: Validate and package the exact tag
         run: |
           set -eu

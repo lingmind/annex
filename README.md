@@ -11,16 +11,18 @@ LingMind Annex 是 LingMind 的开放集成中心，维护 SDK、CLI 与 Agent �
 - **豆包桌面端**：安装同源 Skills，按指引注册 HTTP 连接器并完成 OAuth。
 - **DeepSeek Harness（DSH）**：安装同源 Skills 和 Cordis 配置，通过 Annex stdio 连接助手完成 OAuth；凭据仅存于系统钥匙串。
 
-DSH alpha `0.2.2-alpha.2` 或兼容版本使用原生 GitHub bundle 安装（DSH 宿主待验收）：
+版本 `1.5.2` 支持 DSH 0.2.1，安装命令固定到不可变版本标签。
+
+DSH `0.2.1-rc.5`、`0.2.1` 及兼容版本使用原生 GitHub bundle 安装（同一 bundle 加载 LingMind 与 LingMind Operator）：
 
 ```bash
-dsh plugin --profile web add github:lingmind/annex#v1.5.0
+dsh plugin --profile desktop add github:lingmind/annex#v1.5.2
 ```
 
 WorkBuddy 使用同源 GitHub 安装命令，自动配置共享 Skills 与 MCP：
 
 ```bash
-npx --yes --package=github:lingmind/annex#v1.5.0 lingmind-agent --agent workbuddy --environment-code <code>
+npx --yes --package=github:lingmind/annex#v1.5.2 lingmind-agent --agent workbuddy --environment-code <code>
 ```
 
 上述命令按固定 GitHub 版本安装。豆包的 Skills 安装也可自动化，

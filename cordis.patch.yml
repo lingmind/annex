@@ -1,3 +1,5 @@
 - insert:
     - id: lingmind
       name: lingmind-annex
+    - id: lingmind-operator
+      name: lingmind-annex/scripts/dsh-operator-plugin.mjs

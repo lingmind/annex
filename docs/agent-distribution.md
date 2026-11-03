@@ -8,7 +8,7 @@ Annex 维护一份共享插件内容、一个版本来源和一个发布入口�
 | 平台 | 目标入口 | 当前源码提供的能力 | 尚未完成 |
 | --- | --- | --- | --- |
 | Codex / ChatGPT | 已有 LingMind / LingMind Operator App | 保持已有 App 身份，生成平台更新包 | 新版本上传、平台审核与本地/云端验收 |
-| DSH | GitHub 原生 bundle；可选自定义市场索引 | 根 `package.json` 声明 `dsh.bundle`；安装后自动挂载 Skills、准备 OAuth 运行时并引导登录 | 真实 DSH 安装验收；市场索引静态托管 |
+| DSH | GitHub 原生 bundle；可选自定义市场索引 | 根 `package.json` 声明 `dsh.bundle`；一次安装加载两个独立插件，分别挂载 Skills、准备 OAuth 运行时并引导登录 | 市场索引静态托管；其他 DSH 版本仍需对应宿主验收 |
 | WorkBuddy | GitHub 安装命令；后续 SkillHub + 连接器市场 | npm/GitHub 包提供安装命令，自动合并 Skills 与 MCP 配置 | 宿主验收；原生市场上架与连接器资格 |
 | 豆包 | GitHub 安装命令；最终使用工作伙伴/连接器市场 | 自动安装共享 Skills，输出需要的连接信息 | 尚无已核验的连接器自动注册接口，首次 UI 注册仍是缺口；不能宣称一键完成 |
 
@@ -19,11 +19,11 @@ WorkBuddy 的技能市场和连接器是独立入口，上架 Skill 不代表自
 
 以下命令使用不可变版本标签。升级时替换为已发布的新版本标签。
 
-DSH 需要官方 alpha 发行版 `0.2.2-alpha.2` 或兼容版本，默认 npm latest `0.2.1-rc.5` 不在本包声明范围内。
-本版本未完成 DSH 宿主验收。使用其原生插件管理器安装，无需用户指定 overlay 路径：
+DSH 支持 `>=0.2.1-rc.5 <0.3.0`（包含 `0.2.1` 稳定版）。
+使用其原生插件管理器安装；桌面版的 profile 为 `desktop`，命令行 Web 版为 `web`：
 
 ```bash
-dsh plugin --profile web add github:lingmind/annex#v1.5.0
+dsh plugin --profile desktop add github:lingmind/annex#v1.5.2
 ```
 
 包内是可直接执行的 JavaScript，没有 prepare/build/install 生命周期脚本。
@@ -34,7 +34,7 @@ dsh plugin --profile web add github:lingmind/annex#v1.5.0
 WorkBuddy 使用同一个 GitHub 包中的安装命令：
 
 ```bash
-npx --yes --package=github:lingmind/annex#v1.5.0 lingmind-agent --agent workbuddy --environment-code <code>
+npx --yes --package=github:lingmind/annex#v1.5.2 lingmind-agent --agent workbuddy --environment-code <code>
 ```
 
 安装器自动合并 `~/.workbuddy/mcp.json`，保留其他 MCP 连接，由 WorkBuddy 完成 OAuth。
@@ -43,7 +43,7 @@ npx --yes --package=github:lingmind/annex#v1.5.0 lingmind-agent --agent workbudd
 豆包可用同一命令安装 Skills：
 
 ```bash
-npx --yes --package=github:lingmind/annex#v1.5.0 lingmind-agent --agent doubao --environment-code <code>
+npx --yes --package=github:lingmind/annex#v1.5.2 lingmind-agent --agent doubao --environment-code <code>
 ```
 
 目前仍需通过豆包支持的 UI 注册 HTTP 连接器，所以这条命令尚不满足完整一键接入。
@@ -89,8 +89,10 @@ GitHub Release 的 latest/download 地址存在重定向，不能直接当作 DS
 业务通过 Connect 或当前宿主的直接 Phoenix MCP 独立授权，每条连接只绑定一个环境。
 Operator 经全局 Apex MCP 选择 `environmentId`，不与业务授权混用。
 DSH 依赖运行时位于用户目录 `.lingmind/runtime/`，凭据仅存系统钥匙串。
-OAuth 回调临时监听 `127.0.0.1:17641/callback`，服务错误不会自动重放工具调用。
-新增 `lingmind-dsh` client 仍需随 Phoenix/Apex 配置完成线上部署。
+业务 OAuth 回调临时监听 `127.0.0.1:17641/callback`，Operator 为 `127.0.0.1:17642/callback`，服务错误不会自动重放工具调用。
+业务复用 `lingmind-dsh` Connect client；Operator 使用独立的 `lingmind-operator-dsh` Keycloak public client、S256 PKCE 和 Apex audience。
+两者的授权、系统钥匙串条目和刷新锁相互隔离，业务已有钥匙串条目保持不变。
+Operator client 必须随 Apex Keycloak 配置部署后才能完成真实授权，不复用 Codex client 或业务凭据。
 
 各宿主分别验收首次安装、新会话、真实授权读取、刷新、撤销、升级和错误环境拒绝。
 配置生成、npm 打包和模拟挂载测试不能代替实际 DSH 或各宿主验收。
@@ -100,3 +102,46 @@ OAuth 回调临时监听 `127.0.0.1:17641/callback`，服务错误不会自动�
 [DSH 市场索引](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/plugin-market.md)、
 [WorkBuddy 技能市场](https://www.codebuddy.cn/docs/workbuddy/From-Beginner-to-Expert-Guide/Function-Description/Skills-Market)、
 [WorkBuddy 连接器](https://www.codebuddy.cn/docs/workbuddy/From-Beginner-to-Expert-Guide/Function-Description/Connector)。
+
+## DSH 0.2.1 兼容验证
+
+`make validate-plugins` 覆盖双插件挂载、发布归档完整性、独立授权发现、回调与凭据隔离。
+可指定真实宿主依赖执行集成验证，测试使用本地 MCP 协议服务，不访问业务数据、不进行账户授权：
+
+```bash
+DSH_NODE_MODULES=<DSH-runtime>/node_modules node scripts/test-dsh-runtime.mjs
+```
+
+macOS 桌面版的依赖位于 ASAR 内时，使用该应用的 Electron Node 模式执行此脚本。
+测试覆盖真实 Cordis、Skills registry、Skills filesystem 和 MCP client 的加载与工具发现。
+通过测试不等于完成线上 OAuth、新会话或真实工具调用验收。
+
+版本 `1.5.2` 已完成 DSH `0.2.1-rc.5` 的真实浏览器授权、双插件只读调用和错误环境拒绝验收；具体环境与账户记录保留私有。
+维护者可先运行 `npm pack --ignore-scripts`，再用 `dsh plugin --profile desktop add /absolute/path/lingmind-annex-1.5.2.tgz` 安装本地构建验收。
+
+### DSH 多环境连接
+
+LingMind 组件的 `connections` 是本机账户名称列表，默认 `["lingmind"]`。每个账户分别完成浏览器环境授权，
+钥匙串凭据、刷新锁和 MCP 命名空间均相互隔离；本机账户名只是标签，不是环境授权或身份依据。
+在 DSH 的 LingMind 组件配置中，可按需设置 `connections: [beta, sandbox]`，两个账户分别授权到对应环境。
+只配置已经需要连接的账户；首次授权顺序执行，同一业务回调端口不并发占用。
+
+默认账户保留 `lingmind` 工具命名空间；其他账户使用 `lingmind-<账户名>`。
+每次选择连接后先调用 `connection_profile_get` 和 `context_get`，以返回的实际环境代码为准。
+环境参数与授权不匹配时必须拒绝，不能复用另一个账户的凭据或回退到默认连接。
+Operator 是独立的全局运维授权，仍通过显式 `environmentId` 选择环境。
+
+安装列表和组件详情通过 DSH 官方 locale metadata 显示 **LingMind** 和 **LingMind Operator**，
+内部 npm 包名不作为产品显示名。
+
+### 服务端发布依赖
+
+DSH 授权需要同时完成：
+
+- Keycloak：`lingmind-operator-dsh` public client、精确本机回调、S256 PKCE 和 Operator audience/scopes。
+- Apex gateway：在现有 `components.gateway.operator.allowedClientIds` 中加入 `lingmind-operator-dsh`，保留已有客户端。
+- Connect：`clients` 同时保留 `lingmind-cloud` 与 `lingmind-dsh`，后者回调为 `http://127.0.0.1:17641/callback`。
+- Apex gateway 与执行安装的 apex-agent 必须都包含新版 Connect 模板。只更新 gateway 会导致旧 Agent 继续渲染旧格式。
+- Connect 二进制必须与新 `clients` 配置格式匹配；升级须保留原 vault PVC 和加密密钥。
+
+验证客户端登录页、浏览器回调、实际 MCP 握手和只读工具调用后，才可认定授权可用。

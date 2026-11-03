@@ -21,8 +21,16 @@ export function run(command, args, capture = false) {
   });
 }
 
+let runtimePreparation;
+
 export function runtimePython() {
-  return run(systemPython(), [fileURLToPath(new URL('./agent_runtime.py', import.meta.url))], true);
+  // Both DSH components share one bootstrap, including the first-run venv creation.
+  runtimePreparation ??= run(systemPython(), [fileURLToPath(new URL('./agent_runtime.py', import.meta.url))], true)
+    .catch(error => {
+      runtimePreparation = undefined;
+      throw error;
+    });
+  return runtimePreparation;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {

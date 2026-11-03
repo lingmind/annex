@@ -10,6 +10,7 @@ import json
 import secrets
 from pathlib import Path
 from contextlib import contextmanager
+from dataclasses import dataclass
 import sys
 import time
 import webbrowser
@@ -17,11 +18,39 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlencode, urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-RESOURCE = "https://connect.lingmind.cn/mcp"
-ISSUER = "https://connect.lingmind.cn"
-CLIENT = "lingmind-dsh"
-REDIRECT = "http://127.0.0.1:17641/callback"
-SERVICE = "cn.lingmind.agent.dsh"
+
+@dataclass(frozen=True)
+class Connection:
+    product: str
+    resource: str
+    issuer: str
+    client: str
+    port: int
+    scopes: str
+    metadata_path: str = "/.well-known/oauth-authorization-server"
+    service: str = "cn.lingmind.agent.dsh"
+
+    @property
+    def redirect(self):
+        return f"http://127.0.0.1:{self.port}/callback"
+
+    @property
+    def resource_metadata(self):
+        resource = urlparse(self.resource)
+        return f"{resource.scheme}://{resource.netloc}/.well-known/oauth-protected-resource{resource.path}"
+
+
+BUSINESS = Connection(
+    "lingmind", "https://connect.lingmind.cn/mcp", "https://connect.lingmind.cn",
+    "lingmind-dsh", 17641, "lingmind.read lingmind.write lingmind.execute",
+)
+OPERATOR = Connection(
+    "lingmind-operator", "https://apex.lingmind.cn/mcp/operator",
+    "https://keycloak.lingmind.cn/realms/lingmind", "lingmind-operator-dsh", 17642,
+    "openid apex.environments.read apex.operator.observe apex.operator.maintain apex.services.deploy apex.backups.operate",
+    "/.well-known/openid-configuration", "cn.lingmind.agent.dsh.operator",
+)
+CONNECTIONS = {connection.product: connection for connection in (BUSINESS, OPERATOR)}
 MAX_MESSAGE = 8 << 20
 
 
@@ -35,12 +64,14 @@ def open_request(request):
     return build_opener(NoRedirect()).open(request, timeout=60)
 
 
-def request_json(url, values=None):
+def request_json(url, values=None, *, allow_empty=False):
     body = urlencode(values).encode() if values is not None else None
     with open_request(Request(url, data=body, headers={"Accept": "application/json"})) as response:
         raw = response.read(MAX_MESSAGE + 1)
     if len(raw) > MAX_MESSAGE:
         raise ValueError("OAuth response is too large")
+    if allow_empty and not raw:
+        return {}
     value = json.loads(raw)
     if not isinstance(value, dict):
         raise ValueError("Invalid OAuth response")
@@ -58,21 +89,21 @@ def keychain():
     return backend
 
 
-def discovery():
-    resource = request_json(ISSUER + "/.well-known/oauth-protected-resource/mcp")
-    if resource.get("resource") != RESOURCE or resource.get("authorization_servers") != [ISSUER]:
+def discovery(connection=BUSINESS):
+    resource = request_json(connection.resource_metadata)
+    if resource.get("resource") != connection.resource or resource.get("authorization_servers") != [connection.issuer]:
         raise ValueError("LingMind resource identity mismatch")
-    metadata = request_json(ISSUER + "/.well-known/oauth-authorization-server")
-    if metadata.get("issuer") != ISSUER or "S256" not in metadata.get("code_challenge_methods_supported", []):
+    metadata = request_json(connection.issuer + connection.metadata_path)
+    if metadata.get("issuer") != connection.issuer or "S256" not in metadata.get("code_challenge_methods_supported", []):
         raise ValueError("LingMind OAuth issuer or PKCE support mismatch")
     for name in ("authorization_endpoint", "token_endpoint", "revocation_endpoint"):
         endpoint = urlparse(metadata.get(name, ""))
-        if endpoint.scheme != "https" or endpoint.netloc != urlparse(ISSUER).netloc or endpoint.username or endpoint.fragment:
-            raise ValueError("OAuth endpoint must belong to LingMind Connect")
+        if endpoint.scheme != "https" or endpoint.netloc != urlparse(connection.issuer).netloc or not metadata[name].startswith(connection.issuer + "/") or endpoint.username or endpoint.fragment:
+            raise ValueError("OAuth endpoint must belong to the configured LingMind issuer")
     return metadata
 
 
-def save_grant(backend, account, response, previous=None):
+def save_grant(backend, account, response, previous=None, connection=BUSINESS):
     if response.get("token_type", "").lower() != "bearer" or not response.get("access_token"):
         raise ValueError("Invalid OAuth token response")
     refresh = response.get("refresh_token") or (previous or {}).get("refresh_token")
@@ -81,36 +112,36 @@ def save_grant(backend, account, response, previous=None):
         raise ValueError("OAuth requires an expiring access token and refresh grant")
     grant = {
         "access_token": response["access_token"], "refresh_token": refresh,
-        "expires_at": time.time() + lifetime, "resource": RESOURCE, "client": CLIENT,
+        "expires_at": time.time() + lifetime, "resource": connection.resource, "client": connection.client,
     }
-    backend.set_password(SERVICE, account, json.dumps(grant))
+    backend.set_password(connection.service, account, json.dumps(grant))
     return grant
 
 
-def load_grant(backend, account):
-    raw = backend.get_password(SERVICE, account)
+def load_grant(backend, account, connection=BUSINESS):
+    raw = backend.get_password(connection.service, account)
     if not raw:
-        raise ValueError("LingMind is not connected; run setup-agent.py --agent dsh --login")
+        raise ValueError(f"{connection.product} is not connected; run setup-agent.py --agent dsh --product {connection.product} --login")
     grant = json.loads(raw)
-    if grant.get("resource") != RESOURCE or grant.get("client") != CLIENT:
+    if grant.get("resource") != connection.resource or grant.get("client") != connection.client:
         raise ValueError("Stored OAuth resource or client mismatch; reconnect LingMind")
     return grant
 
 
-def callback_code(path, host, state):
+def callback_code(path, host, state, connection=BUSINESS):
     parsed = urlparse(path)
     query = parse_qs(parsed.query)
     if (
-        host != "127.0.0.1:17641" or parsed.path != "/callback"
-        or query.get("state") != [state] or query.get("iss") != [ISSUER]
+        host != f"127.0.0.1:{connection.port}" or parsed.path != "/callback"
+        or query.get("state") != [state] or query.get("iss") != [connection.issuer]
         or len(query.get("code", [])) != 1 or not query["code"][0] or "error" in query
     ):
         return None
     return query["code"][0]
 
 
-def login(backend, account):
-    metadata = discovery()
+def login(backend, account, connection=BUSINESS):
+    metadata = discovery(connection)
     verifier, state = secrets.token_urlsafe(48), secrets.token_urlsafe(32)
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
     result = {}
@@ -120,7 +151,7 @@ def login(backend, account):
             pass
 
         def do_GET(self):
-            code = callback_code(self.path, self.headers.get("Host"), state)
+            code = callback_code(self.path, self.headers.get("Host"), state, connection)
             valid = code is not None
             self.send_response(200 if valid else 400)
             self.send_header("Content-Type", "text/plain; charset=utf-8")
@@ -132,64 +163,64 @@ def login(backend, account):
                 result["code"] = code
 
     # Bind before opening the browser, so a conflicting process cannot receive the grant.
-    with HTTPServer(("127.0.0.1", 17641), Callback) as server:
+    with HTTPServer(("127.0.0.1", connection.port), Callback) as server:
         server.timeout = 1
         query = urlencode({
-            "client_id": CLIENT, "redirect_uri": REDIRECT, "response_type": "code",
-            "resource": RESOURCE, "code_challenge_method": "S256", "code_challenge": challenge,
-            "state": state, "scope": "lingmind.read lingmind.write lingmind.execute",
+            "client_id": connection.client, "redirect_uri": connection.redirect, "response_type": "code",
+            "resource": connection.resource, "code_challenge_method": "S256", "code_challenge": challenge,
+            "state": state, "scope": connection.scopes,
         })
         authorization_url = metadata["authorization_endpoint"] + "?" + query
-        print("Complete LingMind environment authorization in your browser.", file=sys.stderr)
+        print(f"Complete {connection.product} authorization in your browser.", file=sys.stderr)
         if not webbrowser.open(authorization_url):
             raise ValueError("Browser could not open; retry from a desktop session")
-        deadline = time.monotonic() + 180
+        deadline = time.monotonic() + 600
         while not result and time.monotonic() < deadline:
             server.handle_request()
     if not result:
         raise ValueError("Authorization timed out; restart the login flow")
     response = request_json(metadata["token_endpoint"], {
-        "grant_type": "authorization_code", "client_id": CLIENT, "redirect_uri": REDIRECT,
-        "resource": RESOURCE, "code": result["code"], "code_verifier": verifier,
+        "grant_type": "authorization_code", "client_id": connection.client, "redirect_uri": connection.redirect,
+        "resource": connection.resource, "code": result["code"], "code_verifier": verifier,
     })
-    save_grant(backend, account, response)
+    save_grant(backend, account, response, connection=connection)
 
 
 @contextmanager
-def grant_lock(account):
+def grant_lock(account, connection=BUSINESS):
     from filelock import FileLock
 
     directory = Path.home() / ".lingmind" / "agent-locks"
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     # Synchronization files contain no credential data. Serialize refresh-token rotation
     # across DSH child processes without serializing independent tool requests.
-    with FileLock(str(directory / (hashlib.sha256(account.encode()).hexdigest() + ".lock")), timeout=10):
+    with FileLock(str(directory / (hashlib.sha256((connection.product + ":" + account).encode()).hexdigest() + ".lock")), timeout=10):
         yield
 
 
-def access_grant(backend, account):
-    with grant_lock(account):
-        return refresh_grant(backend, account)
+def access_grant(backend, account, connection=BUSINESS):
+    with grant_lock(account, connection):
+        return refresh_grant(backend, account, connection)
 
 
-def refresh_grant(backend, account):
-    grant = load_grant(backend, account)
+def refresh_grant(backend, account, connection=BUSINESS):
+    grant = load_grant(backend, account, connection)
     if grant["expires_at"] > time.time() + 30:
         return grant
-    response = request_json(discovery()["token_endpoint"], {
-        "grant_type": "refresh_token", "client_id": CLIENT, "resource": RESOURCE,
+    response = request_json(discovery(connection)["token_endpoint"], {
+        "grant_type": "refresh_token", "client_id": connection.client, "resource": connection.resource,
         "refresh_token": grant["refresh_token"],
     })
-    return save_grant(backend, account, response, grant)
+    return save_grant(backend, account, response, grant, connection)
 
 
-def logout(backend, account):
-    grant = load_grant(backend, account)
+def logout(backend, account, connection=BUSINESS):
+    grant = load_grant(backend, account, connection)
     # Keep the local credential until revocation succeeds, allowing a safe retry.
-    request_json(discovery()["revocation_endpoint"], {
-        "client_id": CLIENT, "token": grant["refresh_token"],
-    })
-    backend.delete_password(SERVICE, account)
+    request_json(discovery(connection)["revocation_endpoint"], {
+        "client_id": connection.client, "token": grant["refresh_token"],
+    }, allow_empty=True)
+    backend.delete_password(connection.service, account)
 
 
 def messages(response):
@@ -222,7 +253,7 @@ def messages(response):
         yield json.loads(b"\n".join(data))
 
 
-def proxy(backend, account, stdin=None, stdout=None):
+def proxy(backend, account, stdin=None, stdout=None, connection=BUSINESS):
     stdin, stdout = stdin or sys.stdin, stdout or sys.stdout
     session, protocol = None, None
     while True:
@@ -236,14 +267,14 @@ def proxy(backend, account, stdin=None, stdout=None):
         request = json.loads(line)
         if not isinstance(request, dict) or request.get("jsonrpc") != "2.0":
             raise ValueError("Invalid MCP request")
-        grant = access_grant(backend, account)
+        grant = access_grant(backend, account, connection)
         headers = {"Authorization": "Bearer " + grant["access_token"], "Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
         if session:
             headers["Mcp-Session-Id"] = session
         if protocol:
             headers["MCP-Protocol-Version"] = protocol
         # No automatic replay after an error: a tool call may already have taken effect.
-        with open_request(Request(RESOURCE, data=line.encode(), headers=headers)) as response:
+        with open_request(Request(connection.resource, data=line.encode(), headers=headers)) as response:
             session = response.headers.get("Mcp-Session-Id", session)
             for message in messages(response):
                 if request.get("method") == "initialize" and "result" in message:
@@ -259,29 +290,31 @@ def main():
     mode.add_argument("--logout", action="store_true")
     mode.add_argument("--stdio", action="store_true")
     mode.add_argument("--connect", action="store_true", help="Reuse a grant or open initial browser authorization")
+    parser.add_argument("--product", choices=CONNECTIONS, default="lingmind")
     parser.add_argument("--connection", default="lingmind")
     args = parser.parse_args()
     if not args.connection or len(args.connection) > 64 or not all(c in "abcdefghijklmnopqrstuvwxyz0123456789-_" for c in args.connection):
         parser.error("connection name must use lowercase letters, digits, hyphens or underscores")
+    connection = CONNECTIONS[args.product]
     try:
         backend = keychain()
         if args.login:
-            with grant_lock(args.connection):
-                login(backend, args.connection)
+            with grant_lock(args.connection, connection):
+                login(backend, args.connection, connection)
         elif args.connect:
-            with grant_lock(args.connection):
-                if backend.get_password(SERVICE, args.connection):
-                    refresh_grant(backend, args.connection)
+            with grant_lock(args.connection, connection):
+                if backend.get_password(connection.service, args.connection):
+                    refresh_grant(backend, args.connection, connection)
                 else:
-                    login(backend, args.connection)
+                    login(backend, args.connection, connection)
         elif args.logout:
-            with grant_lock(args.connection):
-                logout(backend, args.connection)
+            with grant_lock(args.connection, connection):
+                logout(backend, args.connection, connection)
         else:
-            proxy(backend, args.connection)
+            proxy(backend, args.connection, connection=connection)
     except Exception:
         # OAuth/transport/backend exceptions may contain token responses or request URLs.
-        print("LingMind connection failed. Check OS keychain availability and reconnect using setup-agent.py --agent dsh --login. No tool call was retried.", file=sys.stderr)
+        print(f"{connection.product} connection failed. Check OS keychain availability and reconnect using setup-agent.py --agent dsh --product {connection.product} --login. No tool call was retried.", file=sys.stderr)
         return 1
     return 0
 
