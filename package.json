@@ -21,6 +21,7 @@
     "plugins/lingmind/skills",
     "plugins/lingmind/references",
     "plugins/lingmind/assets",
+    "docs/dsh-quick-start.md",
     "docs/agent-distribution.md",
     "docs/agent-connections.md",
     "cordis.patch.yml",

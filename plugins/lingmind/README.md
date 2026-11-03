@@ -4,6 +4,8 @@
 Codex / ChatGPT 通过已注册的 LingMind App 安装，其他 Agent 使用同一发布流程生成的宿主适配包。
 接入说明见 [Agent 分发与接入](../../docs/agent-distribution.md)。
 
+DSH 用户可直接阅读 [快速安装 LingMind 与 LingMind Operator](../../docs/dsh-quick-start.md)：在“插件 → 添加插件”中粘贴 `github:lingmind/annex#v1.5.2`，完成业务环境的浏览器授权，再用只读请求验证连接。该安装包同时包含 Operator；只使用业务功能时可关闭其组件。
+
 插件不预置业务环境。每个连接只绑定一个环境并完成独立授权；调用前核验准确环境编码与 `context_get`。
 不同环境的 token、issuer、audience、项目和确认计划不能混用。只有一个已授权连接时可自动选择，
 存在多个连接时必须明确环境。
