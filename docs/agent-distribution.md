@@ -25,7 +25,7 @@ DSH 支持 `>=0.2.1-rc.5 <0.3.0`（包含 `0.2.1` 稳定版）。
 使用其原生插件管理器安装；桌面版的 profile 为 `desktop`，命令行 Web 版为 `web`：
 
 ```bash
-dsh plugin --profile desktop add github:lingmind/annex#v1.5.2
+dsh plugin --profile desktop add github:lingmind/annex#v1.5.3
 ```
 
 包内是可直接执行的 JavaScript，没有 prepare/build/install 生命周期脚本。
@@ -36,7 +36,7 @@ dsh plugin --profile desktop add github:lingmind/annex#v1.5.2
 WorkBuddy 使用同一个 GitHub 包中的安装命令：
 
 ```bash
-npx --yes --package=github:lingmind/annex#v1.5.2 lingmind-agent --agent workbuddy --environment-code <code>
+npx --yes --package=github:lingmind/annex#v1.5.3 lingmind-agent --agent workbuddy --environment-code <code>
 ```
 
 安装器自动合并 `~/.workbuddy/mcp.json`，保留其他 MCP 连接，由 WorkBuddy 完成 OAuth。
@@ -45,7 +45,7 @@ npx --yes --package=github:lingmind/annex#v1.5.2 lingmind-agent --agent workbudd
 豆包可用同一命令安装 Skills：
 
 ```bash
-npx --yes --package=github:lingmind/annex#v1.5.2 lingmind-agent --agent doubao --environment-code <code>
+npx --yes --package=github:lingmind/annex#v1.5.3 lingmind-agent --agent doubao --environment-code <code>
 ```
 
 目前仍需通过豆包支持的 UI 注册 HTTP 连接器，所以这条命令尚不满足完整一键接入。
@@ -118,14 +118,14 @@ macOS 桌面版的依赖位于 ASAR 内时，使用该应用的 Electron Node �
 测试覆盖真实 Cordis、Skills registry、Skills filesystem 和 MCP client 的加载与工具发现。
 通过测试不等于完成线上 OAuth、新会话或真实工具调用验收。
 
-版本 `1.5.2` 已完成 DSH `0.2.1-rc.5` 的真实浏览器授权、双插件只读调用和错误环境拒绝验收；具体环境与账户记录保留私有。
-维护者可先运行 `npm pack --ignore-scripts`，再用 `dsh plugin --profile desktop add /absolute/path/lingmind-annex-1.5.2.tgz` 安装本地构建验收。
+版本 `1.5.3` 已在 DSH `0.2.2-rc.1` 完成双插件激活、撤销后重新授权和只读调用验收；`1.5.2` 在 `0.2.1-rc.5` 的验收记录仍然有效。具体环境与账户记录保留私有。
+维护者可先运行 `npm pack --ignore-scripts`，再用 `dsh plugin --profile desktop add /absolute/path/lingmind-annex-1.5.3.tgz` 安装本地构建验收。
 
 ### DSH 多环境连接
 
 LingMind 组件的 `connections` 是本机账户名称列表，默认 `["lingmind"]`。每个账户分别完成浏览器环境授权，
 钥匙串凭据、刷新锁和 MCP 命名空间均相互隔离；本机账户名只是标签，不是环境授权或身份依据。
-`1.5.2` 没有提供该字段的图形化配置页，需要在目标 profile 的 `cordis.patch.yml` 中合并 `id: lingmind` 配置条目。
+`1.5.3` 没有提供该字段的图形化配置页，需要在目标 profile 的 `cordis.patch.yml` 中合并 `id: lingmind` 配置条目。
 保留已有账户，再为新环境添加账户名；首次授权顺序执行，同一业务回调端口不并发占用。
 具体路径和可复制示例见[快速安装指南：多环境连接](dsh-quick-start.md#多环境连接按需配置)。
 

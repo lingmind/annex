@@ -1,6 +1,6 @@
 # 在 DSH 中快速安装 LingMind
 
-本指南使用已发布的 [LingMind Agent 1.5.2](https://github.com/lingmind/annex/releases/tag/v1.5.2)。桌面版可直接在插件界面安装；一次安装包含 **LingMind** 和 **LingMind Operator** 两个组件。
+本指南使用已发布的 [LingMind Agent 1.5.3](https://github.com/lingmind/annex/releases/tag/v1.5.3)。桌面版可直接在插件界面安装；一次安装包含 **LingMind** 和 **LingMind Operator** 两个组件。
 
 | 组件 | 用途 | 首次授权 |
 | --- | --- | --- |
@@ -11,7 +11,7 @@
 
 ## 安装前准备
 
-- 已安装并能正常使用 DSH。`1.5.2` 声明兼容 `>=0.2.1-rc.5 <0.3.0`，已在桌面版 `0.2.1-rc.5` 验收。
+- 已安装并能正常使用 DSH。`1.5.3` 声明兼容 `>=0.2.1-rc.5 <0.3.0`，已在桌面版 `0.2.2-rc.1` 完成双插件激活与只读调用验收。
 - 电脑已安装 Python 3.11 或更高版本，并有可用的系统钥匙串。插件自动准备自己的 Python 依赖，无需手动安装 `keyring` 等包。
 - 知道管理员提供的业务环境编码，并有该环境的登录账号。需要运维功能时，另备获授权的 Operator 账号。
 - 安装时能访问 GitHub、npm registry 和 Python 包源；授权时能访问 LingMind 登录服务。
@@ -25,7 +25,7 @@
 打开 DSH 左侧的 **插件** → **添加插件**，在包名或来源输入框粘贴：
 
 ```text
-github:lingmind/annex#v1.5.2
+github:lingmind/annex#v1.5.3
 ```
 
 按安装向导确认安装并启用。这个输入框只需要上面的包标识，不要粘贴整条终端命令。无需克隆仓库、下载 ZIP 或手工添加 MCP 服务器。[DSH 官方插件管理说明](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.5/packages/client/ui-plugin-manager/README.zh.md)
@@ -66,7 +66,7 @@ github:lingmind/annex#v1.5.2
 
 ```bash
 dsh --version
-dsh plugin --profile desktop add github:lingmind/annex#v1.5.2
+dsh plugin --profile desktop add github:lingmind/annex#v1.5.3
 ```
 
 然后回到桌面插件页刷新并完成上述授权。如果提示 `dsh: command not found`，直接使用前面的界面安装方式。
@@ -74,7 +74,7 @@ dsh plugin --profile desktop add github:lingmind/annex#v1.5.2
 如果使用的是命令行启动的 Web 界面，将 `desktop` 换成该会话实际使用的 profile；例如已有的 `web` profile：
 
 ```bash
-dsh plugin --profile web add github:lingmind/annex#v1.5.2
+dsh plugin --profile web add github:lingmind/annex#v1.5.3
 ```
 
 插件只对安装目标 profile 生效。不要把桌面版装到另一个 profile 后，再到桌面窗口寻找插件。[DSH 官方 profile 安装机制](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.1-rc.5/docs/user/develop/basic/publish.md)
@@ -83,7 +83,7 @@ dsh plugin --profile web add github:lingmind/annex#v1.5.2
 
 首次安装使用本机账户名 `lingmind`。这个名称只是本地标签，实际环境由浏览器授权决定。一个业务账户只绑定一个环境；新增环境需要新增账户并独立授权。
 
-`1.5.2` 没有提供 `connections` 的图形化配置页。需要连接多个环境时，使用 DSH 支持的 profile 用户配置：
+`1.5.3` 没有提供 `connections` 的图形化配置页。需要连接多个环境时，使用 DSH 支持的 profile 用户配置：
 
 1. 退出 DSH，备份该 profile 的 `cordis.patch.yml`。桌面版默认路径为 `~/.dsh/profiles/desktop/cordis.patch.yml`；Windows 为用户目录下的 `.dsh\profiles\desktop\cordis.patch.yml`。设置过 `DSH_HOME` 或使用其他 profile 时，以实际位置为准。
 2. 将下面的条目合并到文件的顶层 YAML 列表。保留其他配置；如果已有 `id: lingmind`，修改原条目，不要重复添加。
@@ -110,13 +110,13 @@ dsh plugin --profile web add github:lingmind/annex#v1.5.2
 重新授权一个业务账户：
 
 ```bash
-npx --yes --package="github:lingmind/annex#v1.5.2" lingmind-agent --agent dsh --product lingmind --connection lingmind --login
+npx --yes --package="github:lingmind/annex#v1.5.3" lingmind-agent --agent dsh --product lingmind --connection lingmind --login
 ```
 
 重新授权 Operator：
 
 ```bash
-npx --yes --package="github:lingmind/annex#v1.5.2" lingmind-agent --agent dsh --product lingmind-operator --login
+npx --yes --package="github:lingmind/annex#v1.5.3" lingmind-agent --agent dsh --product lingmind-operator --login
 ```
 
 完成后重新启用组件。重新授权应连接原账户对应的环境；连接新环境时使用新的账户名。
@@ -124,13 +124,13 @@ npx --yes --package="github:lingmind/annex#v1.5.2" lingmind-agent --agent dsh --
 撤销业务账户授权：
 
 ```bash
-npx --yes --package="github:lingmind/annex#v1.5.2" lingmind-agent --agent dsh --product lingmind --connection lingmind --logout
+npx --yes --package="github:lingmind/annex#v1.5.3" lingmind-agent --agent dsh --product lingmind --connection lingmind --logout
 ```
 
 撤销 Operator 授权：
 
 ```bash
-npx --yes --package="github:lingmind/annex#v1.5.2" lingmind-agent --agent dsh --product lingmind-operator --logout
+npx --yes --package="github:lingmind/annex#v1.5.3" lingmind-agent --agent dsh --product lingmind-operator --logout
 ```
 
 不再使用的业务账户应从 `connections` 移除；不再使用的组件保持关闭。重新启用一个没有授权的账户会再次打开浏览器。卸载插件可在 DSH 插件详情页操作，但卸载本身不会自动撤销钥匙串中的授权。
@@ -140,7 +140,7 @@ npx --yes --package="github:lingmind/annex#v1.5.2" lingmind-agent --agent dsh --
 | 现象 | 处理方法 |
 | --- | --- |
 | 插件市场搜不到 LingMind | 使用“添加插件”粘贴本指南的 GitHub 包标识。GitHub 安装不依赖市场索引上架。 |
-| 安装提示 DSH 版本不兼容 | 核对宿主版本和包标识是否为 `v1.5.2`。不要通过版本风险豁免强行安装其他版本。 |
+| 安装提示 DSH 版本不兼容 | 核对宿主版本和包标识是否为 `v1.5.3`。不要通过版本风险豁免强行安装其他版本。 |
 | 组件一直“加载中” | 首次启动需要准备 Python 依赖并完成浏览器授权。检查 Python 版本、包源连通性和未完成的授权页；不需要运维功能时关闭 Operator。 |
 | 授权超时、旧回调页打不开 | 重新发起授权并使用新打开的页面，不重复提交旧回调。若持续失败，检查是否有其他授权流程占用本机回调端口。 |
 | 提示系统钥匙串不可用 | 确保系统钥匙串可用并已解锁；Linux 需要可用的 Secret Service 后端。插件不使用明文文件保存 token。 |
