@@ -1,5 +1,10 @@
 # Plugin source changes
 
+## Unreleased
+
+- Recover from revoked DSH grants by starting the browser consent flow instead of failing plugin activation.
+- Report the OAuth helper's own failure reason in the host plugin diagnostic, so a locked or unavailable keychain is visible.
+
 ## Unreleased — unified Agent release 1.5.0
 
 - Use one release version for App, WorkBuddy, Doubao and DSH packages.

@@ -175,6 +175,43 @@ class AgentDistributionTests(unittest.TestCase):
         self.assertEqual(request.call_args.args[1]["resource"], OAUTH.BUSINESS.resource)
         self.assertIn("rotated", backend.set_password.call_args.args[2])
 
+    def test_revoked_refresh_grant_requires_new_consent(self):
+        backend = Mock()
+        backend.get_password.return_value = json.dumps({"resource": OAUTH.BUSINESS.resource, "client": OAUTH.BUSINESS.client, "expires_at": time.time() - 1, "refresh_token": "revoked"})
+        token_endpoint = {"token_endpoint": OAUTH.BUSINESS.issuer + "/oauth/token"}
+        with patch.object(OAUTH, "discovery", return_value=token_endpoint), patch.object(OAUTH, "request_json", side_effect=OAUTH.OAuthError("invalid_grant")):
+            with self.assertRaises(OAUTH.ReauthorizationRequired):
+                OAUTH.refresh_grant(backend, "account-a")
+        with patch.object(OAUTH, "discovery", return_value=token_endpoint), patch.object(OAUTH, "request_json", side_effect=OAUTH.OAuthError("invalid_client")):
+            with self.assertRaises(OAUTH.OAuthError):
+                OAUTH.refresh_grant(backend, "account-a")
+
+    def test_connect_opens_consent_when_the_grant_was_revoked(self):
+        backend = Mock()
+        backend.get_password.return_value = "stored grant"
+        from contextlib import nullcontext
+        with patch("sys.argv", ["agent-oauth.py", "--connect"]), patch.object(OAUTH, "keychain", return_value=backend), patch.object(OAUTH, "grant_lock", return_value=nullcontext()), patch.object(OAUTH, "refresh_grant", side_effect=OAUTH.ReauthorizationRequired()), patch.object(OAUTH, "login") as login:
+            self.assertEqual(OAUTH.main(), 0)
+        login.assert_called_once_with(backend, "lingmind", OAUTH.BUSINESS)
+
+    def test_token_endpoint_error_body_becomes_an_oauth_error(self):
+        response = Mock()
+        response.read.return_value = b'{"error": "invalid_grant", "error_description": "expired"}'
+        error = OAUTH.HTTPError("https://connect.lingmind.cn/oauth/token", 400, "Bad Request", {}, response)
+        with patch.object(OAUTH, "open_request", side_effect=error):
+            with self.assertRaises(OAUTH.OAuthError) as caught:
+                OAUTH.request_json("https://connect.lingmind.cn/oauth/token", {"grant_type": "refresh_token"})
+        self.assertEqual(caught.exception.code, "invalid_grant")
+        self.assertNotIn("refresh_token", str(caught.exception))
+
+    def test_unclassified_http_errors_are_not_rewritten(self):
+        response = Mock()
+        response.read.return_value = b"upstream unavailable"
+        error = OAUTH.HTTPError("https://connect.lingmind.cn/oauth/token", 502, "Bad Gateway", {}, response)
+        with patch.object(OAUTH, "open_request", side_effect=error):
+            with self.assertRaises(OAUTH.HTTPError):
+                OAUTH.request_json("https://connect.lingmind.cn/oauth/token")
+
     def test_callback_requires_state_issuer_code_and_exact_loopback_host(self):
         query = {"state": "expected", "iss": OAUTH.BUSINESS.issuer, "code": "authorization-code"}
         path = "/callback?" + urlencode(query)

@@ -56,8 +56,10 @@ mock.method(childProcess, 'spawn', () => {
   preparations++;
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
   process.nextTick(() => {
     child.stdout.emit('data', '/runtime/python\n');
+    if (preparations === 1) child.stderr.emit('data', 'Python runtime could not be prepared\n');
     child.emit('close', preparations === 1 ? 1 : 0);
   });
   return child;
@@ -66,7 +68,7 @@ syncBuiltinESMExports();
 try {
   const first = runtimePython();
   assert.equal(first, runtimePython(), 'concurrent components share the bootstrap');
-  await assert.rejects(first, /code 1/);
+  await assert.rejects(first, /code 1\. Python runtime could not be prepared/);
   const retry = runtimePython();
   assert.notEqual(first, retry, 'a failed bootstrap can be retried');
   assert.equal(retry, runtimePython());

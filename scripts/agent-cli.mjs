@@ -11,13 +11,21 @@ function systemPython() {
   throw new Error('Install Python 3.11 or newer, then retry.');
 }
 
+// Host diagnostics only show this message, so carry the child's own reason with it.
+function cause(stderr) {
+  const line = stderr.split('\n').map(text => text.trim()).filter(Boolean).pop();
+  return line ? ` ${line.length > 300 ? `${line.slice(0, 297)}...` : line}` : '';
+}
+
 export function run(command, args, capture = false) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { stdio: capture ? ['ignore', 'pipe', 'inherit'] : 'inherit' });
+    const child = spawn(command, args, { stdio: capture ? ['ignore', 'pipe', 'pipe'] : ['inherit', 'inherit', 'pipe'] });
     let output = '';
+    let errors = '';
     if (capture) child.stdout.on('data', data => { output += data; });
+    child.stderr.on('data', data => { errors += data; process.stderr.write(data); });
     child.on('error', reject);
-    child.on('close', code => code === 0 ? resolve(output.trim()) : reject(new Error(`LingMind setup exited with code ${code}.`)));
+    child.on('close', code => code === 0 ? resolve(output.trim()) : reject(new Error(`LingMind setup exited with code ${code}.${cause(errors)}`)));
   });
 }
 

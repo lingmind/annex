@@ -15,6 +15,7 @@ import sys
 import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.error import HTTPError
 from urllib.parse import parse_qs, urlencode, urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
@@ -52,6 +53,20 @@ OPERATOR = Connection(
 )
 CONNECTIONS = {connection.product: connection for connection in (BUSINESS, OPERATOR)}
 MAX_MESSAGE = 8 << 20
+# Token-endpoint errors that mean the stored grant is gone, not that the request was wrong.
+REAUTHORIZE_ERRORS = {"invalid_grant", "invalid_token"}
+
+
+class OAuthError(Exception):
+    """A token-endpoint error response, carrying its OAuth error code."""
+
+    def __init__(self, code, description=None, status=None):
+        super().__init__(f"OAuth error {code}" + (f": {description}" if description else ""))
+        self.code, self.status = code, status
+
+
+class ReauthorizationRequired(Exception):
+    """The stored grant was revoked or expired; only a new browser consent can restore it."""
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -64,10 +79,25 @@ def open_request(request):
     return build_opener(NoRedirect()).open(request, timeout=60)
 
 
+def oauth_error(error):
+    """Return the token endpoint's error payload, or None when the body is not one."""
+    try:
+        value = json.loads(error.read(MAX_MESSAGE + 1))
+    except Exception:
+        return None
+    return value if isinstance(value, dict) and isinstance(value.get("error"), str) else None
+
+
 def request_json(url, values=None, *, allow_empty=False):
     body = urlencode(values).encode() if values is not None else None
-    with open_request(Request(url, data=body, headers={"Accept": "application/json"})) as response:
-        raw = response.read(MAX_MESSAGE + 1)
+    try:
+        with open_request(Request(url, data=body, headers={"Accept": "application/json"})) as response:
+            raw = response.read(MAX_MESSAGE + 1)
+    except HTTPError as error:
+        payload = oauth_error(error)
+        if payload is None:
+            raise
+        raise OAuthError(payload["error"], payload.get("error_description"), error.code) from None
     if len(raw) > MAX_MESSAGE:
         raise ValueError("OAuth response is too large")
     if allow_empty and not raw:
@@ -207,10 +237,15 @@ def refresh_grant(backend, account, connection=BUSINESS):
     grant = load_grant(backend, account, connection)
     if grant["expires_at"] > time.time() + 30:
         return grant
-    response = request_json(discovery(connection)["token_endpoint"], {
-        "grant_type": "refresh_token", "client_id": connection.client, "resource": connection.resource,
-        "refresh_token": grant["refresh_token"],
-    })
+    try:
+        response = request_json(discovery(connection)["token_endpoint"], {
+            "grant_type": "refresh_token", "client_id": connection.client, "resource": connection.resource,
+            "refresh_token": grant["refresh_token"],
+        })
+    except OAuthError as error:
+        if error.code in REAUTHORIZE_ERRORS:
+            raise ReauthorizationRequired(f"{connection.product} grant is no longer valid") from None
+        raise
     return save_grant(backend, account, response, grant, connection)
 
 
@@ -304,7 +339,12 @@ def main():
         elif args.connect:
             with grant_lock(args.connection, connection):
                 if backend.get_password(connection.service, args.connection):
-                    refresh_grant(backend, args.connection, connection)
+                    try:
+                        refresh_grant(backend, args.connection, connection)
+                    except (ReauthorizationRequired, ValueError):
+                        # A revoked, expired or unreadable grant needs new browser consent,
+                        # otherwise the host could never recover without a manual login.
+                        login(backend, args.connection, connection)
                 else:
                     login(backend, args.connection, connection)
         elif args.logout:
