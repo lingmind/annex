@@ -13,7 +13,7 @@ schema、角色名称、工具目录或当前可用性清单。
 每次目标调用都携带显式 `environmentId`。Apex 会重新校验超级管理员身份和环境有效状态，再从该
 Environment 当前的 `agentConfig.endpoint` 解析 Agent URL 并分发 observe/operate 请求。插件可以保存本地
 默认环境，但不得缓存默认 Agent、沿用上一个环境的 Agent，或把 Agent URL 暴露给模型。多个环境可以共享
-同一个 Agent，Plugin 不假设 Agent 部署在目标环境中。所有观察和修改操作都必须经过 Apex Agent；Agent
+同一个 Agent，Plugin 不假设 Agent 部署在目标环境中。所有目标环境的观察和修改操作都必须经过 Apex Agent；Agent
 不可用时明确失败，不向模型暴露直接集群客户端、SSH、shell 或其他任意命令 fallback。节点侧连接方式只可
 作为 Agent 内部固定、只读能力的实现细节；当前资源观测通过类型化 Kubernetes Metrics API 完成。命名服务的安装与运行
 状态以该 Environment 的 Agent-backed 工具为准；Prometheus 聚合状态冲突时报告监控绑定问题，不能据此
@@ -36,11 +36,14 @@ Operator token 不能用于业务环境 Phoenix MCP，标准插件 token 也不�
 
 完整路由与证据优先级见 [Operator Agent binding](./references/agent-binding.md)。
 
+Jenkins 构建和代码仓库维护使用宿主已授权的 CI 和 Git 接入。云端宿主需要单独配置 Jenkins 访问权限。
+
 ## Skills
 
 - `lingmind-operator-environment-context`：发现、选择和核验有效环境。
 - `lingmind-operator-observe`：收集环境、服务、事件和日志证据。
 - `lingmind-operator-incident-analysis`：组织故障证据并形成诊断。
 - `lingmind-operator-service-maintenance`：编排服务维护与结果验证。
+- 使用 [`lingmind-operator-jenkins-build`](./skills/lingmind-operator-jenkins-build/SKILL.md) 核对代码版本、跟踪 Jenkins 构建并验证构建优化与换源。
 - `lingmind-operator-service-deploy`：编排受控服务安装或升级。
 - `lingmind-operator-backup-restore`：编排备份恢复和验证。
