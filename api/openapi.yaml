@@ -261,7 +261,7 @@ paths:
       summary: 查询当前集成可见的任务列表。
       description: >
         默认只返回任务标量字段。可通过 populate 展开 wayline、device、rawData、trajectories、
-        viewpoints、project 和 sharedProjects。
+        viewpoints 和 project。
       parameters:
         - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Populate'
@@ -304,7 +304,7 @@ paths:
       summary: 查询单个任务。
       description: >
         默认只返回任务标量字段。可通过 populate 展开 wayline、device、rawData、trajectories、
-        viewpoints、project 和 sharedProjects。
+        viewpoints 和 project。
       parameters:
         - $ref: '#/components/parameters/ProjectID'
         - $ref: '#/components/parameters/Populate'
@@ -337,7 +337,7 @@ paths:
       summary: 查询当前集成可见的原始数据列表。
       description: >
         默认只返回原始数据标量字段。可通过 populate 展开 device、mission、wayline、trajectory、
-        viewpoint、landmark、spatialZone、storageConfig、project、sharedProjects、dataProcesses、
+        viewpoint、landmark、spatialZone、storageConfig、project、dataProcesses、
         rawNotes、aerialVideos 以及媒体和时空组件。
       parameters:
         - $ref: '#/components/parameters/ProjectID'
@@ -388,7 +388,7 @@ paths:
       summary: 查询单条原始数据记录。
       description: >
         默认只返回原始数据标量字段。可通过 populate 展开 device、mission、wayline、trajectory、
-        viewpoint、landmark、spatialZone、storageConfig、project、sharedProjects、dataProcesses、
+        viewpoint、landmark、spatialZone、storageConfig、project、dataProcesses、
         rawNotes、aerialVideos 以及媒体和时空组件。
       parameters:
         - $ref: '#/components/parameters/ProjectID'
